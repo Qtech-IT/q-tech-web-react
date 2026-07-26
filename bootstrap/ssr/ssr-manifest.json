@@ -1,0 +1,1145 @@
+{
+  "node_modules/laravel-vite-plugin/inertia-helpers/index.js": [],
+  "node_modules/react-quill-new/dist/quill.snow.css": [
+    "/build/assets/RichTextEditor-cWbzZRFQ.js",
+    "/build/assets/RichTextEditor-4RyaA7S0.css"
+  ],
+  "resources/js/Assets/icons/custom/icon-dir.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Assets/icons/custom/icon-sidebar-floating.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Assets/icons/custom/icon-sidebar-inset.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Assets/icons/custom/icon-sidebar-sidebar.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Assets/icons/custom/icon-theme-dark.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Assets/icons/custom/icon-theme-light.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Assets/icons/custom/icon-theme-system.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Assets/images/placeholders/default.jpg": [
+    "/build/assets/constants-4k_q_jeE.js",
+    "/build/assets/default-BF8QkkMI.jpg"
+  ],
+  "resources/js/Components/Common/Admin/CommandMenu.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Components/Common/Admin/ConfigDrawer.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Components/Common/Admin/ConfirmDialog.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Components/Common/Admin/LanguageSwitch.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Components/Common/Admin/ProfileDropdown.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Components/Common/Admin/Search.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Components/Common/Admin/SignOutDialog.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Components/Common/Admin/SkipToMain.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Components/Common/Admin/ThemeSwitch.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Components/Common/Frontend/AuthenticatedSidebar.jsx": [
+    "/build/assets/AuthenticatedLayout-RBWn151p.js"
+  ],
+  "resources/js/Components/Common/Frontend/Footer.jsx": [
+    "/build/assets/AppLayout-BOaFJ-XR.js"
+  ],
+  "resources/js/Components/Common/Frontend/Header.jsx": [
+    "/build/assets/AppLayout-BOaFJ-XR.js"
+  ],
+  "resources/js/Components/Common/Frontend/MenuSidebar.jsx": [
+    "/build/assets/AppLayout-BOaFJ-XR.js"
+  ],
+  "resources/js/Components/Feature/Admin/AdminUser/OverviewCard.jsx": [
+    "/build/assets/Index-CWfCvT71.js"
+  ],
+  "resources/js/Components/Feature/Admin/AdminUser/SearchBox.jsx": [
+    "/build/assets/Index-CWfCvT71.js"
+  ],
+  "resources/js/Components/Feature/Admin/Appearance/SearchBox.jsx": [
+    "/build/assets/Index-ZdXIFWO2.js"
+  ],
+  "resources/js/Components/Feature/Admin/Appearance/SectionCard.jsx": [
+    "/build/assets/Index-ZdXIFWO2.js"
+  ],
+  "resources/js/Components/Feature/Admin/Appearance/SectionGridList.jsx": [
+    "/build/assets/Index-ZdXIFWO2.js"
+  ],
+  "resources/js/Components/Feature/Admin/Appearance/SectionOverview.jsx": [
+    "/build/assets/Index-ZdXIFWO2.js"
+  ],
+  "resources/js/Components/Feature/Admin/Appearance/StatisticsCard.jsx": [
+    "/build/assets/Index-ZdXIFWO2.js"
+  ],
+  "resources/js/Components/Feature/Admin/AutomationOverview.jsx": [
+    "/build/assets/Index-DEmYlZiK.js"
+  ],
+  "resources/js/Components/Feature/Admin/Backup/QuickAction.jsx": [
+    "/build/assets/Index-DoGIE5lz.js"
+  ],
+  "resources/js/Components/Feature/Admin/Backup/StorageOverview.jsx": [
+    "/build/assets/Index-DoGIE5lz.js"
+  ],
+  "resources/js/Components/Feature/Admin/Blog/OverviewCard.jsx": [
+    "/build/assets/Index-akZ1sIbF.js"
+  ],
+  "resources/js/Components/Feature/Admin/Blog/SearchBox.jsx": [
+    "/build/assets/Index-akZ1sIbF.js"
+  ],
+  "resources/js/Components/Feature/Admin/Blog/Tags/OverviewCard.jsx": [
+    "/build/assets/Index-Jeuny6vJ.js"
+  ],
+  "resources/js/Components/Feature/Admin/Blog/Tags/SearchBox.jsx": [
+    "/build/assets/Index-Jeuny6vJ.js"
+  ],
+  "resources/js/Components/Feature/Admin/Blog/Tags/TagDialog.jsx": [
+    "/build/assets/TagDialog-DHdQLSZJ.js"
+  ],
+  "resources/js/Components/Feature/Admin/CacheOverview.jsx": [
+    "/build/assets/Index-BF1Mj-4v.js"
+  ],
+  "resources/js/Components/Feature/Admin/CommonLayoutHeader.jsx": [
+    "/build/assets/CommonLayoutHeader-CyKOpByu.js"
+  ],
+  "resources/js/Components/Feature/Admin/CommonSimpleSearchBox.jsx": [
+    "/build/assets/Index-DoGIE5lz.js"
+  ],
+  "resources/js/Components/Feature/Admin/Contact/OverviewCard.jsx": [
+    "/build/assets/Contacts-T5xcev1Z.js"
+  ],
+  "resources/js/Components/Feature/Admin/Contact/SearchBox.jsx": [
+    "/build/assets/Contacts-T5xcev1Z.js"
+  ],
+  "resources/js/Components/Feature/Admin/Contact/SendEmailDialog.jsx": [
+    "/build/assets/Contacts-T5xcev1Z.js"
+  ],
+  "resources/js/Components/Feature/Admin/Dashboard/Overview.jsx": [
+    "/build/assets/Dashboard-CT93H9QD.js"
+  ],
+  "resources/js/Components/Feature/Admin/Dashboard/RecentSales.jsx": [
+    "/build/assets/Dashboard-CT93H9QD.js"
+  ],
+  "resources/js/Components/Feature/Admin/Faq/FaqDialog.jsx": [
+    "/build/assets/Index-CQjx-HQY.js"
+  ],
+  "resources/js/Components/Feature/Admin/Faq/OverviewCard.jsx": [
+    "/build/assets/Index-CQjx-HQY.js"
+  ],
+  "resources/js/Components/Feature/Admin/Faq/SearchBox.jsx": [
+    "/build/assets/Index-CQjx-HQY.js"
+  ],
+  "resources/js/Components/Feature/Admin/FirebaseGateway/FirebaseGatewayDialog.jsx": [
+    "/build/assets/Index-DaRBtGoc.js"
+  ],
+  "resources/js/Components/Feature/Admin/FirebaseGateway/LayoutHeader.jsx": [
+    "/build/assets/Index-DaRBtGoc.js"
+  ],
+  "resources/js/Components/Feature/Admin/FirebaseGateway/SearchBox.jsx": [
+    "/build/assets/Index-DaRBtGoc.js"
+  ],
+  "resources/js/Components/Feature/Admin/Language/CustomPagination.jsx": [
+    "/build/assets/Translate-B5NqzGha.js"
+  ],
+  "resources/js/Components/Feature/Admin/Language/LanguageDialog.jsx": [
+    "/build/assets/Index-D3AqRB6i.js"
+  ],
+  "resources/js/Components/Feature/Admin/Language/LanguageInfoCard.jsx": [
+    "/build/assets/Translate-B5NqzGha.js"
+  ],
+  "resources/js/Components/Feature/Admin/Language/LayoutHeader.jsx": [
+    "/build/assets/SimpleSearchBox-BCkL0aj1.js"
+  ],
+  "resources/js/Components/Feature/Admin/Language/SimpleSearchBox.jsx": [
+    "/build/assets/SimpleSearchBox-BCkL0aj1.js"
+  ],
+  "resources/js/Components/Feature/Admin/Language/TranslationRow.jsx": [
+    "/build/assets/Translate-B5NqzGha.js"
+  ],
+  "resources/js/Components/Feature/Admin/MailGateway/GatewayInfo.jsx": [
+    "/build/assets/Edit-DJ9jbXN1.js"
+  ],
+  "resources/js/Components/Feature/Admin/MailGateway/LayoutHeader.jsx": [
+    "/build/assets/LayoutHeader-BuHBNf3-.js"
+  ],
+  "resources/js/Components/Feature/Admin/MailGateway/SearchBox.jsx": [
+    "/build/assets/Index-DMS0wCt-.js"
+  ],
+  "resources/js/Components/Feature/Admin/MailGateway/TestGatewayDialog.jsx": [
+    "/build/assets/Edit-DJ9jbXN1.js"
+  ],
+  "resources/js/Components/Feature/Admin/Market/Category/CategoryDialog.jsx": [
+    "/build/assets/CategoryDialog-WJXZpB7q.js"
+  ],
+  "resources/js/Components/Feature/Admin/Market/Category/CategoryOverviewCard.jsx": [
+    "/build/assets/Index-QAslDKG3.js"
+  ],
+  "resources/js/Components/Feature/Admin/Market/Category/SearchBox.jsx": [
+    "/build/assets/Index-QAslDKG3.js"
+  ],
+  "resources/js/Components/Feature/Admin/Menu/MenuDialog.jsx": [
+    "/build/assets/Index-CU9LkVZb.js"
+  ],
+  "resources/js/Components/Feature/Admin/Menu/OverviewCard.jsx": [
+    "/build/assets/Index-CU9LkVZb.js"
+  ],
+  "resources/js/Components/Feature/Admin/Menu/SearchBox.jsx": [
+    "/build/assets/Index-CU9LkVZb.js"
+  ],
+  "resources/js/Components/Feature/Admin/NotificationTemplate/LayoutHeader.jsx": [
+    "/build/assets/LayoutHeader-DyQkXJ8M.js"
+  ],
+  "resources/js/Components/Feature/Admin/NotificationTemplate/SearchBox.jsx": [
+    "/build/assets/Index-3CbCO0nr.js"
+  ],
+  "resources/js/Components/Feature/Admin/NotificationTemplate/TemplateKeysSidebar.jsx": [
+    "/build/assets/TemplateKeysSidebar-BORC0U1f.js"
+  ],
+  "resources/js/Components/Feature/Admin/Pages/OverviewCard.jsx": [
+    "/build/assets/Index-KD-R7oRo.js"
+  ],
+  "resources/js/Components/Feature/Admin/Pages/SearchBox.jsx": [
+    "/build/assets/Index-KD-R7oRo.js"
+  ],
+  "resources/js/Components/Feature/Admin/PaymentMethod/OverviewCard.jsx": [
+    "/build/assets/Index-DW6U1xSF.js"
+  ],
+  "resources/js/Components/Feature/Admin/PaymentMethod/SearchBox.jsx": [
+    "/build/assets/Index-DW6U1xSF.js"
+  ],
+  "resources/js/Components/Feature/Admin/Profile/BrowserSessions.jsx": [
+    "/build/assets/Index-Du8U5ISY.js"
+  ],
+  "resources/js/Components/Feature/Admin/Profile/ContentSection.jsx": [
+    "/build/assets/ContentSection-DFKIhAed.js"
+  ],
+  "resources/js/Components/Feature/Admin/Profile/SidebarNav.jsx": [
+    "/build/assets/ContentSection-DFKIhAed.js"
+  ],
+  "resources/js/Components/Feature/Admin/Profile/TwoFAConfig.jsx": [
+    "/build/assets/Index-Du8U5ISY.js"
+  ],
+  "resources/js/Components/Feature/Admin/Profile/TwoFaDialog.jsx": [
+    "/build/assets/Index-Du8U5ISY.js"
+  ],
+  "resources/js/Components/Feature/Admin/Role/OverviewCard.jsx": [
+    "/build/assets/Index-MqyFqECw.js"
+  ],
+  "resources/js/Components/Feature/Admin/Role/SearchBox.jsx": [
+    "/build/assets/Index-MqyFqECw.js"
+  ],
+  "resources/js/Components/Feature/Admin/Subscriber/OverviewCard.jsx": [
+    "/build/assets/Subscribers-CeQ8OWCP.js"
+  ],
+  "resources/js/Components/Feature/Admin/Subscriber/SearchBox.jsx": [
+    "/build/assets/Subscribers-CeQ8OWCP.js"
+  ],
+  "resources/js/Components/Feature/Admin/Subscriber/SendEmailAllDialog.jsx": [
+    "/build/assets/Subscribers-CeQ8OWCP.js"
+  ],
+  "resources/js/Components/Feature/Admin/SystemOverview.jsx": [
+    "/build/assets/SystemInfo-BvMxokzr.js"
+  ],
+  "resources/js/Components/Feature/Admin/User/OverviewCard.jsx": [
+    "/build/assets/Index-CnFkg2Hj.js"
+  ],
+  "resources/js/Components/Feature/Admin/User/SearchBox.jsx": [
+    "/build/assets/Index-CnFkg2Hj.js"
+  ],
+  "resources/js/Components/Feature/Admin/User/WalletDialog.jsx": [
+    "/build/assets/Index-CnFkg2Hj.js"
+  ],
+  "resources/js/Components/Feature/Admin/WithdrawMethod/OverviewCard.jsx": [
+    "/build/assets/Index-1UOc80ja.js"
+  ],
+  "resources/js/Components/Feature/Admin/WithdrawMethod/SearchBox.jsx": [
+    "/build/assets/Index-1UOc80ja.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Blog/BlogCard.jsx": [
+    "/build/assets/BlogCard-Jrl9AHYg.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Blog/BlogDetails.jsx": [
+    "/build/assets/Details-Bu_uo3mj.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Blog/Blogs.jsx": [
+    "/build/assets/Index-DreYjnf5.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Market/MarketCard.jsx": [
+    "/build/assets/MarketGrid-DlkazA02.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Market/MarketCardTwo.jsx": [
+    "/build/assets/MarketGrid-DlkazA02.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Market/MarketChart.jsx": [
+    "/build/assets/Details-DWIQZQLj.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Market/MarketFilters.jsx": [
+    "/build/assets/MarketGrid-DlkazA02.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Market/MarketGrid.jsx": [
+    "/build/assets/MarketGrid-DlkazA02.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Market/MarketTradeWidget.jsx": [
+    "/build/assets/TradeDialog-Dt4WEyMP.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Market/OrderBook.jsx": [
+    "/build/assets/Details-DWIQZQLj.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Market/PredictionCollapse.jsx": [
+    "/build/assets/Details-DWIQZQLj.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Market/PredictionCollapseBody.jsx": [
+    "/build/assets/Details-DWIQZQLj.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Market/PredictionItem.jsx": [
+    "/build/assets/Details-DWIQZQLj.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Market/RelatedMarkets.jsx": [
+    "/build/assets/Details-DWIQZQLj.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Market/RulesResolutionCollapse.jsx": [
+    "/build/assets/Details-DWIQZQLj.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Market/TradeDialog.jsx": [
+    "/build/assets/TradeDialog-Dt4WEyMP.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Market/TradeForm.jsx": [
+    "/build/assets/TradeDialog-Dt4WEyMP.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Market/TradingCard.jsx": [
+    "/build/assets/MarketGrid-DlkazA02.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Page/PageDetails.jsx": [
+    "/build/assets/Details-DDqC75TM.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Sections/BlogSection.jsx": [
+    "/build/assets/BlogSection-DiGfvTON.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Sections/ContactSection.jsx": [
+    "/build/assets/constants-4k_q_jeE.js",
+    "/build/assets/default-BF8QkkMI.jpg"
+  ],
+  "resources/js/Components/Feature/Frontend/Sections/FaqSection.jsx": [
+    "/build/assets/constants-4k_q_jeE.js",
+    "/build/assets/default-BF8QkkMI.jpg"
+  ],
+  "resources/js/Components/Feature/Frontend/Sections/HeroSection.jsx": [
+    "/build/assets/constants-4k_q_jeE.js",
+    "/build/assets/default-BF8QkkMI.jpg"
+  ],
+  "resources/js/Components/Feature/Frontend/Sections/HowItWorksSection.jsx": [
+    "/build/assets/constants-4k_q_jeE.js",
+    "/build/assets/default-BF8QkkMI.jpg"
+  ],
+  "resources/js/Components/Feature/Frontend/Sections/LeaderboardSection.jsx": [
+    "/build/assets/constants-4k_q_jeE.js",
+    "/build/assets/default-BF8QkkMI.jpg"
+  ],
+  "resources/js/Components/Feature/Frontend/Sections/MarketDetailsSection.jsx": [
+    "/build/assets/Details-DWIQZQLj.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Sections/MarketSection.jsx": [
+    "/build/assets/Index-BEhjcK-I.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Sections/MarketSectionTwo.jsx": [
+    "/build/assets/MarketSectionTwo-RD2Nw8tb.js"
+  ],
+  "resources/js/Components/Feature/Frontend/Sections/NewsletterSection.jsx": [
+    "/build/assets/constants-4k_q_jeE.js",
+    "/build/assets/default-BF8QkkMI.jpg"
+  ],
+  "resources/js/Components/Feature/User/Auth/AuthFooter.jsx": [
+    "/build/assets/AuthFooter-BXqHF0L0.js"
+  ],
+  "resources/js/Components/Feature/User/Auth/SocialLoginButtons.jsx": [
+    "/build/assets/SocialLoginButtons-BfDakk2J.js"
+  ],
+  "resources/js/Components/Feature/User/Bookmark/BookmarkList.jsx": [
+    "/build/assets/Index-Cmm7-c0U.js"
+  ],
+  "resources/js/Components/Feature/User/History/DepositsTab.jsx": [
+    "/build/assets/Index-BSaDfJwK.js"
+  ],
+  "resources/js/Components/Feature/User/History/TradesTab.jsx": [
+    "/build/assets/Index-BSaDfJwK.js"
+  ],
+  "resources/js/Components/Feature/User/History/WithdrawalsTab.jsx": [
+    "/build/assets/Index-BSaDfJwK.js"
+  ],
+  "resources/js/Components/Feature/User/Profile/BrowserSessions.jsx": [
+    "/build/assets/Index-CBzv3Qit.js"
+  ],
+  "resources/js/Components/Feature/User/Profile/DangerZone.jsx": [
+    "/build/assets/Index-CBzv3Qit.js"
+  ],
+  "resources/js/Components/Feature/User/Profile/DeleteAccountDialog.jsx": [
+    "/build/assets/Index-CBzv3Qit.js"
+  ],
+  "resources/js/Components/Feature/User/Profile/DisableTwoFactorDialog.jsx": [
+    "/build/assets/Index-CBzv3Qit.js"
+  ],
+  "resources/js/Components/Feature/User/Profile/PasswordForm.jsx": [
+    "/build/assets/Index-CBzv3Qit.js"
+  ],
+  "resources/js/Components/Feature/User/Profile/ProfileSetting.jsx": [
+    "/build/assets/Index-CBzv3Qit.js"
+  ],
+  "resources/js/Components/Feature/User/Profile/TwoFaDialog.jsx": [
+    "/build/assets/Index-CBzv3Qit.js"
+  ],
+  "resources/js/Components/Feature/User/Profile/TwoFactorAuth.jsx": [
+    "/build/assets/Index-CBzv3Qit.js"
+  ],
+  "resources/js/Components/Feature/User/Tickets/TicketSection.jsx": [
+    "/build/assets/Index-DzSJZTUM.js"
+  ],
+  "resources/js/Components/Feature/User/Trade/TradeResultDialog.jsx": [
+    "/build/assets/TradeDialog-Dt4WEyMP.js"
+  ],
+  "resources/js/Components/Feature/User/Wallet/Deposit.jsx": [
+    "/build/assets/Index-BDrqUXHE.js"
+  ],
+  "resources/js/Components/Feature/User/Wallet/Withdrawal.jsx": [
+    "/build/assets/Index-BDrqUXHE.js"
+  ],
+  "resources/js/Components/Forms/Admin/AdminUser/AdminUserSaveForm.jsx": [
+    "/build/assets/Save-DGLF9UCM.js"
+  ],
+  "resources/js/Components/Forms/Admin/Appearance/SectionDynamicForm.jsx": [
+    "/build/assets/Create-BvotqQq6.js"
+  ],
+  "resources/js/Components/Forms/Admin/Auth/EmailVerificationForm.jsx": [
+    "/build/assets/ResetPassword-CbhK1R0R.js"
+  ],
+  "resources/js/Components/Forms/Admin/Auth/OtpVerificationForm.jsx": [
+    "/build/assets/OtpVerificationForm-BzuLdAr7.js"
+  ],
+  "resources/js/Components/Forms/Admin/Auth/UpdatePasswordForm.jsx": [
+    "/build/assets/UpdatePassword-DDZRQGq-.js"
+  ],
+  "resources/js/Components/Forms/Admin/Auth/UserAuthForm.jsx": [
+    "/build/assets/Login-BUCab5xi.js"
+  ],
+  "resources/js/Components/Forms/Admin/Blog/BlogSaveForm.jsx": [
+    "/build/assets/Save-CtWNWXD8.js"
+  ],
+  "resources/js/Components/Forms/Admin/EmailGateway/EmailGatewayForm.jsx": [
+    "/build/assets/Edit-DJ9jbXN1.js"
+  ],
+  "resources/js/Components/Forms/Admin/NotificationTemplate/GlobalTemplateForm.jsx": [
+    "/build/assets/Global-B1Vp-zBE.js"
+  ],
+  "resources/js/Components/Forms/Admin/NotificationTemplate/TemplateSaveForm.jsx": [
+    "/build/assets/Edit-Ch8QLrJA.js"
+  ],
+  "resources/js/Components/Forms/Admin/Page/PageSaveForm.jsx": [
+    "/build/assets/Save-DNVO56IU.js"
+  ],
+  "resources/js/Components/Forms/Admin/PaymentMethod/PaymentMethodSaveForm.jsx": [
+    "/build/assets/Save-C7lCfJ4v.js"
+  ],
+  "resources/js/Components/Forms/Admin/Profile/PasswordForm.jsx": [
+    "/build/assets/Index-Du8U5ISY.js"
+  ],
+  "resources/js/Components/Forms/Admin/Profile/ProfileForm.jsx": [
+    "/build/assets/Index-Du8U5ISY.js"
+  ],
+  "resources/js/Components/Forms/Admin/Role/RoleSaveForm.jsx": [
+    "/build/assets/Save-DHWJoUI5.js"
+  ],
+  "resources/js/Components/Forms/Admin/Settings/AppearanceForm.jsx": [
+    "/build/assets/Index-BE0sZ_St.js"
+  ],
+  "resources/js/Components/Forms/Admin/Settings/CurrencySettingsForm.jsx": [
+    "/build/assets/Index-BE0sZ_St.js"
+  ],
+  "resources/js/Components/Forms/Admin/Settings/GeneralSettingsForm.jsx": [
+    "/build/assets/Index-BE0sZ_St.js"
+  ],
+  "resources/js/Components/Forms/Admin/Settings/LogoForm.jsx": [
+    "/build/assets/Index-BE0sZ_St.js"
+  ],
+  "resources/js/Components/Forms/Admin/Settings/RecaptchaSettingsForm.jsx": [
+    "/build/assets/Index-BE0sZ_St.js"
+  ],
+  "resources/js/Components/Forms/Admin/Settings/SEOSettingsForm.jsx": [
+    "/build/assets/Index-BE0sZ_St.js"
+  ],
+  "resources/js/Components/Forms/Admin/Settings/SecuritySettingsForm.jsx": [
+    "/build/assets/Index-BE0sZ_St.js"
+  ],
+  "resources/js/Components/Forms/Admin/Settings/SocialLoginSettingsForm.jsx": [
+    "/build/assets/Index-BE0sZ_St.js"
+  ],
+  "resources/js/Components/Forms/Admin/Settings/StorageSettingsForm.jsx": [
+    "/build/assets/Index-BE0sZ_St.js"
+  ],
+  "resources/js/Components/Forms/Admin/Settings/SystemPreferencesForm.jsx": [
+    "/build/assets/Index-BE0sZ_St.js"
+  ],
+  "resources/js/Components/Forms/Admin/Settings/TicketConfigurationForm.jsx": [
+    "/build/assets/Index-BE0sZ_St.js"
+  ],
+  "resources/js/Components/Forms/Admin/Transaction/SearchBox.jsx": [
+    "/build/assets/Index-uiM-udut.js"
+  ],
+  "resources/js/Components/Forms/Admin/Transaction/TransactionOverviewCard.jsx": [
+    "/build/assets/Index-uiM-udut.js"
+  ],
+  "resources/js/Components/Forms/Admin/User/UserSaveForm.jsx": [
+    "/build/assets/Save-DXElzRLI.js"
+  ],
+  "resources/js/Components/Forms/Admin/WithdrawMethod/WithdrawMethodSaveForm.jsx": [
+    "/build/assets/Save-B7E8lZ8a.js"
+  ],
+  "resources/js/Components/Forms/Frontend/Contact/ContactForm.jsx": [
+    "/build/assets/constants-4k_q_jeE.js",
+    "/build/assets/default-BF8QkkMI.jpg"
+  ],
+  "resources/js/Components/Forms/User/Auth/EmailVerificationForm.jsx": [
+    "/build/assets/EmailVerification-BNupTYAX.js"
+  ],
+  "resources/js/Components/Forms/User/Auth/ForgotForm.jsx": [
+    "/build/assets/ResetPassword-DU3Hiz6E.js"
+  ],
+  "resources/js/Components/Forms/User/Auth/LoginForm.jsx": [
+    "/build/assets/Login-ZRbBcdTq.js"
+  ],
+  "resources/js/Components/Forms/User/Auth/OtpVerificationForm.jsx": [
+    "/build/assets/OtpVerification-C4iliHt8.js"
+  ],
+  "resources/js/Components/Forms/User/Auth/ResetPasswordForm.jsx": [
+    "/build/assets/UpdatePassword-Cc65-iWn.js"
+  ],
+  "resources/js/Components/Forms/User/Auth/SignupForm.jsx": [
+    "/build/assets/Register-B-pXGQ_R.js"
+  ],
+  "resources/js/Components/Forms/User/Auth/TwoFactorVerificationForm.jsx": [
+    "/build/assets/TwoFactorVerification-VTR04K9l.js"
+  ],
+  "resources/js/Components/Navigation/Admin/AppSidebar.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Components/Navigation/Admin/Header.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Components/Navigation/Admin/NavGroup.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Components/Navigation/Admin/NavUser.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Components/Navigation/Admin/TeamSwitcher.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Components/Navigation/Admin/TopNav.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Components/Navigation/Frontend/HeaderNav.jsx": [
+    "/build/assets/AppLayout-BOaFJ-XR.js"
+  ],
+  "resources/js/Components/PasswordInput.jsx": [
+    "/build/assets/PasswordInput-y5M6NrVa.js"
+  ],
+  "resources/js/Components/Table/Admin/AdminUserTable.jsx": [
+    "/build/assets/Index-CWfCvT71.js"
+  ],
+  "resources/js/Components/Table/Admin/BackupTable.jsx": [
+    "/build/assets/Index-DoGIE5lz.js"
+  ],
+  "resources/js/Components/Table/Admin/BlogTable.jsx": [
+    "/build/assets/Index-akZ1sIbF.js"
+  ],
+  "resources/js/Components/Table/Admin/ContactTable.jsx": [
+    "/build/assets/Contacts-T5xcev1Z.js"
+  ],
+  "resources/js/Components/Table/Admin/FaqTable.jsx": [
+    "/build/assets/Index-CQjx-HQY.js"
+  ],
+  "resources/js/Components/Table/Admin/FirebaseGatewaysTable.jsx": [
+    "/build/assets/Index-DaRBtGoc.js"
+  ],
+  "resources/js/Components/Table/Admin/LanguagesTable.jsx": [
+    "/build/assets/Index-D3AqRB6i.js"
+  ],
+  "resources/js/Components/Table/Admin/MailGatewaysTable.jsx": [
+    "/build/assets/Index-DMS0wCt-.js"
+  ],
+  "resources/js/Components/Table/Admin/MarketCategoryTable.jsx": [
+    "/build/assets/Index-QAslDKG3.js"
+  ],
+  "resources/js/Components/Table/Admin/MenuTable.jsx": [
+    "/build/assets/Index-CU9LkVZb.js"
+  ],
+  "resources/js/Components/Table/Admin/NotificationTemplatesTable.jsx": [
+    "/build/assets/Index-3CbCO0nr.js"
+  ],
+  "resources/js/Components/Table/Admin/PageTable.jsx": [
+    "/build/assets/Index-KD-R7oRo.js"
+  ],
+  "resources/js/Components/Table/Admin/PaymentMethodTable.jsx": [
+    "/build/assets/Index-DW6U1xSF.js"
+  ],
+  "resources/js/Components/Table/Admin/RoleTable.jsx": [
+    "/build/assets/Index-MqyFqECw.js"
+  ],
+  "resources/js/Components/Table/Admin/SubscriberTable.jsx": [
+    "/build/assets/Subscribers-CeQ8OWCP.js"
+  ],
+  "resources/js/Components/Table/Admin/TagTable.jsx": [
+    "/build/assets/Index-Jeuny6vJ.js"
+  ],
+  "resources/js/Components/Table/Admin/TransactionTable.jsx": [
+    "/build/assets/Index-uiM-udut.js"
+  ],
+  "resources/js/Components/Table/Admin/TranslationTable.jsx": [
+    "/build/assets/Translate-B5NqzGha.js"
+  ],
+  "resources/js/Components/Table/Admin/UserTable.jsx": [
+    "/build/assets/Index-CnFkg2Hj.js"
+  ],
+  "resources/js/Components/Table/Admin/WithdrawMethodTable.jsx": [
+    "/build/assets/Index-1UOc80ja.js"
+  ],
+  "resources/js/Components/Table/User/LeaderboardTable.jsx": [
+    "/build/assets/constants-4k_q_jeE.js",
+    "/build/assets/default-BF8QkkMI.jpg"
+  ],
+  "resources/js/Components/UI/Accordion.jsx": [
+    "/build/assets/constants-4k_q_jeE.js",
+    "/build/assets/default-BF8QkkMI.jpg"
+  ],
+  "resources/js/Components/UI/Alert.jsx": [
+    "/build/assets/Alert-3s5DZB4H.js"
+  ],
+  "resources/js/Components/UI/AlertDialog.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Components/UI/Avatar.jsx": [
+    "/build/assets/Sheet-B-_2BaZp.js"
+  ],
+  "resources/js/Components/UI/Badge.jsx": [
+    "/build/assets/Badge-B6jlhcU-.js"
+  ],
+  "resources/js/Components/UI/Breadcrumb.jsx": [
+    "/build/assets/Breadcrumb-D0MBns-9.js"
+  ],
+  "resources/js/Components/UI/BulkActionDialog.jsx": [
+    "/build/assets/BulkActionsCard-D0COHX8t.js"
+  ],
+  "resources/js/Components/UI/BulkActionsCard.jsx": [
+    "/build/assets/BulkActionsCard-D0COHX8t.js"
+  ],
+  "resources/js/Components/UI/Button.jsx": [
+    "/build/assets/Button-CFMlPXiE.js"
+  ],
+  "resources/js/Components/UI/ButtonLoader.jsx": [
+    "/build/assets/ButtonLoader-BVWhRiGk.js"
+  ],
+  "resources/js/Components/UI/Card.jsx": [
+    "/build/assets/Card-CQ2ij0--.js"
+  ],
+  "resources/js/Components/UI/Checkbox.jsx": [
+    "/build/assets/Checkbox-CsK9i2JK.js"
+  ],
+  "resources/js/Components/UI/Collapsible.jsx": [
+    "/build/assets/TradeDialog-Dt4WEyMP.js"
+  ],
+  "resources/js/Components/UI/Command.jsx": [
+    "/build/assets/Sheet-B-_2BaZp.js"
+  ],
+  "resources/js/Components/UI/DeleteDialog.jsx": [
+    "/build/assets/DeleteDialog-DBDDlwO7.js"
+  ],
+  "resources/js/Components/UI/Dialog.jsx": [
+    "/build/assets/Sheet-B-_2BaZp.js"
+  ],
+  "resources/js/Components/UI/DropdownMenu.jsx": [
+    "/build/assets/Sheet-B-_2BaZp.js"
+  ],
+  "resources/js/Components/UI/EmptyTableState.jsx": [
+    "/build/assets/EmptyTableState-C7sYsPjb.js"
+  ],
+  "resources/js/Components/UI/Form.jsx": [
+    "/build/assets/Form-dg4L2iRR.js"
+  ],
+  "resources/js/Components/UI/Frontend/Animation/SlideLeft.jsx": [
+    "/build/assets/AuthenticatedLayout-RBWn151p.js"
+  ],
+  "resources/js/Components/UI/Frontend/Animation/SlideUp.jsx": [
+    "/build/assets/SlideUp-CpffxXZf.js"
+  ],
+  "resources/js/Components/UI/Frontend/CollapseWrapper.jsx": [
+    "/build/assets/TradeDialog-Dt4WEyMP.js"
+  ],
+  "resources/js/Components/UI/Frontend/EmptyData.jsx": [
+    "/build/assets/EmptyData-DjqqIMwS.js"
+  ],
+  "resources/js/Components/UI/Frontend/FancyButton.jsx": [
+    "/build/assets/Sheet-B-_2BaZp.js"
+  ],
+  "resources/js/Components/UI/Frontend/FileUploader.jsx": [
+    "/build/assets/Index-CBzv3Qit.js"
+  ],
+  "resources/js/Components/UI/Frontend/FilterCollapse.jsx": [
+    "/build/assets/constants-4k_q_jeE.js",
+    "/build/assets/default-BF8QkkMI.jpg"
+  ],
+  "resources/js/Components/UI/Frontend/FilterWrapper.jsx": [
+    "/build/assets/constants-4k_q_jeE.js",
+    "/build/assets/default-BF8QkkMI.jpg"
+  ],
+  "resources/js/Components/UI/Frontend/InputCountDown.jsx": [
+    "/build/assets/TradeDialog-Dt4WEyMP.js"
+  ],
+  "resources/js/Components/UI/Frontend/LanguageSwitch.jsx": [
+    "/build/assets/AppLayout-BOaFJ-XR.js"
+  ],
+  "resources/js/Components/UI/Frontend/MenuScroller.jsx": [
+    "/build/assets/Sheet-B-_2BaZp.js"
+  ],
+  "resources/js/Components/UI/Frontend/NotificationDropdown.jsx": [
+    "/build/assets/AppLayout-BOaFJ-XR.js"
+  ],
+  "resources/js/Components/UI/Frontend/Pagination.jsx": [
+    "/build/assets/PaginationWrapper-B-KWAp7V.js"
+  ],
+  "resources/js/Components/UI/Frontend/PaginationWrapper.jsx": [
+    "/build/assets/PaginationWrapper-B-KWAp7V.js"
+  ],
+  "resources/js/Components/UI/Frontend/ProfileDropdown.jsx": [
+    "/build/assets/AppLayout-BOaFJ-XR.js"
+  ],
+  "resources/js/Components/UI/Frontend/RadialProgress.jsx": [
+    "/build/assets/MarketGrid-DlkazA02.js"
+  ],
+  "resources/js/Components/UI/Frontend/ThemeSwitch.jsx": [
+    "/build/assets/AppLayout-BOaFJ-XR.js"
+  ],
+  "resources/js/Components/UI/HotToast.jsx": [
+    "/build/assets/HotToast-DfpkTxSC.js"
+  ],
+  "resources/js/Components/UI/Input.jsx": [
+    "/build/assets/Input-ikOfQO4K.js"
+  ],
+  "resources/js/Components/UI/InputOtp.jsx": [
+    "/build/assets/OtpVerificationForm-BzuLdAr7.js"
+  ],
+  "resources/js/Components/UI/Label.jsx": [
+    "/build/assets/Label-BxDBN09D.js"
+  ],
+  "resources/js/Components/UI/Pagination.jsx": [
+    "/build/assets/Pagination-CFo-75Wy.js"
+  ],
+  "resources/js/Components/UI/Popover.jsx": [
+    "/build/assets/Popover-Ckus2dfK.js"
+  ],
+  "resources/js/Components/UI/Progress.jsx": [
+    "/build/assets/Progress-DT6CA82_.js"
+  ],
+  "resources/js/Components/UI/RadioGroup.jsx": [
+    "/build/assets/Index-BE0sZ_St.js"
+  ],
+  "resources/js/Components/UI/RichTextEditor.jsx": [
+    "/build/assets/RichTextEditor-cWbzZRFQ.js",
+    "/build/assets/RichTextEditor-4RyaA7S0.css"
+  ],
+  "resources/js/Components/UI/SafeImage.jsx": [
+    "/build/assets/constants-4k_q_jeE.js",
+    "/build/assets/default-BF8QkkMI.jpg"
+  ],
+  "resources/js/Components/UI/SafePreview.jsx": [
+    "/build/assets/TemplateKeysSidebar-BORC0U1f.js"
+  ],
+  "resources/js/Components/UI/ScrollArea.jsx": [
+    "/build/assets/Sheet-B-_2BaZp.js"
+  ],
+  "resources/js/Components/UI/Select.jsx": [
+    "/build/assets/MarketGrid-DlkazA02.js"
+  ],
+  "resources/js/Components/UI/Separator.jsx": [
+    "/build/assets/Sheet-B-_2BaZp.js"
+  ],
+  "resources/js/Components/UI/Sheet.jsx": [
+    "/build/assets/Sheet-B-_2BaZp.js"
+  ],
+  "resources/js/Components/UI/Sidebar.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Components/UI/Switch.jsx": [
+    "/build/assets/constants-4k_q_jeE.js",
+    "/build/assets/default-BF8QkkMI.jpg"
+  ],
+  "resources/js/Components/UI/Table.jsx": [
+    "/build/assets/Table-Dz-EvWd_.js"
+  ],
+  "resources/js/Components/UI/Tabs.jsx": [
+    "/build/assets/TradeDialog-Dt4WEyMP.js"
+  ],
+  "resources/js/Components/UI/Textarea.jsx": [
+    "/build/assets/constants-4k_q_jeE.js",
+    "/build/assets/default-BF8QkkMI.jpg"
+  ],
+  "resources/js/Components/UI/Tooltip.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Contexts/Admin/DirectionProvider.jsx": [
+    "/build/assets/Sheet-B-_2BaZp.js"
+  ],
+  "resources/js/Contexts/Admin/FontProvider.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Contexts/Admin/LayoutProvider.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Contexts/Admin/SearchProvider.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Contexts/ThemeProvider.jsx": [
+    "/build/assets/Sheet-B-_2BaZp.js"
+  ],
+  "resources/js/Controllers/Admin/AdminUserController.js": [
+    "/build/assets/AdminUserController-kpy-Kjgj.js"
+  ],
+  "resources/js/Controllers/Admin/AppearanceController.js": [
+    "/build/assets/AppearanceController-DmPoT0M9.js"
+  ],
+  "resources/js/Controllers/Admin/AuthController.js": [
+    "/build/assets/AuthController-DaCguZ7K.js"
+  ],
+  "resources/js/Controllers/Admin/BlogController.js": [
+    "/build/assets/BlogController-D6kflUCs.js"
+  ],
+  "resources/js/Controllers/Admin/ContactController.js": [
+    "/build/assets/Contacts-T5xcev1Z.js"
+  ],
+  "resources/js/Controllers/Admin/FaqController.js": [
+    "/build/assets/Index-CQjx-HQY.js"
+  ],
+  "resources/js/Controllers/Admin/GatewayController.js": [
+    "/build/assets/GatewayController-BzwTzlIx.js"
+  ],
+  "resources/js/Controllers/Admin/LanguageController.js": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Controllers/Admin/MarketCategoryController.js": [
+    "/build/assets/CategoryDialog-WJXZpB7q.js"
+  ],
+  "resources/js/Controllers/Admin/MenuController.js": [
+    "/build/assets/Index-CU9LkVZb.js"
+  ],
+  "resources/js/Controllers/Admin/NotificationTemplateController.js": [
+    "/build/assets/NotificationTemplateController-DQGJbhT2.js"
+  ],
+  "resources/js/Controllers/Admin/PagesController.js": [
+    "/build/assets/PagesController-CMH21MmJ.js"
+  ],
+  "resources/js/Controllers/Admin/PaymentMethodController.js": [
+    "/build/assets/PaymentMethodController-w4wfQ0gi.js"
+  ],
+  "resources/js/Controllers/Admin/ProfileController.js": [
+    "/build/assets/Index-Du8U5ISY.js"
+  ],
+  "resources/js/Controllers/Admin/RoleController.js": [
+    "/build/assets/RoleController-Dowu4kpP.js"
+  ],
+  "resources/js/Controllers/Admin/SettingsController.js": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Controllers/Admin/SubscriberController.js": [
+    "/build/assets/Subscribers-CeQ8OWCP.js"
+  ],
+  "resources/js/Controllers/Admin/UserController.js": [
+    "/build/assets/UserController-CXMhOV3I.js"
+  ],
+  "resources/js/Controllers/Admin/WithdrawMethodController.js": [
+    "/build/assets/WithdrawMethodController-Ch4XgSUg.js"
+  ],
+  "resources/js/Controllers/FrontendController.js": [
+    "/build/assets/Sheet-B-_2BaZp.js"
+  ],
+  "resources/js/Controllers/User/UserAuthController.js": [
+    "/build/assets/AppLayout-BOaFJ-XR.js"
+  ],
+  "resources/js/Controllers/User/UserProfileController.js": [
+    "/build/assets/UserProfileController-ATO74P5M.js"
+  ],
+  "resources/js/Data/demo-data.js": [
+    "/build/assets/demo-data-C5EGh9Nk.js"
+  ],
+  "resources/js/Data/sidebar-data.js": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Hooks/use-dialog-state.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Hooks/use-mobile.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Hooks/useForm.js": [
+    "/build/assets/HotToast-DfpkTxSC.js"
+  ],
+  "resources/js/Hooks/useToast.js": [
+    "/build/assets/HotToast-DfpkTxSC.js"
+  ],
+  "resources/js/Hooks/useTranslations.js": [
+    "/build/assets/Sheet-B-_2BaZp.js"
+  ],
+  "resources/js/Layouts/Admin/AuthenticatedLayout.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Layouts/Admin/BaseLayout.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Layouts/Admin/GuestLayout.jsx": [
+    "/build/assets/GuestLayout-C8E7PqMN.js"
+  ],
+  "resources/js/Layouts/Admin/Main.jsx": [
+    "/build/assets/Main-BjCbeyG1.js"
+  ],
+  "resources/js/Layouts/Frontend/AppLayout.jsx": [
+    "/build/assets/AppLayout-BOaFJ-XR.js"
+  ],
+  "resources/js/Layouts/Frontend/AuthLayout.jsx": [
+    "/build/assets/AuthLayout-Bo9dntK9.js"
+  ],
+  "resources/js/Layouts/Frontend/AuthenticatedLayout.jsx": [
+    "/build/assets/AuthenticatedLayout-RBWn151p.js"
+  ],
+  "resources/js/Layouts/ToastProvider.jsx": [
+    "/build/assets/HotToast-DfpkTxSC.js"
+  ],
+  "resources/js/Pages/Admin/AdminUser/Index.jsx": [
+    "/build/assets/Index-CWfCvT71.js"
+  ],
+  "resources/js/Pages/Admin/AdminUser/Save.jsx": [
+    "/build/assets/Save-DGLF9UCM.js"
+  ],
+  "resources/js/Pages/Admin/Appearance/Create.jsx": [
+    "/build/assets/Create-BvotqQq6.js"
+  ],
+  "resources/js/Pages/Admin/Appearance/Index.jsx": [
+    "/build/assets/Index-ZdXIFWO2.js"
+  ],
+  "resources/js/Pages/Admin/Auth/Login.jsx": [
+    "/build/assets/Login-BUCab5xi.js"
+  ],
+  "resources/js/Pages/Admin/Auth/OtpVerification.jsx": [
+    "/build/assets/OtpVerification-DhcdSsSD.js"
+  ],
+  "resources/js/Pages/Admin/Auth/ResetPassword.jsx": [
+    "/build/assets/ResetPassword-CbhK1R0R.js"
+  ],
+  "resources/js/Pages/Admin/Auth/TwoFactorVerification.jsx": [
+    "/build/assets/TwoFactorVerification-CkjzZ_zk.js"
+  ],
+  "resources/js/Pages/Admin/Auth/UpdatePassword.jsx": [
+    "/build/assets/UpdatePassword-DDZRQGq-.js"
+  ],
+  "resources/js/Pages/Admin/Automation/Index.jsx": [
+    "/build/assets/Index-DEmYlZiK.js"
+  ],
+  "resources/js/Pages/Admin/Backup/Index.jsx": [
+    "/build/assets/Index-DoGIE5lz.js"
+  ],
+  "resources/js/Pages/Admin/Blog/Index.jsx": [
+    "/build/assets/Index-akZ1sIbF.js"
+  ],
+  "resources/js/Pages/Admin/Blog/Save.jsx": [
+    "/build/assets/Save-CtWNWXD8.js"
+  ],
+  "resources/js/Pages/Admin/Cache/Index.jsx": [
+    "/build/assets/Index-BF1Mj-4v.js"
+  ],
+  "resources/js/Pages/Admin/Communication/Contacts.jsx": [
+    "/build/assets/Contacts-T5xcev1Z.js"
+  ],
+  "resources/js/Pages/Admin/Communication/Subscribers.jsx": [
+    "/build/assets/Subscribers-CeQ8OWCP.js"
+  ],
+  "resources/js/Pages/Admin/Dashboard.jsx": [
+    "/build/assets/Dashboard-CT93H9QD.js"
+  ],
+  "resources/js/Pages/Admin/FAQ/Index.jsx": [
+    "/build/assets/Index-CQjx-HQY.js"
+  ],
+  "resources/js/Pages/Admin/Language/Index.jsx": [
+    "/build/assets/Index-D3AqRB6i.js"
+  ],
+  "resources/js/Pages/Admin/Language/Translate.jsx": [
+    "/build/assets/Translate-B5NqzGha.js"
+  ],
+  "resources/js/Pages/Admin/MarketCategory/Index.jsx": [
+    "/build/assets/Index-QAslDKG3.js"
+  ],
+  "resources/js/Pages/Admin/Menu/Index.jsx": [
+    "/build/assets/Index-CU9LkVZb.js"
+  ],
+  "resources/js/Pages/Admin/Notification/Gateway/Firebases/Index.jsx": [
+    "/build/assets/Index-DaRBtGoc.js"
+  ],
+  "resources/js/Pages/Admin/Notification/Gateway/Mail/Edit.jsx": [
+    "/build/assets/Edit-DJ9jbXN1.js"
+  ],
+  "resources/js/Pages/Admin/Notification/Gateway/Mail/Index.jsx": [
+    "/build/assets/Index-DMS0wCt-.js"
+  ],
+  "resources/js/Pages/Admin/Notification/Template/Edit.jsx": [
+    "/build/assets/Edit-Ch8QLrJA.js"
+  ],
+  "resources/js/Pages/Admin/Notification/Template/Global.jsx": [
+    "/build/assets/Global-B1Vp-zBE.js"
+  ],
+  "resources/js/Pages/Admin/Notification/Template/Index.jsx": [
+    "/build/assets/Index-3CbCO0nr.js"
+  ],
+  "resources/js/Pages/Admin/Page/Index.jsx": [
+    "/build/assets/Index-KD-R7oRo.js"
+  ],
+  "resources/js/Pages/Admin/Page/Save.jsx": [
+    "/build/assets/Save-DNVO56IU.js"
+  ],
+  "resources/js/Pages/Admin/PaymentMethod/Index.jsx": [
+    "/build/assets/Index-DW6U1xSF.js"
+  ],
+  "resources/js/Pages/Admin/PaymentMethod/Save.jsx": [
+    "/build/assets/Save-C7lCfJ4v.js"
+  ],
+  "resources/js/Pages/Admin/Profile/Index.jsx": [
+    "/build/assets/Index-Du8U5ISY.js"
+  ],
+  "resources/js/Pages/Admin/Role/Index.jsx": [
+    "/build/assets/Index-MqyFqECw.js"
+  ],
+  "resources/js/Pages/Admin/Role/Save.jsx": [
+    "/build/assets/Save-DHWJoUI5.js"
+  ],
+  "resources/js/Pages/Admin/Settings/Index.jsx": [
+    "/build/assets/Index-BE0sZ_St.js"
+  ],
+  "resources/js/Pages/Admin/Settings/SystemInfo.jsx": [
+    "/build/assets/SystemInfo-BvMxokzr.js"
+  ],
+  "resources/js/Pages/Admin/Tag/Index.jsx": [
+    "/build/assets/Index-Jeuny6vJ.js"
+  ],
+  "resources/js/Pages/Admin/Transaction/Index.jsx": [
+    "/build/assets/Index-uiM-udut.js"
+  ],
+  "resources/js/Pages/Admin/User/Index.jsx": [
+    "/build/assets/Index-CnFkg2Hj.js"
+  ],
+  "resources/js/Pages/Admin/User/Save.jsx": [
+    "/build/assets/Save-DXElzRLI.js"
+  ],
+  "resources/js/Pages/Admin/WithdrawMethod/Index.jsx": [
+    "/build/assets/Index-1UOc80ja.js"
+  ],
+  "resources/js/Pages/Admin/WithdrawMethod/Save.jsx": [
+    "/build/assets/Save-B7E8lZ8a.js"
+  ],
+  "resources/js/Pages/Frontend/Blogs/Details.jsx": [
+    "/build/assets/Details-Bu_uo3mj.js"
+  ],
+  "resources/js/Pages/Frontend/Blogs/Index.jsx": [
+    "/build/assets/Index-DreYjnf5.js"
+  ],
+  "resources/js/Pages/Frontend/Home.jsx": [
+    "/build/assets/Home-B0Wbc0kx.js"
+  ],
+  "resources/js/Pages/Frontend/Markets/Details.jsx": [
+    "/build/assets/Details-DWIQZQLj.js"
+  ],
+  "resources/js/Pages/Frontend/Markets/Index.jsx": [
+    "/build/assets/Index-BEhjcK-I.js"
+  ],
+  "resources/js/Pages/Frontend/Markets/ThemeTwo.jsx": [
+    "/build/assets/ThemeTwo-ChJZjL4S.js"
+  ],
+  "resources/js/Pages/Frontend/Pages/Details.jsx": [
+    "/build/assets/Details-DDqC75TM.js"
+  ],
+  "resources/js/Pages/User/Auth/EmailVerification.jsx": [
+    "/build/assets/EmailVerification-BNupTYAX.js"
+  ],
+  "resources/js/Pages/User/Auth/ForgotPassword.jsx": [
+    "/build/assets/ForgotPassword-LnKodhC8.js"
+  ],
+  "resources/js/Pages/User/Auth/Login.jsx": [
+    "/build/assets/Login-ZRbBcdTq.js"
+  ],
+  "resources/js/Pages/User/Auth/OtpVerification.jsx": [
+    "/build/assets/OtpVerification-C4iliHt8.js"
+  ],
+  "resources/js/Pages/User/Auth/Register.jsx": [
+    "/build/assets/Register-B-pXGQ_R.js"
+  ],
+  "resources/js/Pages/User/Auth/ResetPassword.jsx": [
+    "/build/assets/ResetPassword-DU3Hiz6E.js"
+  ],
+  "resources/js/Pages/User/Auth/TwoFactorVerification.jsx": [
+    "/build/assets/TwoFactorVerification-VTR04K9l.js"
+  ],
+  "resources/js/Pages/User/Auth/UpdatePassword.jsx": [
+    "/build/assets/UpdatePassword-Cc65-iWn.js"
+  ],
+  "resources/js/Pages/User/Bookmarks/Index.jsx": [
+    "/build/assets/Index-Cmm7-c0U.js"
+  ],
+  "resources/js/Pages/User/History/Index.jsx": [
+    "/build/assets/Index-BSaDfJwK.js"
+  ],
+  "resources/js/Pages/User/Notifications.jsx": [
+    "/build/assets/Notifications-MZThFWKR.js"
+  ],
+  "resources/js/Pages/User/Portfolio/Index.jsx": [
+    "/build/assets/Index-CYtseZPq.js"
+  ],
+  "resources/js/Pages/User/Profile/Index.jsx": [
+    "/build/assets/Index-CBzv3Qit.js"
+  ],
+  "resources/js/Pages/User/Tickets/Index.jsx": [
+    "/build/assets/Index-DzSJZTUM.js"
+  ],
+  "resources/js/Pages/User/Tickets/Show.jsx": [
+    "/build/assets/Show-BFOYsENJ.js"
+  ],
+  "resources/js/Pages/User/Wallet/Index.jsx": [
+    "/build/assets/Index-BDrqUXHE.js"
+  ],
+  "resources/js/Services/FormService.js": [
+    "/build/assets/HotToast-DfpkTxSC.js"
+  ],
+  "resources/js/Utils/constants.js": [
+    "/build/assets/constants-4k_q_jeE.js",
+    "/build/assets/default-BF8QkkMI.jpg"
+  ],
+  "resources/js/Utils/helpers.js": [
+    "/build/assets/Button-CFMlPXiE.js"
+  ],
+  "resources/js/Utils/iconHelper.jsx": [
+    "/build/assets/Sheet-B-_2BaZp.js"
+  ],
+  "resources/js/Utils/toast.js": [
+    "/build/assets/HotToast-DfpkTxSC.js"
+  ],
+  "resources/js/app.jsx": [],
+  "resources/js/bootstrap.js": []
+}

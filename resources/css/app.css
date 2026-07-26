@@ -1,0 +1,452 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap');
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import './theme.css';
+
+@custom-variant dark (&:is(.dark *));
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    /* Move exactly 50% since we duplicate the list */
+    transform: translateX(-50%);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+    font-feature-settings: "zero" 0 !important;
+    font-variant-numeric: normal !important;
+  }
+
+  
+  html {
+    @apply overflow-x-hidden;
+  }
+
+   body {
+    font-family: var(--font-sans);
+    font-variant-numeric: normal;
+    font-feature-settings: "zero" 0;
+
+    @apply bg-background text-foreground font-sans has-[div[data-variant='inset']]:bg-sidebar min-h-svh w-full;
+  }
+
+  body, span, p, div {
+  font-feature-settings: "zero" 0;
+  font-variant-numeric: normal;
+}
+
+  /* Override Radix scroll locking for sticky headers */
+  body[data-scroll-locked] {
+    overflow: unset !important;
+  }
+
+  /* Cursor pointer for buttons */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* Prevent focus zoom on mobile devices */
+  @media screen and (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+}
+
+@utility no-scrollbar {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+@utility faded-bottom {
+  @apply after:pointer-events-none after:absolute after:start-0 after:bottom-0 after:hidden after:h-32 after:w-full after:rounded-b-2xl after:bg-[linear-gradient(180deg,_transparent_10%,_var(--background)_70%)] md:after:block;
+}
+
+/* styles.css */
+.CollapsibleContent {
+  overflow: hidden;
+}
+.CollapsibleContent[data-state='open'] {
+  animation: slideDown 300ms ease-out;
+}
+.CollapsibleContent[data-state='closed'] {
+  animation: slideUp 300ms ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    height: var(--radix-collapsible-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+/* Inertia Progress Bar with Tailwind */
+#nprogress {
+  @apply pointer-events-none;
+}
+
+#nprogress .bar {
+  @apply fixed top-0 left-0 z-50 w-full h-1;
+  background: #01132bff;
+}
+
+.no-slash-zero {
+  font-feature-settings: "zero" 0 !important;
+  font-variant-numeric: normal !important;
+  font-family: 'Open Sans', sans-serif !important;
+}
+
+#nprogress .peg {
+  @apply absolute right-0 block w-24 h-full opacity-100;
+  box-shadow: 0 0 10px #01132bff, 0 0 5px #01132bff;
+  transform: rotate(3deg) translate(0px, -4px);
+}
+
+#nprogress .spinner {
+  @apply fixed z-50 block top-4 right-4;
+}
+
+#nprogress .spinner-icon {
+  @apply w-5 h-5 border-2 border-transparent rounded-full;
+  border-top-color: rgb(62, 3, 31);
+  border-left-color: #01132bff;
+  animation: nprogress-spinner 400ms linear infinite;
+}
+
+@keyframes nprogress-spinner {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Alternative: Thicker progress bar */
+#nprogress .bar.thick {
+  @apply h-2;
+}
+
+/* Alternative: Different positioning */
+#nprogress .spinner.bottom-right {
+  @apply top-auto bottom-4;
+}
+
+.ql-editor {
+  min-height: 300px !important;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ql-container {
+  font-family: inherit;
+}
+
+.ql-toolbar {
+  border-top: 1px solid hsl(var(--border));
+  border-left: 1px solid hsl(var(--border));
+  border-right: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+}
+
+.ql-container {
+  border-bottom: 1px solid hsl(var(--border));
+  border-left: 1px solid hsl(var(--border));
+  border-right: 1px solid hsl(var(--border));
+}
+
+.ql-editor.ql-blank::before {
+  color: hsl(var(--muted-foreground));
+  font-style: normal;
+}
+
+/* Dark mode support */
+.dark .ql-toolbar {
+  background: hsl(var(--background));
+  border-color: hsl(var(--border));
+}
+
+.dark .ql-container {
+  border-color: hsl(var(--border));
+}
+
+.dark .ql-editor {
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+}
+
+.dark .ql-toolbar .ql-stroke {
+  stroke: hsl(var(--foreground));
+}
+
+.dark .ql-toolbar .ql-fill {
+  fill: hsl(var(--foreground));
+}
+
+.dark .ql-toolbar button:hover,
+.dark .ql-toolbar button:focus {
+  background: hsl(var(--accent));
+}
+
+/* Template key highlighting in editor */
+.ql-editor .template-key {
+  background-color: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-weight: 500;
+}
+
+/* Dark mode styles for ReactQuill */
+.rich-text-editor.dark-mode .ql-toolbar {
+  background-color: #374151;
+  border-color: #4b5563;
+}
+
+.rich-text-editor.dark-mode .ql-toolbar .ql-stroke {
+  stroke: #d1d5db;
+}
+
+.rich-text-editor.dark-mode .ql-toolbar .ql-fill {
+  fill: #d1d5db;
+}
+
+.rich-text-editor.dark-mode .ql-toolbar .ql-picker-label {
+  color: #d1d5db;
+}
+
+.rich-text-editor.dark-mode .ql-toolbar .ql-picker-options {
+  background-color: #1f2937;
+  border-color: #4b5563;
+}
+
+.rich-text-editor.dark-mode .ql-toolbar .ql-picker-item {
+  color: #d1d5db;
+}
+
+.rich-text-editor.dark-mode .ql-toolbar .ql-picker-item:hover {
+  background-color: #374151;
+}
+
+.rich-text-editor.dark-mode .ql-toolbar button {
+  color: #d1d5db;
+}
+
+.rich-text-editor.dark-mode .ql-toolbar button:hover {
+  background-color: #4b5563;
+}
+
+.rich-text-editor.dark-mode .ql-toolbar button.ql-active {
+  background-color: #6366f1;
+  color: white;
+}
+
+.rich-text-editor.dark-mode .ql-container {
+  background-color: #1f2937;
+  border-color: #4b5563;
+  color: #f3f4f6;
+}
+
+.rich-text-editor.dark-mode .ql-editor {
+  background-color: #1f2937;
+  color: #f3f4f6;
+}
+
+.rich-text-editor.dark-mode .ql-editor.ql-blank::before {
+  color: #9ca3af;
+}
+
+.rich-text-editor.dark-mode .ql-editor h1,
+.rich-text-editor.dark-mode .ql-editor h2,
+.rich-text-editor.dark-mode .ql-editor h3,
+.rich-text-editor.dark-mode .ql-editor h4,
+.rich-text-editor.dark-mode .ql-editor h5,
+.rich-text-editor.dark-mode .ql-editor h6 {
+  color: #f9fafb;
+}
+
+.rich-text-editor.dark-mode .ql-editor blockquote {
+  background-color: #374151;
+  border-left-color: #6b7280;
+  color: #e5e7eb;
+}
+
+.rich-text-editor.dark-mode .ql-editor pre {
+  background-color: #111827;
+  color: #f3f4f6;
+}
+
+.rich-text-editor.dark-mode .ql-editor code {
+  background-color: #374151;
+  color: #f472b6;
+}
+
+.rich-text-editor.dark-mode .ql-editor a {
+  color: #60a5fa;
+}
+
+.rich-text-editor.dark-mode .ql-editor a:hover {
+  color: #93c5fd;
+}
+
+/* Color picker adjustments for dark mode */
+.rich-text-editor.dark-mode .ql-color-picker .ql-picker-options {
+  background-color: #1f2937;
+  border-color: #4b5563;
+}
+
+.rich-text-editor.dark-mode .ql-background .ql-picker-options {
+  background-color: #1f2937;
+  border-color: #4b5563;
+}
+
+/* Dropdown menus dark mode */
+.rich-text-editor.dark-mode .ql-picker.ql-expanded .ql-picker-options {
+  background-color: #1f2937;
+  border-color: #4b5563;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.rich-text-editor.dark-mode .ql-picker.ql-expanded .ql-picker-label {
+  border-color: #4b5563;
+}
+
+/* Snow theme specific dark mode adjustments */
+.rich-text-editor.dark-mode .ql-snow {
+  border-color: #4b5563;
+}
+
+.rich-text-editor.dark-mode .ql-snow .ql-tooltip {
+  background-color: #1f2937;
+  border-color: #4b5563;
+  color: #f3f4f6;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.rich-text-editor.dark-mode .ql-snow .ql-tooltip input[type=text] {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #f3f4f6;
+}
+
+.rich-text-editor.dark-mode .ql-snow .ql-tooltip input[type=text]::placeholder {
+  color: #9ca3af;
+}
+
+.rich-text-editor.dark-mode .ql-snow .ql-tooltip a {
+  color: #60a5fa;
+}
+
+.rich-text-editor.dark-mode .ql-snow .ql-tooltip a:hover {
+  color: #93c5fd;
+}
+
+/* Auto dark mode detection using CSS media query as fallback */
+@media (prefers-color-scheme: dark) {
+  .rich-text-editor:not(.light-mode) .ql-toolbar {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+
+  .rich-text-editor:not(.light-mode) .ql-toolbar .ql-stroke {
+    stroke: #d1d5db;
+  }
+
+  .rich-text-editor:not(.light-mode) .ql-toolbar .ql-fill {
+    fill: #d1d5db;
+  }
+
+  .rich-text-editor:not(.light-mode) .ql-toolbar .ql-picker-label {
+    color: #d1d5db;
+  }
+
+  .rich-text-editor:not(.light-mode) .ql-toolbar button {
+    color: #d1d5db;
+  }
+
+  .rich-text-editor:not(.light-mode) .ql-container {
+    background-color: #1f2937;
+    border-color: #4b5563;
+    color: #f3f4f6;
+  }
+
+  .rich-text-editor:not(.light-mode) .ql-editor {
+    background-color: #1f2937;
+    color: #f3f4f6;
+  }
+
+  .rich-text-editor:not(.light-mode) .ql-editor.ql-blank::before {
+    color: #9ca3af;
+  }
+}
+
+#nprogress {
+  pointer-events: none;
+}
+
+
+/* resources/css/app.css */
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+}
+
+
+/* Add this to your global CSS file (e.g. resources/css/app.css) */
+
+/* Coin slider infinite marquee */
+@keyframes marquee {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        /* Move exactly 50% since we duplicate the list */
+        transform: translateX(-50%);
+    }
+}
+
+/* Pause on hover for better UX */
+.overflow-hidden:hover [style*="marquee"] {
+    animation-play-state: paused;
+}

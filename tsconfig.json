@@ -1,0 +1,51 @@
+{
+  "compilerOptions": {
+    // Environment Settings
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+
+    "lib": ["esnext", "dom"],
+    "types": ["node", "react", "react-dom"],
+
+    // JSX
+    "jsx": "react-jsx",
+
+    // Strict Type Checking
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": false,
+
+    // Output Options
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+
+    // JS handling
+    "allowJs": false,  // ⚠️ important: disables .js auto-imports
+
+    // Paths
+    "baseUrl": "./resources/js",
+    "paths": {
+      "@/*": ["./*"],
+      "@/Components/*": ["Components/*"],
+      "@/Pages/*": ["Pages/*"],
+      "@/Layouts/*": ["Layouts/*"],
+      "@/Utils/*": ["Utils/*"],
+      "@/Hooks/*": ["Hooks/*"],
+      "@/Assets/*": ["Assets/*"],
+      "@Types/*": ["Types/*"],
+      "@Lib/*": ["Lib/*"]
+    }
+  },
+  "include": ["resources/js"]
+  
+}
