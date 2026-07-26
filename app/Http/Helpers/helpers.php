@@ -231,7 +231,6 @@ if (!function_exists('translate')) {
 		$local = App::getLocale();
 
 		try {
-		
 			$lang_array = include base_path('resources/lang/' . $local . '/messages.php');
 			$value      = remove_special_characters($value);
 			$key        = value_to_key($value);
@@ -245,7 +244,6 @@ if (!function_exists('translate')) {
 
 			return trans('messages.' . $key);
 		} catch (\Exception $ex) {
-
 			//dd($ex->getMessage());
 			return $value;
 		}
@@ -970,19 +968,5 @@ if (!function_exists('isBackendRoute')) {
 	function isBackendRoute(): bool
 	{
 		return request()->is('backend/*') || request()->is('backend') || request()->routeIs('backend.*');
-	}
-}
-
-if(!function_exists('getArea')) {
-	function getArea(): string | null
-	{
-		return  request()->route('area');
-	}
-}
-
-if(!function_exists('isBackenArea')) {
-	function isBackenArea(): bool
-	{
-		return  getArea() === 'backend';
 	}
 }

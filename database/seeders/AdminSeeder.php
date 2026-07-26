@@ -94,11 +94,9 @@ class AdminSeeder extends Seeder
                         'username' => Arr::get($data, 'username'),
                         'email'    => Arr::get($data, 'email')
                     ], [
-                        'name'            => Arr::get($data, 'name'),
-                        'phone'           => Arr::get($data, 'phone'),
-                        'password'        => Arr::get($data, 'password'),
-                        'is_admin'        => true,
-                        'is_kyc_verified' => true
+                        'name'     => Arr::get($data, 'name'),
+                        'phone'    => Arr::get($data, 'phone'),
+                        'password' => Arr::get($data, 'password')
                     ]);
 
                     $superadminRole = Role::where('is_super_admin', true)->first();

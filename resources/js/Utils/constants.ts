@@ -4,7 +4,6 @@ import {
   HardDrive,
   Image,
   Lock,
-  MonitorCog,
   Palette,
   Settings,
   Shield,
@@ -63,13 +62,7 @@ export const profileNavItems: ProfileNavItem[] = [
 /** Settings navigation items */
 export const settingsNavItems: SettingsNavItem[] = [
   { title: "General", exact: true, href: route("backend.settings.index"), icon: Settings, group: "general" },
-  {
-    title: 'Withdraw & Deposit Config',
-    exact: true,
-    href: route('backend.settings.withdraw-deposit.configuration'),
-    icon: MonitorCog,
-    group: "general"
-  },
+
   { title: "Appearance", exact: true, href: route('backend.settings.appearance'), icon: Palette, group: "general" },
   {
     title: 'Support Settings', exact: true, href: route('backend.settings.support'), icon: UserCog, group: "general"

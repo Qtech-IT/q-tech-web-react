@@ -6,7 +6,7 @@ use App\Constants\FilePathConstants;
 use App\Enums\Settings\SessionKey;
 use App\Enums\Settings\SettingKey;
 use App\Http\Resources\Backend\LanguageResource;
-use App\Http\Resources\Backend\User\UserResource;
+use App\Http\Resources\Backend\UserResource;
 use App\Traits\Common\Fileable;
 use App\Traits\Common\ModelAction;
 use Illuminate\Http\Request;

@@ -19,9 +19,7 @@ class Permissions
 
 			...DashboardPermissions::getAll(),
 			...AdminUserPermissions::getAll(),
-			...UserPermissions::getAll(),
 			...NotificationPermissions::getAll(),
-			...FormPermissions::getAll(),
 			...SystemPermissions::getAll(),
 		];
 	}

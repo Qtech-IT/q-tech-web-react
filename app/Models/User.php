@@ -39,7 +39,6 @@ class User extends Authenticatable
 		'updated_by',
 		'uuid',
 		'username',
-		'withdrawal_address',
 		'email',
 		'phone',
 		'email_verified_at',
@@ -50,7 +49,6 @@ class User extends Authenticatable
 		'two_factor_enabled',
 		'two_factor_confirmed_at',
 		'status',
-		'is_admin',
 		'is_kyc_verified',
 		'last_login_at',
 		'last_login_ip',
@@ -79,11 +77,7 @@ class User extends Authenticatable
 			'recovery_codes'    => 'object',
 			'email_verified_at' => 'datetime',
 			'status'            => Status::class,
-			'is_admin'          => 'boolean',
-			'is_kyc_verified'   => 'boolean',
 			'last_login_at'     => 'datetime',
-			'is_winner'         => 'boolean',
-			'last_win_at'       => 'datetime',
 		];
 	}
 
@@ -112,16 +106,6 @@ class User extends Authenticatable
 		static::updating(function (Model $model) {
 			$model->updated_by = auth_user()?->id;
 		});
-	}
-
-	/**
-	 * Summary of scopeAdminUser
-	 * @param Builder $query
-	 * @return Builder
-	 */
-	public function scopeAdminUser(Builder $query): Builder
-	{
-		return $query->where('is_admin', true);
 	}
 
 	/**
@@ -161,26 +145,6 @@ class User extends Authenticatable
 	}
 
 	/**
-	 * Summary of scopeAdmin
-	 * @param Builder $query
-	 * @return Builder
-	 */
-	public function scopeAdmin(Builder $query): Builder
-	{
-		return $query->where('is_admin', true);
-	}
-
-	/**
-	 * Summary of scopeNonAdmin
-	 * @param Builder $query
-	 * @return Builder
-	 */
-	public function scopeNonAdmin(Builder $query): Builder
-	{
-		return $query->where('is_admin', false);
-	}
-
-	/**
 	 * Summary of scopeWithNonSuperAdminRoles
 	 * @param Builder $query
 	 * @return Builder
@@ -189,4 +153,4 @@ class User extends Authenticatable
 	{
 		return $query->whereHas('roles', fn ($q) => $q->where('is_super_admin', false));
 	}
-	}
+}

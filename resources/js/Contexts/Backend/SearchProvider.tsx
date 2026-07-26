@@ -1,6 +1,6 @@
 import { CommandMenu } from '@/Components/Common/Backend/CommandMenu';
-import { createContext, useContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 const SearchContext = createContext<any>(null)
 
 interface SearchProviderProps {

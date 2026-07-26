@@ -17,24 +17,8 @@ class FilePathConstants
 			'path' => self::IMAGE_PATH_PREFIX . 'content/texteditor',
 		],
 
-		'deposit_voucher' => [
-			'path' => self::FILE_PATH_PREFIX . 'deposits/vouchers',
-		],
-		'loan_request' => [
-			'path' => self::FILE_PATH_PREFIX . 'loan_requests',
-		],
-
 		'company_logo' => [
 			'path' => self::IMAGE_PATH_PREFIX . 'branding/logos',
-			'size' => '200x80',
-		],
-
-		'banner' => [
-			'path' => self::IMAGE_PATH_PREFIX . 'banners',
-		],
-
-		'crypto_logo' => [
-			'path' => self::IMAGE_PATH_PREFIX . 'crypto/logo',
 			'size' => '200x80',
 		],
 

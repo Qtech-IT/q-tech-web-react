@@ -8,7 +8,7 @@ services:
             args:
                 WWWGROUP: '${WWWGROUP}'
         image: 'laravel.test'
-        container_name: trade_hub_app
+        container_name: qtech_web_app
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
@@ -23,7 +23,7 @@ services:
         volumes:
             - '.:/var/www/html'
         networks:
-            - trade_hub_network
+            - qtech_web_network
         depends_on:
             - mysql
             - redis
@@ -34,7 +34,7 @@ services:
     # ========================= MySQL =========================
     mysql:
         image: 'mysql/mysql-server:8.0'
-        container_name: trade_hub_mysql
+        container_name: qtech_web_mysql
         ports:
             - '${FORWARD_DB_PORT:-3306}:3306'
         environment:
@@ -46,10 +46,10 @@ services:
             MYSQL_ALLOW_EMPTY_PASSWORD: 1
             MYSQL_EXTRA_OPTIONS: "${MYSQL_EXTRA_OPTIONS:-}"
         volumes:
-            - 'trade-hub-mysql:/var/lib/mysql'
+            - 'qtech-web-mysql:/var/lib/mysql'
             - './vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
         networks:
-            - trade_hub_network
+            - qtech_web_network
         healthcheck:
             test: ['CMD', 'mysqladmin', 'ping', '-p${DB_PASSWORD}']
             retries: 3
@@ -58,13 +58,13 @@ services:
     # ======================== Redis ==========================
     redis:
         image: 'redis:alpine'
-        container_name: trade_hub_redis
+        container_name: qtech_web_redis
         ports:
             - '${FORWARD_REDIS_PORT:-6379}:6379'
         volumes:
-            - 'trade-hub-redis:/data'
+            - 'qtech-web-redis:/data'
         networks:
-            - trade_hub_network
+            - qtech_web_network
         healthcheck:
             test: ['CMD', 'redis-cli', 'ping']
             retries: 3
@@ -73,15 +73,15 @@ services:
     # ===================== MeiliSearch =======================
     meilisearch:
         image: 'getmeili/meilisearch:latest'
-        container_name: trade_hub_meilisearch
+        container_name: qtech_web_meilisearch
         ports:
             - '${FORWARD_MEILISEARCH_PORT:-7700}:7700'
         environment:
             MEILI_NO_ANALYTICS: '${MEILISEARCH_NO_ANALYTICS:-false}'
         volumes:
-            - 'trade-hub-meilisearch:/meili_data'
+            - 'qtech-web-meilisearch:/meili_data'
         networks:
-            - trade_hub_network
+            - qtech_web_network
         healthcheck:
             test: ['CMD', 'wget', '--no-verbose', '--spider', 'http://127.0.0.1:7700/health']
             retries: 3
@@ -90,50 +90,50 @@ services:
     # ======================== Mailpit =========================
     mailpit:
         image: 'axllent/mailpit:latest'
-        container_name: trade_hub_mailpit
+        container_name: qtech_web_mailpit
         ports:
             - '${FORWARD_MAILPIT_PORT:-1025}:1025'
             - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
         networks:
-            - trade_hub_network
+            - qtech_web_network
 
     # ======================== Selenium =========================
     selenium:
         image: selenium/standalone-chromium
-        container_name: trade_hub_selenium
+        container_name: qtech_web_selenium
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         volumes:
             - '/dev/shm:/dev/shm'
         networks:
-            - trade_hub_network
+            - qtech_web_network
 
     # ======================= phpMyAdmin ========================
     phpmyadmin:
         image: phpmyadmin/phpmyadmin
         platform: linux/amd64
-        container_name: trade_hub_phpmyadmin
+        container_name: qtech_web_phpmyadmin
         environment:
             PMA_HOST: mysql
             PMA_PORT: 3306
             MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
         ports:
-            - 8080:80
+            - '8080:80'
         networks:
-            - trade_hub_network
+            - qtech_web_network
         depends_on:
             - mysql
 
 # ========================= Networks ==========================
 networks:
-    trade_hub_network:
+    qtech_web_network:
         driver: bridge
 
 # ========================== Volumes ===========================
 volumes:
-    trade-hub-mysql:
+    qtech-web-mysql:
         driver: local
-    trade-hub-redis:
+    qtech-web-redis:
         driver: local
-    trade-hub-meilisearch:
+    qtech-web-meilisearch:
         driver: local

@@ -153,7 +153,7 @@ class ExceptionHelper
         }
 
         if(!isAdminRoute()) {
-            return redirect()->guest(route('login'));
+            return redirect()->guest(route('backend.login'));
         }
         // Redirect to login
         return redirect()->guest(route('backend.login'));

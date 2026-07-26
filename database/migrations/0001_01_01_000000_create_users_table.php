@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\Common\Status;
-use App\Enums\User\EmploymentState;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -28,15 +27,10 @@ return new class extends Migration {
 			$table->text('google2fa_secret')->nullable();
 			$table->longText('recovery_codes')->nullable();
 			$table->boolean('two_factor_enabled')->default(false);
-			$table->boolean('is_kyc_verified')->default(false);
 			$table->timestamp('two_factor_confirmed_at')->nullable();
-
-		   $table->text('withdrawal_address')->unique()->nullable();
 
 			$table->enum('status', Status::getValues())
 								->default(Status::ACTIVE);
-
-			$table->boolean('is_admin')->default(true);
 
 			$table->timestamp('last_login_at')->nullable();
             $table->string('last_login_ip', 45)->nullable();

@@ -28,13 +28,7 @@ class RedirectIfAuthenticated
         // Loop through each guard and check authentication
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                $user = Auth::guard($guard)->user();
-
-                if ($user->is_admin) {
-                    return redirect()->route('backend.dashboard');
-                }
-
-                return redirect()->route('frontend.home'); // replace with your frontend route
+               return redirect()->route('backend.dashboard');
             }
         }
 

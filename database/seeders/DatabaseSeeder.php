@@ -12,13 +12,10 @@ class DatabaseSeeder extends Seeder
 	public function run(): void
 	{
 		$this->call([
-			// LanguageSeeder::class,
+			LanguageSeeder::class,
 			PermissionSeeder::class,
-			// KycSeeder::class,
-			// AdminSeeder::class,
-			// FormSeeder::class
-			// PolicyPageSeeder::class,
-			// NotificationTemplateSeeder::class
+			AdminSeeder::class,
+			NotificationTemplateSeeder::class
 		]);
 	}
 }

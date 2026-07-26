@@ -18,9 +18,7 @@ class PermissionSeeder extends Seeder
 	protected array $moduleSeders = [
 		AdminModulePermissionSeeder::class,
 		DashboardModuelPermissionSeeder::class,
-		FormModulePermissionSeeder::class,
 		SystemModulePermissionSeeder::class,
-		UserModulePermissionSeeder::class,
 	];
 
 	/**

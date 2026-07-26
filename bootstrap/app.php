@@ -2,7 +2,6 @@
 
 use App\Http\Helpers\ExceptionHelper;
 use App\Http\Middleware\Authenticate;
-use App\Http\Middleware\CheckUserStatus;
 use App\Http\Middleware\LanguageMiddleware;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\Sanitization;
@@ -10,7 +9,7 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-
+use Illuminate\Support\Facades\Route;
 return Application::configure(basePath: dirname(__DIR__))
 
     ->withRouting(
@@ -18,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__ . '/../routes/api.php',
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
+        then: function () {
+        Route::middleware(['web'])
+            ->prefix('backend')
+            ->as('backend.')
+            ->group(base_path('routes/backend.php'));
+    }
     )
 
     ->withMiddleware(function (Middleware $middleware): void {
@@ -28,18 +33,14 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'sanitization'      => Sanitization::class,
-            'throttle'          => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-            'auth'              => Authenticate::class,
-            'auth.basic'        => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-            'auth.session'      => \Illuminate\Session\Middleware\AuthenticateSession::class,
-            'cache.headers'     => \Illuminate\Http\Middleware\SetCacheHeaders::class,
-            'can'               => \Illuminate\Auth\Middleware\Authorize::class,
-            'guest'             => RedirectIfAuthenticated::class,
-            'check.user.status' => CheckUserStatus::class,
-            'kyc.verification'  => \App\Http\Middleware\KycVerification::class,
-            'check.area'        => \App\Http\Middleware\CheckArea::class,
-            'check.admin'       => \App\Http\Middleware\CheckAdmin::class,
+            'sanitization'  => Sanitization::class,
+            'throttle'      => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+            'auth'          => Authenticate::class,
+            'auth.basic'    => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
+            'auth.session'  => \Illuminate\Session\Middleware\AuthenticateSession::class,
+            'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
+            'can'           => \Illuminate\Auth\Middleware\Authorize::class,
+            'guest'         => RedirectIfAuthenticated::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

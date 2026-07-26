@@ -84,9 +84,6 @@ class DefaultSettings
 			SettingKey::SESSION_TIMEOUT->value          => 120,
 			SettingKey::STRONG_PASSWORD->value          => Status::INACTIVE->value,
 			SettingKey::MAINTENANCE_MODE->value         => Status::INACTIVE->value,
-			SettingKey::MAXIMUM_LOGIN_ATTEMPTS->value   => 6,
-			SettingKey::LATE_GRACE_MINUTES->value       => 0,
-			SettingKey::EARLY_CLOCK_IN_MINUTES->value   => 0,
 			SettingKey::MAINTENANCE_TITLE->value        => 'We\'ll be back soon!',
 			SettingKey::MAINTENANCE_DESCRIPTION->value  => 'Sorry for the inconvenience but we\'re performing some maintenance at the moment. We\'ll be back online shortly!',
 		];

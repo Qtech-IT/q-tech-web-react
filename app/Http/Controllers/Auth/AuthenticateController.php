@@ -30,13 +30,12 @@ use Inertia\Response;
  */
 class AuthenticateController extends Controller
 {
-	protected bool $isAdminRoute = false;
+	protected bool $isAdminRoute = true;
 	/**
 	 * Inject AuthService for authentication-related operations.
 	 */
 	public function __construct(protected AuthService $authService)
 	{
-		$this->isAdminRoute = isBackendRoute();
 	}
 
 	/**
@@ -64,8 +63,7 @@ class AuthenticateController extends Controller
 		try {
 			$username = $request->input('username');
 
-			$user = User::where('is_admin', true)->where('username', $username)->first();
-
+			$user = User::where('username', $username)->first();
 
 			if(!$user) {
 				return back()->with(response_status('Invalid credentials.', 'error'));

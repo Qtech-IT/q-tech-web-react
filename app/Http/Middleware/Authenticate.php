@@ -14,10 +14,6 @@ class Authenticate extends Middleware
     {
         // Return admin login route for all unauthenticated access
         // Add any additional logic if needed in the future
-
-        if(!isAdminRoute()) {
-            return route('login');
-        }
         return route('backend.login');
     }
 }

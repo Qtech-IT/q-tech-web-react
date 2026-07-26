@@ -38,7 +38,7 @@ export default function OtpVerification({ title }: TitleProps) {
                     <p className='px-8 mx-auto text-sm text-center text-muted-foreground text-balance'>
                         {t('Want to access your account?')}{' '}
                         <Link
-                            href={route('login')}
+                            href={route('backend.login')}
                             className='underline hover:text-primary underline-offset-4'
                         >
                             {t('Login')}?

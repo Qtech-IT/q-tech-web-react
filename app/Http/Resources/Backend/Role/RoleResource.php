@@ -24,7 +24,6 @@ class RoleResource extends BaseResource
             'is_super_admin'    => (bool) $this->is_super_admin,
             'order_index'       => $this->order_index,
             'description'       => $this->description,
-            'type'              => $this->type
         ];
 
         if($this->relationLoaded('permissions')){
