@@ -42,7 +42,7 @@ class SectionBlockService
                 : null;
 
             $this->guardDepth($parent);
-            $this->guardCount($section, $request->input('block_type', 'item'), $block);
+            $this->guardCount($section, $request->input('block_type', 'item'), $block, $parent);
 
             $block->page_section_id = $section->id;
             $block->parent_id = $parent?->id;
@@ -141,12 +141,18 @@ class SectionBlockService
     }
 
     /**
-     * Enforce the registry's `max` for this block type.
+     * Enforce the registry's `max` for this block type, **per level**.
+     *
+     * The count is of siblings only: items of this block type sharing this
+     * section AND this parent. Nested children are counted against their own
+     * parent, never against the top level. Without that, `max: 8` on an
+     * accordion rejected 3 parents plus 6 children — 9 rows, but only 3 at
+     * the level the editor was adding to.
      *
      * The failure mode this prevents is an editor pasting a 500-row table into
      * a repeater, which is unbounded row growth with no natural ceiling.
      */
-    protected function guardCount(PageSection $section, string $blockType, SectionBlock $block): void
+    protected function guardCount(PageSection $section, string $blockType, SectionBlock $block, ?SectionBlock $parent): void
     {
         if ($block->exists) {
             return;
@@ -160,6 +166,7 @@ class SectionBlockService
 
         $current = SectionBlock::where('page_section_id', $section->id)
             ->where('block_type', $blockType)
+            ->where('parent_id', $parent?->id)
             ->count();
 
         if ($current >= $max) {

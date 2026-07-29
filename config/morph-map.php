@@ -15,7 +15,6 @@ use App\Models\SeoMeta;
 use App\Models\User;
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Morph aliases
@@ -38,24 +37,23 @@ return [
     */
 
     'aliases' => [
-
         // Legacy owners, retrofitted by the files backfill migration.
-        'user' => User::class,
+        'user'        => User::class,
         'app_setting' => AppSetting::class,
 
         // Core CMS
-        'page' => Page::class,
-        'page_section' => PageSection::class,
+        'page'          => Page::class,
+        'page_section'  => PageSection::class,
         'section_block' => SectionBlock::class,
-        'block' => Block::class,
-        'cta' => Cta::class,
+        'block'         => Block::class,
+        'cta'           => Cta::class,
 
         // Navigation
-        'menu' => Menu::class,
+        'menu'      => Menu::class,
         'menu_item' => MenuItem::class,
 
         // Media
-        'media' => Media::class,
+        'media'        => Media::class,
         'media_folder' => MediaFolder::class,
 
         // SEO + routing
@@ -77,7 +75,6 @@ return [
     */
 
     'columns' => [
-
         // mediables.mediable_type — anything that can own library media.
         'mediable' => [
             'page',

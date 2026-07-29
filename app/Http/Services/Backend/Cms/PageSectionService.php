@@ -9,11 +9,13 @@ use App\Enums\System\CacheKey;
 use App\Models\Block;
 use App\Models\Page;
 use App\Models\PageSection;
+use App\Models\SectionBlock;
 use App\Traits\Cms\CacheInvalidation;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class PageSectionService
@@ -22,6 +24,7 @@ class PageSectionService
 
     public function __construct(
         protected SectionTypeRegistry $registry,
+        protected MediaService $media,
     ) {}
 
     /**
@@ -177,6 +180,181 @@ class PageSectionService
     }
 
     /**
+     * Deep-copy a section: the row, every repeater item beneath it at every
+     * level, and every media attachment.
+     *
+     * Four properties this guarantees, each of which is a bug if dropped:
+     *
+     *  - The copy lands as `draft`, never inheriting `published`/`scheduled`.
+     *    Duplicating a live section to experiment on it must not push a second
+     *    copy of that section onto the live page.
+     *  - Every row gets a fresh uuid. The uuid is the stable translation
+     *    address (§1.3) and the route key; reusing one would make the copy and
+     *    the source the same object to the translation overlay.
+     *  - The copy sits immediately after the source, with later siblings
+     *    shifted down, so it appears where the editor clicked rather than at
+     *    the bottom of a forty-section page.
+     *  - Media associations are copied, the `media` rows are not. The library
+     *    is shared by design; duplicating the assets would fill it with
+     *    byte-identical uploads.
+     *
+     * @param  string|null  $name  Optional label for the copy.
+     */
+    public function duplicate(PageSection $section, ?string $name = null): PageSection
+    {
+        return DB::transaction(function () use ($section, $name): PageSection {
+            $sourceBlocks = SectionBlock::where('page_section_id', $section->id)
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get();
+
+            // Before writing anything: a cap lowered after the source was
+            // authored means the source itself is now over-quota, and the copy
+            // must be refused rather than silently truncated to fit.
+            $this->guardDuplicateCaps($section, $sourceBlocks);
+
+            // Make room at sort_order + 1. Strict `>` leaves any existing tie
+            // with the source where it is, which is the conservative choice —
+            // the copy still lands after its source either way.
+            $this->ownerScope($section)
+                ->where('sort_order', '>', $section->sort_order)
+                ->increment('sort_order');
+
+            // uuid is omitted so HasUuid mints a new one; the audit columns are
+            // omitted so HasAuditUsers stamps whoever clicked duplicate rather
+            // than inheriting the original author.
+            $copy = $section->replicate(['uuid', 'created_by', 'updated_by']);
+
+            $copy->name = $this->copyName($section, $name);
+
+            // The anchor is a DOM id. Copying it would put two identical ids on
+            // one page — invalid HTML, a WCAG failure, and it silently breaks
+            // every menu item and in-page link targeting that anchor. The
+            // editor re-assigns it if the copy needs one.
+            $copy->anchor = null;
+
+            $copy->publish_status = ContentStatus::DRAFT;
+            $copy->published_at = null;
+            $copy->expires_at = null;
+            $copy->sort_order = $section->sort_order + 1;
+
+            $copy->save();
+
+            $this->copyBlocks($sourceBlocks, $copy);
+
+            $this->media->copyAttachments($section, $copy);
+
+            $this->forgetSection($copy);
+
+            return $copy;
+        });
+    }
+
+    /**
+     * Recreate a section's repeater tree under a new section.
+     *
+     * Walks parents before children off an in-memory grouping rather than
+     * re-querying per level, so the whole tree costs one SELECT plus one
+     * INSERT per row regardless of depth.
+     *
+     * @param  \Illuminate\Support\Collection<int, SectionBlock>|Collection<int, SectionBlock>  $sourceBlocks
+     */
+    protected function copyBlocks(iterable $sourceBlocks, PageSection $copy): void
+    {
+        $byParent = collect($sourceBlocks)->groupBy(fn (SectionBlock $block): int => (int) $block->parent_id);
+
+        $copyLevel = function (int $sourceParentId, ?int $newParentId) use (&$copyLevel, $byParent, $copy): void {
+            foreach ($byParent->get($sourceParentId, []) as $source) {
+                /** @var SectionBlock $source */
+                $child = $source->replicate(['uuid']);
+
+                $child->page_section_id = $copy->id;
+                $child->parent_id = $newParentId;
+
+                // sort_order is carried over verbatim: sibling order is part of
+                // what "duplicate" means.
+                $child->sort_order = $source->sort_order;
+
+                $child->save();
+
+                $this->media->copyAttachments($source, $child);
+
+                $copyLevel((int) $source->id, (int) $child->id);
+            }
+        };
+
+        // parent_id NULL groups under key 0 — the top level.
+        $copyLevel(0, null);
+    }
+
+    /**
+     * Refuse a duplicate that would exceed a registry cap.
+     *
+     * `max` is a PER-LEVEL sibling cap, so the count is grouped by
+     * (parent, block_type) exactly as SectionBlockService::guardCount() counts
+     * it — a nested child is counted against its own parent, never against the
+     * top level.
+     *
+     * This fires when a cap has been lowered since the source was authored.
+     * Truncating to fit is the wrong failure mode: it silently discards
+     * editorial content and the editor has no way to know which items went.
+     *
+     * @param  \Illuminate\Support\Collection<int, SectionBlock>|Collection<int, SectionBlock>  $sourceBlocks
+     */
+    protected function guardDuplicateCaps(PageSection $section, iterable $sourceBlocks): void
+    {
+        $blockTypes = $this->registry->get($section->section_type)?->blockTypes() ?? [];
+
+        if ($blockTypes === []) {
+            return;
+        }
+
+        $counts = collect($sourceBlocks)
+            ->groupBy(fn (SectionBlock $block): string => ((int) $block->parent_id).'|'.$block->block_type);
+
+        foreach ($counts as $key => $siblings) {
+            $blockType = Str::after((string) $key, '|');
+            $max = $blockTypes[$blockType]['max'] ?? null;
+
+            if (! is_int($max) || $siblings->count() <= $max) {
+                continue;
+            }
+
+            throw ValidationException::withMessages([
+                'block_type' => translate('This section holds more items than its type now allows, so it cannot be duplicated. Remove some items first.'),
+            ]);
+        }
+    }
+
+    /**
+     * Label for a copy, clamped to the column width.
+     */
+    protected function copyName(PageSection $section, ?string $name): ?string
+    {
+        if (filled($name)) {
+            return Str::limit($name, 191, '');
+        }
+
+        $base = $section->name ?? $section->section_type;
+
+        return Str::limit($base.' ('.translate('Copy').')', 191, '');
+    }
+
+    /**
+     * Sections sharing this section's owner — the sibling set that sort_order
+     * is meaningful within.
+     *
+     * Exactly one of page_id / block_id owns a row (§1.2), so the two branches
+     * are mutually exclusive and never both applied.
+     */
+    protected function ownerScope(PageSection $section): \Illuminate\Database\Eloquent\Builder
+    {
+        return PageSection::query()
+            ->when($section->page_id, fn ($query) => $query->where('page_id', $section->page_id))
+            ->when(! $section->page_id && $section->block_id, fn ($query) => $query->where('block_id', $section->block_id));
+    }
+
+    /**
      * Soft delete a section.
      */
     public function destroy(PageSection $section): bool
@@ -254,10 +432,7 @@ class PageSectionService
      */
     protected function nextSortOrder(PageSection $section): int
     {
-        return (int) PageSection::query()
-            ->when($section->page_id, fn ($q) => $q->where('page_id', $section->page_id))
-            ->when($section->block_id && ! $section->page_id, fn ($q) => $q->where('block_id', $section->block_id))
-            ->max('sort_order') + 1;
+        return (int) $this->ownerScope($section)->max('sort_order') + 1;
     }
 
     /**

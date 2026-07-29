@@ -161,6 +161,31 @@ class PageService
     }
 
     /**
+     * Apply an editorial state transition on its own, without touching content.
+     *
+     * The publish button is not a save: it carries only publish_status,
+     * published_at and expires_at (PagePublishRequest), so routing it through
+     * save() would null out every field the payload omits. It reuses
+     * applyPublishing() so the "a future date IS scheduling" coercion cannot
+     * drift between the two entry points.
+     *
+     * Still one page at a time and still through PagePolicy::publish() — see
+     * PagePublishRequest's docblock for why this never becomes a bulk action.
+     */
+    public function publish(Request $request, Page $page): Page
+    {
+        return DB::transaction(function () use ($request, $page): Page {
+            $this->applyPublishing($request, $page);
+
+            $page->save();
+
+            $this->forgetPage($page);
+
+            return $page;
+        });
+    }
+
+    /**
      * Enforce the single-homepage invariant.
      *
      * Not expressible as a unique index — UNIQUE (site_id, locale, is_homepage)

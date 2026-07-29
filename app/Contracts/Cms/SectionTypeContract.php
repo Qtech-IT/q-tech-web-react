@@ -56,7 +56,14 @@ interface SectionTypeContract
      * each with `label`, `fields`, and `min`/`max` counts.
      *
      * `max` is not decorative: it is what stops an editor pasting a 500-row
-     * table into a repeater, and SectionSaveRequest enforces it.
+     * table into a repeater.
+     *
+     * **`min`/`max` are per level, not per section.** They cap the number of
+     * sibling items of this block_type sharing one parent — top-level items
+     * are counted against `null`, and each parent's children are counted
+     * against that parent. A section with `max: 8` therefore permits 8
+     * top-level items and 8 children under each of them, not 8 rows in total.
+     * `SectionBlockService::guardCount()` is what enforces this.
      *
      * @return array<string, array<string, mixed>>
      */

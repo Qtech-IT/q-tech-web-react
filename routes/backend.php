@@ -2,6 +2,17 @@
 
 use App\Http\Controllers\Auth\AuthenticateController;
 use App\Http\Controllers\Backend\AdminUserController;
+use App\Http\Controllers\Backend\Cms\BlockController;
+use App\Http\Controllers\Backend\Cms\CtaController;
+use App\Http\Controllers\Backend\Cms\MediaController;
+use App\Http\Controllers\Backend\Cms\MediaFolderController;
+use App\Http\Controllers\Backend\Cms\MenuController;
+use App\Http\Controllers\Backend\Cms\MenuItemController;
+use App\Http\Controllers\Backend\Cms\PageController;
+use App\Http\Controllers\Backend\Cms\PageSectionController;
+use App\Http\Controllers\Backend\Cms\RedirectController;
+use App\Http\Controllers\Backend\Cms\SectionBlockController;
+use App\Http\Controllers\Backend\Cms\SeoMetaController;
 use App\Http\Controllers\Backend\DashboardController;
 use App\Http\Controllers\Backend\Job\FailedJobController;
 use App\Http\Controllers\Backend\Job\JobController;
@@ -202,6 +213,92 @@ Route::middleware(['sanitization', 'throttle:60,1'])->group(function (): void {
 
 		/**
 		 * =========================
+		 * CMS PAGE BUILDER ROUTES
+		 * =========================
+		 */
+		Route::controller(PageController::class)
+			->prefix('pages')
+			->name('pages.')
+			->group(function () {
+				Route::get('tree', 'tree')->name('tree');
+				Route::post('update-status', 'updateStatus')->name('update.status');
+				Route::post('{page}/publish', 'publish')->name('publish');
+				Route::post('{page}/make-homepage', 'makeHomepage')->name('make.homepage');
+			});
+
+		// Sections are always addressed through their owning page.
+		Route::get('pages/{page}/sections', [PageSectionController::class, 'index'])
+			->name('pages.sections');
+
+		Route::controller(PageSectionController::class)
+			->prefix('page-sections')
+			->name('page-sections.')
+			->group(function () {
+				Route::post('reorder', 'reorder')->name('reorder');
+				Route::post('update-status', 'updateStatus')->name('update.status');
+
+				// Deep copy: the section, its whole repeater tree, and its
+				// media attachments. Lands as a draft immediately after the
+				// source.
+				Route::post('{page_section}/duplicate', 'duplicate')->name('duplicate');
+			});
+
+		Route::controller(SectionBlockController::class)
+			->prefix('section-blocks')
+			->name('section-blocks.')
+			->group(function () {
+				Route::post('reorder', 'reorder')->name('reorder');
+			});
+
+		/**
+		 * =========================
+		 * CMS MENU BUILDER ROUTES
+		 * =========================
+		 */
+		Route::get('menus/{menu}/items', [MenuItemController::class, 'index'])
+			->name('menus.items');
+
+		// One request persists both the reparent and the new sibling order.
+		Route::post('menu-items/{menu_item}/move', [MenuItemController::class, 'move'])
+			->name('menu-items.move');
+
+		/**
+		 * =========================
+		 * CMS MEDIA LIBRARY ROUTES
+		 * =========================
+		 */
+		Route::controller(MediaController::class)
+			->prefix('media')
+			->name('media.')
+			->group(function () {
+				Route::post('move', 'move')->name('move');
+
+				// Attachment pivot, not the asset: attaching links an existing
+				// library row to an owner's slot, detaching unlinks it, and
+				// neither creates or deletes a `media` row.
+				Route::post('attach', 'attach')->name('attach');
+				Route::post('detach', 'detach')->name('detach');
+				Route::post('attachments/reorder', 'reorderAttachments')->name('attachments.reorder');
+
+				Route::get('{media}/usage', 'usage')->name('usage');
+				Route::delete('{media}/force', 'forceDestroy')->name('force.destroy');
+			});
+
+		/**
+		 * =========================
+		 * CMS SEO ROUTES
+		 * =========================
+		 */
+		Route::controller(SeoMetaController::class)
+			->prefix('seo-meta')
+			->name('seo-meta.')
+			->group(function () {
+				Route::get('/', 'show')->name('show');
+				Route::post('/', 'store')->name('store');
+			});
+
+		/**
+		 * =========================
 		 * RESOURCE ROUTES
 		 * =========================
 		 */
@@ -216,9 +313,41 @@ Route::middleware(['sanitization', 'throttle:60,1'])->group(function (): void {
 				'languages'              => LanguageController::class,
 				'jobs'                   => JobController::class,
 				'failed-jobs'            => FailedJobController::class,
-				'permissions'            => PermissionController::class
+				'permissions'            => PermissionController::class,
+
+				// CMS spine.
+				'pages'                  => PageController::class,
+				'blocks'                 => BlockController::class,
+				'ctas'                   => CtaController::class,
+				'redirects'              => RedirectController::class,
+				'menus'                  => MenuController::class,
+				'media-folders'          => MediaFolderController::class,
 			],
 		);
+
+		/**
+		 * =========================
+		 * CMS WRITE-ONLY RESOURCES
+		 * =========================
+		 * Sections, repeater items and menu items are edited inside their
+		 * parent's screen, so they expose no index/create/edit/show of their own.
+		 */
+		Route::resource('page-sections', PageSectionController::class)
+			->only(['store', 'update', 'destroy']);
+
+		Route::resource('section-blocks', SectionBlockController::class)
+			->only(['store', 'update', 'destroy']);
+
+		Route::resource('menu-items', MenuItemController::class)
+			->only(['store', 'update', 'destroy']);
+
+		// `media` is its own plural — Laravel's singulariser would name the route
+		// parameter {medium}, which matches neither the controller signatures nor
+		// the {media} that authorizeResource() derives from the model, so the
+		// can: middleware would resolve against a binding that does not exist.
+		Route::resource('media', MediaController::class)
+			->parameters(['media' => 'media'])
+			->only(['index', 'store', 'update', 'destroy']);
 
 		/**
 		 * =========================

@@ -10,5 +10,4 @@ class DashboardPolicy
     {
         return $user->hasPermissionTo('dashboard.view');
     }
-
 }

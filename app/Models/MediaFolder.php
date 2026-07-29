@@ -12,9 +12,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Never extends BaseModel: BaseModel::getRouteKeyName() returns 'uid', which
- * matches no column in any migration. HasUuid + UsesUuidRouting is the correct
- * pair — the first fills `uuid` on creating, the second binds routes to it.
+ * Extends Model directly. HasUuid + UsesUuidRouting is the route-binding pair
+ * for every CMS model — the first fills `uuid` on creating, the second binds
+ * routes to it. (The old App\Models\BaseModel, whose getRouteKeyName() returned
+ * 'uid' — a column that exists in no migration — has been deleted; see §17.1.)
  */
 class MediaFolder extends Model
 {

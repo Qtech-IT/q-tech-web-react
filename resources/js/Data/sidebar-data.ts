@@ -1,15 +1,22 @@
 import type { SidebarGroup } from '@/Types/User';
 import {
   Bell,
+  Blocks,
   Clock,
   Cog,
   Coins,
   DatabaseBackup,
+  Files,
+  FolderTree,
   HardDrive,
+  Images,
   Info,
   Languages,
   LayoutDashboard,
   ListChecks,
+  ListTree,
+  MousePointerClick,
+  Signpost,
   LucideMailCheck,
   LucideTrendingUpDown,
   Settings,
@@ -70,6 +77,70 @@ export const sidebarData: SidebarData = {
       ],
     },
 
+
+    // 4. Content
+    {
+      title: 'Content',
+      permissionsAny: [
+        'page.view',
+        'block.view',
+        'cta.view',
+        'menu.view',
+        'media.view',
+        'folder.view',
+        'redirect.view',
+      ],
+      items: [
+        {
+          title: 'Pages',
+          url: route('backend.pages.index'),
+          icon: Files,
+          permission: 'page.view',
+        },
+        {
+          title: 'Global Blocks',
+          url: route('backend.blocks.index'),
+          icon: Blocks,
+          permission: 'block.view',
+        },
+        {
+          title: 'Call To Actions',
+          url: route('backend.ctas.index'),
+          icon: MousePointerClick,
+          permission: 'cta.view',
+        },
+        {
+          title: 'Menus',
+          url: route('backend.menus.index'),
+          icon: ListTree,
+          permission: 'menu.view',
+        },
+        {
+          title: 'Media',
+          icon: Images,
+          items: [
+            {
+              title: 'Media Library',
+              url: route('backend.media.index'),
+              icon: Images,
+              permission: 'media.view',
+            },
+            {
+              title: 'Folders',
+              url: route('backend.media-folders.index'),
+              icon: FolderTree,
+              permission: 'folder.view',
+            },
+          ],
+        },
+        {
+          title: 'Redirects',
+          url: route('backend.redirects.index'),
+          icon: Signpost,
+          permission: 'redirect.view',
+        },
+      ],
+    },
 
     // 6. Notifications
     {

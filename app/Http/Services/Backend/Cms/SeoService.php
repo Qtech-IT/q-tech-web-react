@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class SeoService
 {
@@ -139,6 +140,33 @@ class SeoService
             CacheKey::CMS_SEO->for($alias, $id, $locale),
             CacheKey::CMS_SITEMAP->for(config('cms.site_id')),
         ]);
+    }
+
+    /**
+     * Resolve an owner from the morph alias + id an SEO request carries.
+     *
+     * The alias has already been constrained by SeoMetaSaveRequest against
+     * config('morph-map.columns.seoable'), so this cannot be pointed at an
+     * arbitrary class — but it resolves through Relation::getMorphedModel()
+     * rather than a local map so the permitted set stays declared in exactly
+     * one place.
+     *
+     * @return Model The owning entity.
+     */
+    public function resolveOwner(string $alias, int|string $id): Model
+    {
+        $class = Relation::getMorphedModel($alias);
+
+        if ($class === null || ! is_subclass_of($class, Model::class)) {
+            throw ValidationException::withMessages([
+                'seoable_type' => translate('That content type cannot carry SEO settings.'),
+            ]);
+        }
+
+        /** @var Model $model */
+        $model = new $class;
+
+        return $model->newQuery()->findOrFail($id);
     }
 
     /**

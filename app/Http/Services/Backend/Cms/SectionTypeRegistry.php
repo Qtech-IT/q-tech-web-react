@@ -276,7 +276,8 @@ class SectionTypeRegistry
             }
 
             // Every repeater must be bounded, or a paste can write thousands of
-            // section_blocks rows.
+            // section_blocks rows. `max` is a PER-LEVEL sibling cap, not a
+            // per-section row total — see SectionTypeContract::blockTypes().
             foreach ($type->blockTypes() as $blockType => $definition) {
                 if (! isset($definition['max']) || ! is_int($definition['max']) || $definition['max'] < 1) {
                     $errors[] = "[{$key}] blockType `{$blockType}`: a positive integer `max` is required.";

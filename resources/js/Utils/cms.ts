@@ -1,0 +1,305 @@
+import type {
+  CmsMenuItem,
+  CmsPaginated,
+  CmsSectionField,
+  CmsSectionType,
+} from '@/Types/cms';
+
+/**
+ * Unwrap a list prop.
+ *
+ * Inertia resolves every `Responsable` it finds, including the nested
+ * `AnonymousResourceCollection` inside `formatLengthAwarePagination()`, so the
+ * same payload arrives as one of three shapes depending on whether it was
+ * paginated and how deeply the resource nested. Normalising in one place is
+ * what stops every screen inventing its own `?.data?.data` chain.
+ */
+export function unwrapList<T>(raw: unknown): T[] {
+  if (Array.isArray(raw)) {
+    return raw as T[];
+  }
+
+  if (raw && typeof raw === 'object') {
+    const inner = (raw as { data?: unknown }).data;
+
+    if (Array.isArray(inner)) {
+      return inner as T[];
+    }
+
+    if (inner && typeof inner === 'object') {
+      const deeper = (inner as { data?: unknown }).data;
+
+      if (Array.isArray(deeper)) {
+        return deeper as T[];
+      }
+    }
+  }
+
+  return [];
+}
+
+/** Unwrap a single-resource prop, which Inertia wraps as `{ data: {...} }`. */
+export function unwrapItem<T>(raw: unknown): T | null {
+  if (!raw || typeof raw !== 'object') {
+    return null;
+  }
+
+  const inner = (raw as { data?: unknown }).data;
+
+  if (inner && typeof inner === 'object' && !Array.isArray(inner)) {
+    return inner as T;
+  }
+
+  return raw as T;
+}
+
+/** Pagination meta, when the payload carries any. */
+export function unwrapMeta<T>(raw: unknown): CmsPaginated<T>['meta'] | undefined {
+  if (raw && typeof raw === 'object' && 'meta' in raw) {
+    return (raw as CmsPaginated<T>).meta;
+  }
+
+  return undefined;
+}
+
+/* ------------------------------------------------------------------ */
+/* Section registry helpers                                           */
+/* ------------------------------------------------------------------ */
+
+/** Index the registry by key, so a section resolves its type in O(1). */
+export function indexSectionTypes(
+  types: CmsSectionType[]
+): Record<string, CmsSectionType> {
+  const index: Record<string, CmsSectionType> = {};
+
+  for (const type of types) {
+    index[type.key] = type;
+  }
+
+  return index;
+}
+
+/**
+ * Fields for one storage target, in declaration order.
+ *
+ * Mirrors `SectionTypeRegistry::fieldsFor()` so the form renders exactly the
+ * set the server will accept — a field the client invents is stripped by
+ * `SectionSaveRequest`, and a field it omits silently loses its value.
+ */
+export function fieldsForStore(
+  type: CmsSectionType | null | undefined,
+  store: CmsSectionField['store']
+): CmsSectionField[] {
+  return (type?.fields ?? []).filter((field) => field.store === store);
+}
+
+/** Ordered, de-duplicated `group` values across a field set, for tab headings. */
+export function fieldGroups(fields: CmsSectionField[]): string[] {
+  const groups: string[] = [];
+
+  for (const field of fields) {
+    const group = field.group || 'Content';
+
+    if (!groups.includes(group)) {
+      groups.push(group);
+    }
+  }
+
+  return groups;
+}
+
+/**
+ * Whether a conditional field should render right now.
+ *
+ * A hidden field is not cleared — the server still accepts whatever is stored,
+ * and clearing on toggle would destroy content an editor is mid-way through
+ * reorganising.
+ */
+export function isFieldVisible(
+  field: CmsSectionField,
+  values: Record<string, unknown>
+): boolean {
+  if (!field.conditional) {
+    return true;
+  }
+
+  return values[field.conditional.field] === field.conditional.value;
+}
+
+/** Normalise `options`, which may be a static array or an enum class name. */
+export function fieldOptions(
+  field: CmsSectionField
+): Array<{ value: string | number; label: string }> {
+  return Array.isArray(field.options) ? field.options : [];
+}
+
+/* ------------------------------------------------------------------ */
+/* Trees                                                              */
+/* ------------------------------------------------------------------ */
+
+/** A node in a client-side nested tree, with its children resolved. */
+export interface CmsTreeNode<T> {
+  item: T;
+  depth: number;
+  children: Array<CmsTreeNode<T>>;
+}
+
+/**
+ * Nest a flat, pre-ordered list by `parent_id`.
+ *
+ * The backend ships the list flat and already sorted, so this is a single pass
+ * with no query and no sort — see `MenuItemController::index()`.
+ */
+export function buildTree<T extends { id: number; parent_id: number | null }>(
+  items: T[]
+): Array<CmsTreeNode<T>> {
+  const nodes = new Map<number, CmsTreeNode<T>>();
+  const roots: Array<CmsTreeNode<T>> = [];
+
+  for (const item of items) {
+    nodes.set(item.id, { item, depth: 0, children: [] });
+  }
+
+  for (const item of items) {
+    const node = nodes.get(item.id);
+
+    if (!node) {
+      continue;
+    }
+
+    const parent = item.parent_id === null ? undefined : nodes.get(item.parent_id);
+
+    if (parent) {
+      node.depth = parent.depth + 1;
+      parent.children.push(node);
+    } else {
+      // An orphan — parent filtered out or deleted — is promoted to root
+      // rather than dropped, so no item ever becomes invisible and
+      // uneditable.
+      roots.push(node);
+    }
+  }
+
+  return roots;
+}
+
+/** Depth-first flatten, so a nested tree can drive a single dnd-kit list. */
+export function flattenTree<T>(
+  nodes: Array<CmsTreeNode<T>>
+): Array<CmsTreeNode<T>> {
+  const flat: Array<CmsTreeNode<T>> = [];
+
+  const walk = (list: Array<CmsTreeNode<T>>): void => {
+    for (const node of list) {
+      flat.push(node);
+      walk(node.children);
+    }
+  };
+
+  walk(nodes);
+
+  return flat;
+}
+
+/**
+ * Every descendant id of `id`, plus `id` itself.
+ *
+ * The menu builder uses this to refuse a reparent into the dragged node's own
+ * subtree before the request leaves the browser. The server refuses it too,
+ * but a rejected drop that snaps back is a far better experience than a
+ * validation error after the tree has already visually reordered.
+ */
+export function subtreeIds<T extends { id: number; parent_id: number | null }>(
+  items: T[],
+  id: number
+): Set<number> {
+  const byParent = new Map<number | null, T[]>();
+
+  for (const item of items) {
+    const siblings = byParent.get(item.parent_id) ?? [];
+    siblings.push(item);
+    byParent.set(item.parent_id, siblings);
+  }
+
+  const collected = new Set<number>([id]);
+  const queue: number[] = [id];
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+
+    if (current === undefined) {
+      break;
+    }
+
+    for (const child of byParent.get(current) ?? []) {
+      if (!collected.has(child.id)) {
+        collected.add(child.id);
+        queue.push(child.id);
+      }
+    }
+  }
+
+  return collected;
+}
+
+/**
+ * Whether `parentId` is a legal new parent for `itemId`.
+ *
+ * Illegal when it is the item itself or anything beneath it — that would
+ * detach the subtree from the tree entirely.
+ */
+export function canReparent(
+  items: CmsMenuItem[],
+  itemId: number,
+  parentId: number | null
+): boolean {
+  if (parentId === null) {
+    return true;
+  }
+
+  return !subtreeIds(items, itemId).has(parentId);
+}
+
+/**
+ * Depth of the deepest node in `itemId`'s subtree, counted from `itemId`.
+ *
+ * A leaf is 0. Used with `menu.max_depth` to refuse a drop that would push
+ * descendants past the menu's declared limit.
+ */
+export function subtreeHeight(items: CmsMenuItem[], itemId: number): number {
+  const children = items.filter((item) => item.parent_id === itemId);
+
+  if (children.length === 0) {
+    return 0;
+  }
+
+  return 1 + Math.max(...children.map((child) => subtreeHeight(items, child.id)));
+}
+
+/* ------------------------------------------------------------------ */
+/* Misc                                                               */
+/* ------------------------------------------------------------------ */
+
+/** `move(list, from, to)` — the array reorder both builders share. */
+export function moveItem<T>(list: T[], from: number, to: number): T[] {
+  const next = [...list];
+  const [moved] = next.splice(from, 1);
+
+  if (moved === undefined) {
+    return list;
+  }
+
+  next.splice(to, 0, moved);
+
+  return next;
+}
+
+/** Slugify for anchors and keys. Mirrors the server's `Str::slug()` closely enough for a live preview. */
+export function toSlug(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}

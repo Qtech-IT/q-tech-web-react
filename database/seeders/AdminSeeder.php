@@ -63,29 +63,6 @@ class AdminSeeder extends Seeder
                     'password' => '123123123',
                 ];
                 DB::transaction(function() use($data){
-                    #RUN ROLE PERMISSION SEEDER TO CREATE SUPERADMIN ROLE
-                    Artisan::call('db:seed', [
-                        '--class' => PermissionSeeder::class,
-                        '--force' => true
-                    ]);
-
-                    Artisan::call('db:seed', [
-                        '--class' => RoleSeeder::class,
-                        '--force' => true
-                    ]);
-
-                    #RUN LANGUAGE SEEDER
-                    Artisan::call('db:seed', [
-                        '--class' => LanguageSeeder::class,
-                        '--force' => true
-                    ]);
-
-                    #RUN LANGUAGE SEEDER
-                    Artisan::call('db:seed', [
-                        '--class' => NotificationTemplateSeeder::class,
-                        '--force' => true
-                    ]);
-
                     /***
                      * ######### CREATE SUPERADMIN
                      */

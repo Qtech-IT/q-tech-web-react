@@ -64,6 +64,23 @@ class RedirectService
     }
 
     /**
+     * Delete a redirect and drop the resolver cache for its site.
+     *
+     * The invalidation is the whole reason this is not a bare $model->delete()
+     * in the controller: a deleted rule that is still cached keeps redirecting.
+     */
+    public function destroy(Redirect $redirect): bool
+    {
+        $siteId = (int) $redirect->site_id;
+
+        $deleted = (bool) $redirect->delete();
+
+        $this->forgetRedirects($siteId);
+
+        return $deleted;
+    }
+
+    /**
      * Record a redirect for a path that just moved.
      *
      * Called from PageService inside the same transaction as the slug change,
