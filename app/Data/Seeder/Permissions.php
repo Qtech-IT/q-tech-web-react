@@ -21,6 +21,12 @@ class Permissions
 			...AdminUserPermissions::getAll(),
 			...NotificationPermissions::getAll(),
 			...SystemPermissions::getAll(),
+
+			// CMS modules. Spread exactly as the modules above are — this is
+			// the only edit the CMS makes to an existing permissions file.
+			...ContentPermissions::getAll(),
+			...MediaPermissions::getAll(),
+			...SeoPermissions::getAll(),
 		];
 	}
 }

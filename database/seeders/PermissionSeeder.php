@@ -3,10 +3,11 @@
 namespace Database\Seeders;
 
 use Database\Seeders\Permissions\AdminModulePermissionSeeder;
+use Database\Seeders\Permissions\ContentModulePermissionSeeder;
 use Database\Seeders\Permissions\DashboardModuelPermissionSeeder;
-use Database\Seeders\Permissions\FormModulePermissionSeeder;
+use Database\Seeders\Permissions\MediaModulePermissionSeeder;
+use Database\Seeders\Permissions\SeoModulePermissionSeeder;
 use Database\Seeders\Permissions\SystemModulePermissionSeeder;
-use Database\Seeders\Permissions\UserModulePermissionSeeder;
 use Illuminate\Database\Seeder;
 
 class PermissionSeeder extends Seeder
@@ -19,6 +20,11 @@ class PermissionSeeder extends Seeder
 		AdminModulePermissionSeeder::class,
 		DashboardModuelPermissionSeeder::class,
 		SystemModulePermissionSeeder::class,
+
+		// CMS modules.
+		ContentModulePermissionSeeder::class,
+		MediaModulePermissionSeeder::class,
+		SeoModulePermissionSeeder::class,
 	];
 
 	/**
