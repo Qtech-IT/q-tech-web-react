@@ -752,6 +752,13 @@ enum GlobalConfig
 	const DEFAULT_SMS_TEMPLATE  = '{{message}}';
 	const DEFAULT_PUSH_TEMPLATE = '{{message}}';
 
+	/**
+	 * Visitor theme cookie. Single source of truth for the active theme.
+	 * Must stay unencrypted (see bootstrap/app.php) so JS can read/write it.
+	 */
+	const THEME_COOKIE_NAME    = 'qtech_theme';
+	const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+
 	public static function countryNames(): array
 	{
 		return array_column(self::COUNTRIES, 'name');

@@ -32,7 +32,10 @@ export type SystemInfo = {
 };
 
 export type SystemOverviewProps = {
-  systemInfo?: SystemInfo;
+  // Explicit `| undefined` because the project sets
+  // `exactOptionalPropertyTypes`, under which `?:` alone does not permit an
+  // explicitly-passed `undefined`.
+  systemInfo?: SystemInfo | undefined;
 };
 
 

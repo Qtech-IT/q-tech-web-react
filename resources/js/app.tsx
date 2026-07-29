@@ -25,11 +25,15 @@ import type { Root } from 'react-dom/client';
 import { createRoot } from 'react-dom/client';
 import LoadingBar from 'react-top-loading-bar';
 
+import { ThemeProvider } from '@/Contexts/ThemeProvider';
+
 const appName = import.meta.env.VITE_APP_NAME;
 
 // Define types for site settings
 interface SiteThemeSettings {
     company_name?: string;
+    /** CMS default for first-time visitors only; the cookie always wins. */
+    theme_mode?: string;
 }
 
 interface Logos {
@@ -117,18 +121,20 @@ createInertiaApp({
         }
     },
     setup({ el, App, props }: { el: HTMLElement; App: any; props: any }) {
-        const currentUrl = window.location.pathname;
+        const initialProps = props.initialPage?.props as AppPageProps | undefined;
 
         // Update favicon
-        const favicon = (props.initialPage?.props as AppPageProps)?.logos?.favicon;
+        const favicon = initialProps?.logos?.favicon;
         if (favicon) {
             updateFavicon(favicon);
         }
 
-
+        // Mounted once at the root so public pages and admin share one theme
+        // source. `theme_mode` only seeds first-time visitors — the
+        // `qtech_theme` cookie always wins once the user has chosen.
         const root: Root = createRoot(el);
         root.render(
-            <>
+            <ThemeProvider dbTheme={initialProps?.site_theme_settings?.theme_mode}>
                 <LoadingBar
                     color='#093f28ff'
                     height={2}
@@ -138,7 +144,7 @@ createInertiaApp({
                     }}
                 />
                 <App {...props} />
-            </>
+            </ThemeProvider>
         );
     },
     progress: {

@@ -6,7 +6,6 @@ import { LogoForm } from '@/Components/Forms/Backend/Settings/LogoForm';
 import { SecuritySettingsForm } from '@/Components/Forms/Backend/Settings/SecuritySettingsForm';
 import { StorageSettingsForm } from '@/Components/Forms/Backend/Settings/StorageSettingsForm';
 import { SystemPreferencesForm } from '@/Components/Forms/Backend/Settings/SystemPreferencesForm';
-import { WithdrawDepositConfigurationForm } from '@/Components/Forms/Backend/Settings/WithdrawDepositConfigurationForm';
 import { SupportSettingsForm } from '@/Components/Forms/SupportSettingsFormTest';
 import { Separator } from '@/Components/UI/Separator';
 import { useTranslations } from '@/Hooks/useTranslations';
@@ -28,12 +27,6 @@ export function AppSettingWrapper() {
             title: t("General Settings"),
             description: t("Configure basic site information, timezone, and display preferences."),
             component: GeneralSettingsForm,
-        },
-
-        WithdrawDepositConfigurationForm: {
-            title: t("Withdraw & Deposit Config"),
-            description: t("Manage withdrawal and deposit options, fees, and configurations."),
-            component: WithdrawDepositConfigurationForm,
         },
 
         SupportSettingsForm: {

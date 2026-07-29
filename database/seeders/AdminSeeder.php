@@ -26,8 +26,8 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
            $settings = [
-                            SettingKey::COMPANY_NAME->value     => 'TradeHub',
-                            SettingKey::COMPANY_EMAIL->value    => 'tradehub@gmail.com',
+                            SettingKey::COMPANY_NAME->value     => 'QTEHUB',
+                            SettingKey::COMPANY_EMAIL->value    => 'qtech@gmail.com',
                             SettingKey::COMPANY_PHONE->value    => '01572443',
                             SettingKey::DEFAULT_CURRENCY->value => 'USD',
                             SettingKey::CURRENCY_SYMBOL->value  => '$',

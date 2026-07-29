@@ -1,19 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap');
+/* Inter and Open Sans are self-hosted via @fontsource (see app.tsx) and are
+   what `--font-sans` resolves to. The Google Fonts @import that used to sit
+   here duplicated them over a render-blocking third-party request chain. */
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import './theme.css';
 
 @custom-variant dark (&:is(.dark *));
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    /* Move exactly 50% since we duplicate the list */
-    transform: translateX(-50%);
-  }
-}
 
 @layer base {
   * {
@@ -27,6 +19,55 @@
   
   html {
     @apply overflow-x-hidden;
+    /* The sticky public header is measured from this token; declaring it on
+       <html> lets `scroll-margin-top` on anchor targets stay in sync. */
+    scroll-padding-top: var(--header-height);
+  }
+
+  /* Applied by ThemeProvider for one frame around a theme change so the
+     initial paint (and the swap itself) never shows a staggered repaint of
+     every colour-transitioning element. Removed on the next frame. */
+  .no-transitions,
+  .no-transitions *,
+  .no-transitions *::before,
+  .no-transitions *::after {
+    transition: none !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  /* Anchor targets clear the sticky header. */
+  :target {
+    scroll-margin-top: calc(var(--header-height) + 1rem);
+  }
+
+  /* A single, consistent, AA-contrast focus indicator for anything that does
+     not opt into the component-level `focus-visible:ring-*` treatment. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--foreground);
+    color: var(--background);
+  }
+
+  /* Global reduced-motion strategy. Motion (Framer) components additionally
+     read `useReducedMotion()` so they skip transforms rather than snapping. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto !important;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 
    body {
@@ -47,6 +88,17 @@
     overflow: unset !important;
   }
 
+  /* The override above disables Radix's scroll lock globally, which is right
+     for popovers/dropdowns under a sticky header but wrong for the mobile nav
+     drawer — the page would scroll behind an open full-height menu. MobileNav
+     toggles this class, which the override does not match, to restore the lock
+     for that one case. `overscroll-behavior` stops the scroll chaining that
+     causes iOS rubber-banding. */
+  body.nav-scroll-locked {
+    overflow: hidden !important;
+    overscroll-behavior: contain;
+  }
+
   /* Cursor pointer for buttons */
   button:not(:disabled),
   [role='button']:not(:disabled) {
@@ -63,9 +115,43 @@
   }
 }
 
+/* Kept for the existing admin screens that already use `container`, but now
+   token-driven so admin and public share one gutter rhythm. */
 @utility container {
   margin-inline: auto;
-  padding-inline: 2rem;
+  padding-inline: var(--gutter);
+}
+
+/* Vertical rhythm for public sections. `Section.tsx` composes these via cva
+   so no section ever hand-rolls its own padding. */
+@utility section-y-sm {
+  padding-block: var(--section-py-sm);
+}
+
+@utility section-y {
+  padding-block: var(--section-py);
+}
+
+@utility section-y-lg {
+  padding-block: var(--section-py-lg);
+}
+
+/* Elevation that stays legible in dark mode: the shadow token already carries
+   its lit-edge inset, and this pairs it with the ambient ring. */
+@utility elevated-1 {
+  box-shadow: var(--elevation-ring), var(--elevation-1);
+}
+
+@utility elevated-2 {
+  box-shadow: var(--elevation-ring), var(--elevation-2);
+}
+
+@utility elevated-3 {
+  box-shadow: var(--elevation-ring), var(--elevation-3);
+}
+
+@utility elevated-4 {
+  box-shadow: var(--elevation-ring), var(--elevation-4);
 }
 
 @utility no-scrollbar {
@@ -170,55 +256,55 @@
 }
 
 .ql-toolbar {
-  border-top: 1px solid hsl(var(--border));
-  border-left: 1px solid hsl(var(--border));
-  border-right: 1px solid hsl(var(--border));
-  background: hsl(var(--background));
+  border-top: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  background: var(--background);
 }
 
 .ql-container {
-  border-bottom: 1px solid hsl(var(--border));
-  border-left: 1px solid hsl(var(--border));
-  border-right: 1px solid hsl(var(--border));
+  border-bottom: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
 }
 
 .ql-editor.ql-blank::before {
-  color: hsl(var(--muted-foreground));
+  color: var(--muted-foreground);
   font-style: normal;
 }
 
 /* Dark mode support */
 .dark .ql-toolbar {
-  background: hsl(var(--background));
-  border-color: hsl(var(--border));
+  background: var(--background);
+  border-color: var(--border);
 }
 
 .dark .ql-container {
-  border-color: hsl(var(--border));
+  border-color: var(--border);
 }
 
 .dark .ql-editor {
-  color: hsl(var(--foreground));
-  background: hsl(var(--background));
+  color: var(--foreground);
+  background: var(--background);
 }
 
 .dark .ql-toolbar .ql-stroke {
-  stroke: hsl(var(--foreground));
+  stroke: var(--foreground);
 }
 
 .dark .ql-toolbar .ql-fill {
-  fill: hsl(var(--foreground));
+  fill: var(--foreground);
 }
 
 .dark .ql-toolbar button:hover,
 .dark .ql-toolbar button:focus {
-  background: hsl(var(--accent));
+  background: var(--accent);
 }
 
 /* Template key highlighting in editor */
 .ql-editor .template-key {
-  background-color: hsl(var(--primary) / 0.1);
-  color: hsl(var(--primary));
+  background-color: color-mix(in oklab, var(--primary) 10%, transparent);
+  color: var(--primary);
   padding: 2px 4px;
   border-radius: 3px;
   font-family: monospace;
@@ -424,29 +510,11 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.3);
+    background: color-mix(in oklab, var(--muted-foreground) 30%, transparent);
     border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.5);
+    background: color-mix(in oklab, var(--muted-foreground) 50%, transparent);
 }
 
-
-/* Add this to your global CSS file (e.g. resources/css/app.css) */
-
-/* Coin slider infinite marquee */
-@keyframes marquee {
-    from {
-        transform: translateX(0);
-    }
-    to {
-        /* Move exactly 50% since we duplicate the list */
-        transform: translateX(-50%);
-    }
-}
-
-/* Pause on hover for better UX */
-.overflow-hidden:hover [style*="marquee"] {
-    animation-play-state: paused;
-}

@@ -61,9 +61,9 @@ class SendNotificationJob implements ShouldQueue
         $channel = key_to_value($channel->value);
 
         $this->log->update([
-            'status' => NotificationLogStatus::FAILED,
+            'status'           => NotificationLogStatus::FAILED,
             'gateway_response' => (object) [
-                                        'status' => false,
+                                        'status'  => false,
                                         'message' => $channel . translate(' configuration is missing.')
                                     ]
         ]);

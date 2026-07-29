@@ -1,5 +1,6 @@
 <?php
 
+use App\Constants\GlobalConfig;
 use App\Http\Helpers\ExceptionHelper;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\LanguageMiddleware;
@@ -10,37 +11,44 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Support\Facades\Route;
+
 return Application::configure(basePath: dirname(__DIR__))
 
     ->withRouting(
-        web: __DIR__ . '/../routes/web.php',
-        api: __DIR__ . '/../routes/api.php',
-        commands: __DIR__ . '/../routes/console.php',
+        web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
+        commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
-        Route::middleware(['web'])
-            ->prefix('backend')
-            ->as('backend.')
-            ->group(base_path('routes/backend.php'));
-    }
+            Route::middleware(['web'])
+                ->prefix('backend')
+                ->as('backend.')
+                ->group(base_path('routes/backend.php'));
+        }
     )
 
     ->withMiddleware(function (Middleware $middleware): void {
+        // The theme cookie is stamped server side and read/written by JS before
+        // first paint, so it must stay readable (unencrypted, not httpOnly).
+        $middleware->encryptCookies(except: [
+            GlobalConfig::THEME_COOKIE_NAME,
+        ]);
+
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
-            LanguageMiddleware::class
+            LanguageMiddleware::class,
         ]);
 
         $middleware->alias([
-            'sanitization'  => Sanitization::class,
-            'throttle'      => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-            'auth'          => Authenticate::class,
-            'auth.basic'    => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-            'auth.session'  => \Illuminate\Session\Middleware\AuthenticateSession::class,
+            'sanitization' => Sanitization::class,
+            'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+            'auth' => Authenticate::class,
+            'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
+            'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
             'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
-            'can'           => \Illuminate\Auth\Middleware\Authorize::class,
-            'guest'         => RedirectIfAuthenticated::class,
+            'can' => \Illuminate\Auth\Middleware\Authorize::class,
+            'guest' => RedirectIfAuthenticated::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

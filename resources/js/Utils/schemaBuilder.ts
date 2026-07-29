@@ -19,6 +19,11 @@ export function buildZodSchemaFromFields(fields: FormField[]): z.ZodObject<any> 
   const schema: Record<string, z.ZodTypeAny> = {};
 
   fields.forEach((field) => {
+    // A field without a validation rule contributes nothing to the schema.
+    // Skipping it keeps the shape free of `undefined` entries, which Zod would
+    // reject at object construction.
+    if (!field.validation) return;
+
     if (field.name.includes('.')) {
       // Handle nested fields like "address.full_address"
       const [parent, child] = field.name.split('.');

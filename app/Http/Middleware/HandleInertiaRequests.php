@@ -3,7 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Constants\FilePathConstants;
-use App\Enums\Settings\SessionKey;
+use App\Constants\GlobalConfig;
 use App\Enums\Settings\SettingKey;
 use App\Http\Resources\Backend\LanguageResource;
 use App\Http\Resources\Backend\UserResource;
@@ -18,9 +18,6 @@ class HandleInertiaRequests extends Middleware
 
     /**
      * Determine the current asset version.
-     *
-     * @param Request $request
-     * @return string|null
      */
     public function version(Request $request): ?string
     {
@@ -30,7 +27,6 @@ class HandleInertiaRequests extends Middleware
     /**
      * Define the props that are shared by default for Inertia.
      *
-     * @param Request $request
      * @return array<string, mixed>
      */
     public function share(Request $request): array
@@ -40,7 +36,7 @@ class HandleInertiaRequests extends Middleware
 
             // Authenticated user resource
             'auth' => [
-                'user'          => $this->getAuthenticatedUser($request),
+                'user' => $this->getAuthenticatedUser($request),
                 'authorization' => $this->getAuthenticatedUserRolePermissions($request),
             ],
 
@@ -49,16 +45,17 @@ class HandleInertiaRequests extends Middleware
 
             // Site theme and logo settings
             'site_theme_settings' => $this->getSiteThemeSettings(),
-            'logos'               => $this->getSiteLogo(),
+            'logos' => $this->getSiteLogo(),
 
-            // Current theme (light/dark)
-            'theme'           => session(SessionKey::THEME->value, 'light'),
+            // Resolved visitor theme (cookie first, app setting as fallback)
+            'theme' => theme_preference(),
+            'theme_settings' => $this->getThemeSettings(),
             'copy_right_text' => getCopyRightText(),
 
             'language_settings' => [
                 'available_languages' => formatResourceResponse(site_languages(), LanguageResource::class),
-                'current_language'    => fn(): string => app()->getLocale(),
-                'translations'        => fn(): mixed => getTranslationsFlat()
+                'current_language' => fn (): string => app()->getLocale(),
+                'translations' => fn (): mixed => getTranslationsFlat(),
             ],
         ];
     }
@@ -66,14 +63,13 @@ class HandleInertiaRequests extends Middleware
     /**
      * Get the authenticated user as a resource array.
      *
-     * @param Request $request
      * @return array<string, mixed>|null
      */
     private function getAuthenticatedUser(Request $request): ?array
     {
         $user = $request->user();
 
-        return $user ?  (new UserResource($user))->resolve() : null;
+        return $user ? (new UserResource($user))->resolve() : null;
     }
 
     /**
@@ -84,16 +80,20 @@ class HandleInertiaRequests extends Middleware
         try {
             $user = $request->user();
 
-            if (!$user) return [];
+            if (! $user) {
+                return [];
+            }
 
             $user->loadMissing('roles.permissions:id,name');
 
             $role = $user->roles->first();
 
-            if (!$role) return [];
+            if (! $role) {
+                return [];
+            }
 
             return [
-                'role'        => $this->formatRoleResource($role),
+                'role' => $this->formatRoleResource($role),
                 'permissions' => $role->permissions->pluck('name')->all(),
             ];
         } catch (\Throwable $ex) {
@@ -104,17 +104,16 @@ class HandleInertiaRequests extends Middleware
     /**
      * Get flash messages from the session.
      *
-     * @param Request $request
      * @return array<string, \Closure>
      */
     private function getFlashMessages(Request $request): array
     {
         return [
             'success' => fn () => $request->session()->get('success'),
-            'error'   => fn () => $request->session()->get('error'),
+            'error' => fn () => $request->session()->get('error'),
             'warning' => fn () => $request->session()->get('warning'),
-            'info'    => fn () => $request->session()->get('info'),
-            'data'    => fn () => $request->session()->get('flash_data', []),
+            'info' => fn () => $request->session()->get('info'),
+            'data' => fn () => $request->session()->get('flash_data', []),
         ];
     }
 
@@ -127,7 +126,7 @@ class HandleInertiaRequests extends Middleware
     {
         $settingKeys = [
             'company_logo' => SettingKey::COMPANY_LOGO,
-            'favicon'      => SettingKey::FAVICON,
+            'favicon' => SettingKey::FAVICON,
         ];
 
         $logos = [];
@@ -145,24 +144,43 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
+     * Theme contract shared with the client.
+     *
+     * The `qtech_theme` cookie is the single source of truth for the active
+     * theme. `default` is the admin-configured fallback used only when the
+     * visitor has expressed no preference - it never overrides the cookie.
+     *
+     * @return array<string, mixed>
+     */
+    private function getThemeSettings(): array
+    {
+        return [
+            'preference' => theme_preference(),
+            'resolved' => resolved_theme(),
+            'default' => site_settings(SettingKey::THEME_MODE->value),
+            'cookie_name' => GlobalConfig::THEME_COOKIE_NAME,
+            'cookie_max_age' => GlobalConfig::THEME_COOKIE_MAX_AGE,
+        ];
+    }
+
+    /**
      * Get all site theme and general settings.
      *
      * @return array<string, mixed>
      */
-
     private function getSiteThemeSettings(): array
     {
         $settingKeys = [
-                            SettingKey::THEME_MODE->value,
-                            SettingKey::COMPANY_NAME->value,
-                            SettingKey::FONT->value,
-                            SettingKey::LAYOUT->value,
-                            SettingKey::SIDEBAR->value,
-                            SettingKey::DIRECTION->value,
-                            SettingKey::DEFAULT_CURRENCY->value,
-                            SettingKey::CURRENCY_SYMBOL->value,
-                            SettingKey::MINIMUM_PASSWORD_LENGTH->value
-                        ];
+            SettingKey::THEME_MODE->value,
+            SettingKey::COMPANY_NAME->value,
+            SettingKey::FONT->value,
+            SettingKey::LAYOUT->value,
+            SettingKey::SIDEBAR->value,
+            SettingKey::DIRECTION->value,
+            SettingKey::DEFAULT_CURRENCY->value,
+            SettingKey::CURRENCY_SYMBOL->value,
+            SettingKey::MINIMUM_PASSWORD_LENGTH->value,
+        ];
 
         $settings = [];
 

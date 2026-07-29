@@ -2,7 +2,9 @@
 
 use App\Constants\DefaultSettings;
 use App\Constants\FilePathConstants;
+use App\Constants\GlobalConfig;
 use App\Enums\Common\Status;
+use App\Enums\Common\Theme;
 use App\Enums\Settings\SettingKey;
 use App\Enums\System\CacheKey;
 use App\Models\AppSetting;
@@ -961,6 +963,47 @@ if (!function_exists('isAdmin')) {
 	function isAdmin(User $user): bool
 	{
 		return $user->is_admin;
+	}
+}
+
+if (!function_exists('theme_preference')) {
+	/**
+	 * Resolve the visitor's theme preference.
+	 *
+	 * The `qtech_theme` cookie is the single source of truth. The
+	 * `theme_mode` app setting is only the default for a visitor who
+	 * has not made an explicit choice yet, never an override.
+	 *
+	 * @return string one of light|dark|system
+	 */
+	function theme_preference(): string
+	{
+		$cookie = request()?->cookie(GlobalConfig::THEME_COOKIE_NAME);
+
+		if (is_string($cookie) && ($theme = Theme::tryFrom($cookie))) {
+			return $theme->value;
+		}
+
+		$default = Theme::tryFrom((string) site_settings(SettingKey::THEME_MODE->value));
+
+		return ($default ?? Theme::SYSTEM)->value;
+	}
+}
+
+if (!function_exists('resolved_theme')) {
+	/**
+	 * Concrete theme to paint with when `system` cannot be evaluated
+	 * server side (no media query available on the server).
+	 *
+	 * @return string one of light|dark
+	 */
+	function resolved_theme(): string
+	{
+		$preference = theme_preference();
+
+		return $preference === Theme::SYSTEM->value
+						? Theme::LIGHT->value
+						: $preference;
 	}
 }
 

@@ -1,118 +1,206 @@
+import type { ReactNode } from 'react'
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
-  useState,
   useMemo,
-} from "react";
-import { getCookie, setCookie, removeCookie } from "@/Utils/helpers";
-import type { ReactNode } from "react"; 
+  useRef,
+  useState,
+} from 'react'
 
-type Theme = "light" | "dark" | "system";
+import type { ResolvedTheme, Theme, ThemeContextValue } from '@/Types/theme'
+import {
+  DEFAULT_THEME,
+  LEGACY_THEME_COOKIE_NAME,
+  THEME_COOKIE_MAX_AGE,
+  THEME_COOKIE_NAME,
+  isTheme,
+} from '@/Types/theme'
+import { getCookie, removeCookie, setCookie } from '@/Utils/helpers'
 
-interface ThemeContextType {
-  defaultTheme: Theme;
-  theme: Theme;
-  resolvedTheme: "light" | "dark";
-  setTheme: (theme: Theme) => void;
-  resetTheme: () => void;
+const DARK_QUERY = '(prefers-color-scheme: dark)'
+
+const isBrowser = (): boolean =>
+  typeof window !== 'undefined' && typeof document !== 'undefined'
+
+/** Reads the media query without ever touching `window` on the server. */
+function systemTheme(): ResolvedTheme {
+  if (!isBrowser() || typeof window.matchMedia !== 'function') return 'light'
+  return window.matchMedia(DARK_QUERY).matches ? 'dark' : 'light'
 }
 
-interface ThemeProviderProps {
-  children: ReactNode;
-  defaultTheme?: Theme;
-  storageKey?: string;
-  dbTheme?: Theme;
+/**
+ * The theme that is *already on screen*. The server stamps `class="dark"` (or
+ * a blocking inline script does, when the cookie says `system`), so this is
+ * the authoritative starting value — reading it instead of recomputing is what
+ * keeps the provider from fighting the server and causing a flash.
+ */
+function stampedTheme(): ResolvedTheme {
+  if (!isBrowser()) return 'light'
+  return document.documentElement.classList.contains('dark') ? 'dark' : 'light'
 }
 
-const DEFAULT_THEME: Theme = "system";
-const THEME_COOKIE_NAME = "vite-ui-theme";
-const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+/**
+ * Resolves the user's stated preference. Order:
+ *   1. `qtech_theme` cookie          — explicit choice, always wins
+ *   2. legacy `vite-ui-theme` cookie — migrated, then removed
+ *   3. CMS default                   — first-time visitors only
+ *   4. `system`
+ */
+function readPreference(cmsDefault: Theme | undefined, fallback: Theme): Theme {
+  if (!isBrowser()) return cmsDefault ?? fallback
 
-const initialState: ThemeContextType = {
-  defaultTheme: DEFAULT_THEME,
-  resolvedTheme: "light",
-  theme: DEFAULT_THEME,
-  setTheme: () => {},
-  resetTheme: () => {},
-};
+  const current = getCookie(THEME_COOKIE_NAME)
+  if (isTheme(current)) return current
 
-const ThemeContext = createContext<ThemeContextType>(initialState);
+  const legacy = getCookie(LEGACY_THEME_COOKIE_NAME)
+  if (isTheme(legacy)) return legacy
+
+  return cmsDefault ?? fallback
+}
+
+const ThemeContext = createContext<ThemeContextValue | null>(null)
+
+export interface ThemeProviderProps {
+  children: ReactNode
+  defaultTheme?: Theme
+  /** Cookie name. Overridable for tests; production must use the default. */
+  storageKey?: string
+  /**
+   * `site_theme_settings.theme_mode` from the CMS. Seeds the preference for a
+   * visitor who has never chosen — it never overrides an explicit choice.
+   */
+  dbTheme?: Theme | string | undefined
+}
 
 export function ThemeProvider({
   children,
   defaultTheme = DEFAULT_THEME,
   storageKey = THEME_COOKIE_NAME,
   dbTheme,
-  ...props
 }: ThemeProviderProps) {
-  const [theme, _setTheme] = useState<Theme>(dbTheme ?? defaultTheme);
+  const cmsDefault = isTheme(dbTheme) ? dbTheme : undefined
 
-  useEffect(() => {
-    if (dbTheme) {
-      _setTheme(dbTheme);
+  const [theme, setThemeState] = useState<Theme>(() =>
+    readPreference(cmsDefault, defaultTheme)
+  )
+
+  // Seeded from the class the server already painted, so the first client
+  // render agrees with the DOM instead of contradicting it.
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(stampedTheme)
+
+  // Guards the very first effect run: the DOM is already correct at that
+  // point, so we must not run the transition-suppressing swap.
+  const hasMounted = useRef(false)
+
+  /**
+   * Writes the resolved theme to the DOM. Suppresses transitions for exactly
+   * one frame so switching does not produce a staggered repaint of every
+   * colour-transitioning element. No-ops when the DOM already matches, which
+   * is what makes the initial load transition-free.
+   */
+  const paint = useCallback((next: ResolvedTheme) => {
+    if (!isBrowser()) return
+
+    const root = document.documentElement
+    const alreadyCorrect =
+      root.classList.contains(next) &&
+      !root.classList.contains(next === 'dark' ? 'light' : 'dark')
+
+    if (alreadyCorrect) {
+      root.style.colorScheme = next
+      return
     }
-  }, [dbTheme]);
 
-  const resolvedTheme = useMemo<"light" | "dark">(() => {
-    if (theme === "system") {
-      return window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
-    }
-    return theme;
-  }, [theme]);
+    root.classList.add('no-transitions')
+    root.classList.remove('light', 'dark')
+    root.classList.add(next)
+    root.style.colorScheme = next
 
+    // Two frames: one for the class to commit, one for the paint to settle.
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        root.classList.remove('no-transitions')
+      })
+    })
+  }, [])
+
+  // Adopt the server-stamped class on mount, and migrate the legacy cookie.
   useEffect(() => {
-    const root = window.document.documentElement;
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    if (!isBrowser()) return
 
-    const applyTheme = (currentResolvedTheme: "light" | "dark") => {
-      root.classList.remove("light", "dark");
-      root.classList.add(currentResolvedTheme);
-    };
+    if (!isTheme(getCookie(storageKey)) && isTheme(getCookie(LEGACY_THEME_COOKIE_NAME))) {
+      setCookie(storageKey, getCookie(LEGACY_THEME_COOKIE_NAME) as Theme, THEME_COOKIE_MAX_AGE)
+      removeCookie(LEGACY_THEME_COOKIE_NAME)
+    }
 
-    const handleChange = () => {
-      if (theme === "system") {
-        const systemTheme = mediaQuery.matches ? "dark" : "light";
-        applyTheme(systemTheme);
-      }
-    };
+    setResolvedTheme(stampedTheme())
+    hasMounted.current = true
+    // Runs once; `storageKey` is a constant in production.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-    applyTheme(resolvedTheme);
-    mediaQuery.addEventListener("change", handleChange);
+  // Apply preference changes. Skipped on the first pass — the server already
+  // painted, and repainting there is precisely what caused the old flash.
+  useEffect(() => {
+    if (!isBrowser()) return
 
-    return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme, resolvedTheme]);
+    const next: ResolvedTheme = theme === 'system' ? systemTheme() : theme
 
-  const setTheme = (newTheme: Theme) => {
-    setCookie(storageKey, newTheme, THEME_COOKIE_MAX_AGE);
-    _setTheme(newTheme);
-  };
+    if (!hasMounted.current) {
+      setResolvedTheme(next)
+      // Correct a server/client disagreement silently, without a transition.
+      if (next !== stampedTheme()) paint(next)
+      return
+    }
 
-  const resetTheme = () => {
-    removeCookie(storageKey);
-    _setTheme(DEFAULT_THEME);
-  };
+    setResolvedTheme(next)
+    paint(next)
+  }, [theme, paint])
 
-  const contextValue: ThemeContextType = {
-    defaultTheme,
-    resolvedTheme,
-    theme,
-    setTheme,
-    resetTheme,
-  };
+  // Follow the OS only while the user has actually asked for `system`.
+  useEffect(() => {
+    if (!isBrowser() || theme !== 'system' || typeof window.matchMedia !== 'function') {
+      return
+    }
 
-  return (
-    <ThemeContext.Provider value={contextValue} {...props}>
-      {children}
-    </ThemeContext.Provider>
-  );
+    const media = window.matchMedia(DARK_QUERY)
+    const onChange = (event: MediaQueryListEvent) => {
+      const next: ResolvedTheme = event.matches ? 'dark' : 'light'
+      setResolvedTheme(next)
+      paint(next)
+    }
+
+    media.addEventListener('change', onChange)
+    return () => media.removeEventListener('change', onChange)
+  }, [theme, paint])
+
+  const setTheme = useCallback(
+    (next: Theme) => {
+      if (!isTheme(next)) return
+      setCookie(storageKey, next, THEME_COOKIE_MAX_AGE)
+      setThemeState(next)
+    },
+    [storageKey]
+  )
+
+  const resetTheme = useCallback(() => {
+    removeCookie(storageKey)
+    setThemeState(cmsDefault ?? defaultTheme)
+  }, [storageKey, cmsDefault, defaultTheme])
+
+  const value = useMemo<ThemeContextValue>(
+    () => ({ defaultTheme, theme, resolvedTheme, setTheme, resetTheme }),
+    [defaultTheme, theme, resolvedTheme, setTheme, resetTheme]
+  )
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const useTheme = (): ThemeContextType => {
-  const context = useContext(ThemeContext);
-  if (!context) throw new Error("useTheme must be used within a ThemeProvider");
-  return context;
-};
+export const useTheme = (): ThemeContextValue => {
+  const context = useContext(ThemeContext)
+  if (!context) throw new Error('useTheme must be used within a ThemeProvider')
+  return context
+}

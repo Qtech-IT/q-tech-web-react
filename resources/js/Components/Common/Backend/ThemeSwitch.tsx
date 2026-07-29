@@ -13,24 +13,27 @@ import { useForm as useInertiaForm } from '@/Hooks/useForm'
 import { onSettingsChange } from '@/Controllers/Backend/SettingsController'
 import { useTranslations } from '@/Hooks/useTranslations'
 
-type Theme = 'light' | 'dark' | 'system'
-
 interface ThemeSwitchProps {
-  dbTheme?: string
+  /**
+   * Accepted for call-site compatibility but intentionally unused — see the
+   * note below. `ThemeProvider` is the only place the CMS default is applied.
+   */
+  dbTheme?: string | undefined
 }
 
-export function ThemeSwitch({ dbTheme }: ThemeSwitchProps) {
+export function ThemeSwitch(_props: ThemeSwitchProps) {
   const { theme, setTheme } = useTheme()
   const { loading: isSubmitting, submit } = useInertiaForm()
 
   const {t} = useTranslations();
 
-  // Set initial theme from dbTheme if valid
-  useEffect(() => {
-    if (dbTheme && ['light', 'dark', 'system'].includes(dbTheme)) {
-      setTheme(dbTheme as Theme)
-    }
-  }, [dbTheme, setTheme])
+  // NOTE: this component deliberately does NOT push `dbTheme` into the theme
+  // on mount. It used to, and because `setTheme` writes the `qtech_theme`
+  // cookie, every admin page load silently overwrote the visitor's own choice
+  // with the site-wide default — so picking Dark on the public site was undone
+  // the moment you opened /backend. `ThemeProvider` already applies `dbTheme`
+  // as the default for visitors who have made no choice, which is the whole of
+  // what the CMS setting is allowed to do.
 
   // Update theme-color meta tag when theme changes
   useEffect(() => {

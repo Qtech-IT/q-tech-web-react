@@ -1,23 +1,52 @@
+/* =============================================================================
+   QTECH design tokens
+   -----------------------------------------------------------------------------
+   Monochrome / editorial direction. The palette is deliberately neutral slate —
+   hierarchy is carried by TYPOGRAPHY, SPACING and ELEVATION, not by hue.
+
+   Contract:
+   - Every semantic colour token declared in :root has a `.dark` counterpart.
+   - Body text and muted text meet WCAG AA (>= 4.5:1) on background, card,
+     popover and muted surfaces in BOTH themes.
+   - Focus ring meets WCAG 2.2 non-text contrast (>= 3:1) in BOTH themes.
+   - Existing token names are frozen: 58 UI components depend on them.
+     Add tokens, never rename them.
+   ========================================================================== */
+
 :root {
   --radius: 0.625rem;
+
+  /* ---- Surfaces & content -------------------------------------------- */
   --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.129 0.042 264.695); /* 20.17:1 on background */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.129 0.042 264.695);
   --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
+  --primary-foreground: oklch(0.984 0.003 247.858); /* 17.05:1 on primary */
   --secondary: oklch(0.968 0.007 247.896);
   --secondary-foreground: oklch(0.208 0.042 265.755);
   --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
+  /* Was oklch(0.554 …) => 4.35:1 on --muted, a WCAG AA failure.
+     0.50 gives 5.99:1 on --background and 5.47:1 on --muted. */
+  --muted-foreground: oklch(0.5 0.04 257.417);
   --accent: oklch(0.968 0.007 247.896);
   --accent-foreground: oklch(0.208 0.042 265.755);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.929 0.013 255.508);
   --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  /* Was oklch(0.704 …) => 2.63:1, below the 3:1 focus-indicator minimum.
+     0.55 gives 4.85:1 on --background. */
+  --ring: oklch(0.55 0.05 256.788);
+
+  /* A hairline that stays visible on tinted surfaces (cards, section bands). */
+  --border-strong: oklch(0.87 0.015 255.508);
+  /* Subtle background band for alternating sections. */
+  --surface-subtle: oklch(0.984 0.004 247.896);
+  --surface-inverted: oklch(0.145 0.042 264.695);
+  --surface-inverted-foreground: oklch(0.984 0.003 247.858);
+
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -32,32 +61,107 @@
   --sidebar-accent-foreground: var(--accent-foreground);
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
+
+  /* ---- Elevation ------------------------------------------------------
+     Light mode: soft directional shadow.
+     Dark mode (below): pure-black shadows are invisible on a dark canvas, so
+     each level pairs a deeper shadow with a lightened ring that reads as the
+     lit edge of the surface. Same token names, so components never branch. */
+  --elevation-1:
+    0 1px 2px -1px oklch(0.129 0.042 264.695 / 0.08),
+    0 1px 3px 0 oklch(0.129 0.042 264.695 / 0.06);
+  --elevation-2:
+    0 2px 4px -2px oklch(0.129 0.042 264.695 / 0.08),
+    0 4px 10px -2px oklch(0.129 0.042 264.695 / 0.08);
+  --elevation-3:
+    0 4px 8px -4px oklch(0.129 0.042 264.695 / 0.1),
+    0 12px 24px -6px oklch(0.129 0.042 264.695 / 0.1);
+  --elevation-4:
+    0 8px 16px -8px oklch(0.129 0.042 264.695 / 0.12),
+    0 24px 48px -12px oklch(0.129 0.042 264.695 / 0.14);
+  /* Ring companion — 0 width in light, a visible lit edge in dark. */
+  --elevation-ring: 0 0 #0000;
+
+  /* ---- Layout rhythm --------------------------------------------------
+     Every public section derives its breathing room from these, so vertical
+     rhythm is consistent by construction rather than by discipline. */
+  --container-max: 80rem; /* 1280px — primary reading/content width */
+  --container-wide: 90rem; /* 1440px — full-bleed-ish feature rows */
+  --container-narrow: 48rem; /* 768px — prose / article measure */
+  --gutter: clamp(1.25rem, 0.893rem + 1.786vw, 2.5rem); /* 20px → 40px */
+
+  --section-py-sm: clamp(2.5rem, 1.786rem + 3.571vw, 5rem); /* 40 → 80 */
+  --section-py: clamp(3.5rem, 2.214rem + 6.429vw, 8rem); /* 56 → 128 */
+  --section-py-lg: clamp(4.5rem, 2.643rem + 9.286vw, 11rem); /* 72 → 176 */
+
+  --stack-sm: 0.75rem;
+  --stack-md: 1.25rem;
+  --stack-lg: clamp(2rem, 1.5rem + 2.5vw, 3.5rem);
+
+  /* Reserved so the sticky header never causes layout shift. */
+  --header-height: 4rem;
+  --header-height-scrolled: 3.5rem;
+
+  /* ---- Motion ---------------------------------------------------------- */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --header-height: 5rem;
+    --header-height-scrolled: 4rem;
+  }
 }
 
 .dark {
   --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
+  --foreground: oklch(0.984 0.003 247.858); /* 19.27:1 on background */
   --card: oklch(0.14 0.04 259.21);
   --card-foreground: oklch(0.984 0.003 247.858);
   --popover: oklch(0.208 0.042 265.755);
   --popover-foreground: oklch(0.984 0.003 247.858);
   --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
+  --primary-foreground: oklch(0.208 0.042 265.755); /* 14.49:1 on primary */
   --secondary: oklch(0.279 0.041 260.031);
   --secondary-foreground: oklch(0.984 0.003 247.858);
   --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
+  /* 0.704 already passed (5.58:1 on --muted); 0.75 adds headroom => 6.60:1
+     on --muted, 9.08:1 on --background, 8.97:1 on --card. */
+  --muted-foreground: oklch(0.75 0.033 256.788);
   --accent: oklch(0.279 0.041 260.031);
   --accent-foreground: oklch(0.984 0.003 247.858);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
+  --ring: oklch(0.7 0.03 264.364); /* 7.55:1 on background */
+
+  --border-strong: oklch(1 0 0 / 20%);
+  --surface-subtle: oklch(0.175 0.04 262);
+  --surface-inverted: oklch(0.984 0.003 247.858);
+  --surface-inverted-foreground: oklch(0.145 0.042 264.695);
+
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
+
+  /* Deeper shadow + a lit top edge, otherwise elevation is invisible here. */
+  --elevation-1:
+    0 1px 2px -1px oklch(0 0 0 / 0.6), 0 1px 3px 0 oklch(0 0 0 / 0.5),
+    inset 0 1px 0 0 oklch(1 0 0 / 0.05);
+  --elevation-2:
+    0 2px 4px -2px oklch(0 0 0 / 0.6), 0 4px 12px -2px oklch(0 0 0 / 0.55),
+    inset 0 1px 0 0 oklch(1 0 0 / 0.06);
+  --elevation-3:
+    0 4px 8px -4px oklch(0 0 0 / 0.65), 0 14px 28px -6px oklch(0 0 0 / 0.6),
+    inset 0 1px 0 0 oklch(1 0 0 / 0.07);
+  --elevation-4:
+    0 8px 16px -8px oklch(0 0 0 / 0.7), 0 28px 56px -12px oklch(0 0 0 / 0.65),
+    inset 0 1px 0 0 oklch(1 0 0 / 0.08);
+  --elevation-ring: 0 0 0 1px oklch(1 0 0 / 0.08);
 }
 
 @theme inline {
@@ -84,6 +188,10 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-inverted: var(--surface-inverted);
+  --color-surface-inverted-foreground: var(--surface-inverted-foreground);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
@@ -99,4 +207,88 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* ---- Typography scale ------------------------------------------------
+     Fluid between a 320px and a 1440px viewport. Display and headings scale;
+     body copy stays near-fixed so the measure never collapses on mobile or
+     balloons at 1920px. Line-height and tracking travel WITH the size — a
+     size token used without its pairing is the usual source of ragged
+     vertical rhythm, so they are bound here rather than applied ad hoc. */
+  --text-display: clamp(2.75rem, 1.964rem + 3.929vw, 5.5rem); /* 44 → 88 */
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.035em;
+  --text-display--font-weight: 600;
+
+  --text-h1: clamp(2.25rem, 1.821rem + 2.143vw, 3.75rem); /* 36 → 60 */
+  --text-h1--line-height: 1.08;
+  --text-h1--letter-spacing: -0.03em;
+  --text-h1--font-weight: 600;
+
+  --text-h2: clamp(1.875rem, 1.625rem + 1.25vw, 2.75rem); /* 30 → 44 */
+  --text-h2--line-height: 1.14;
+  --text-h2--letter-spacing: -0.025em;
+  --text-h2--font-weight: 600;
+
+  --text-h3: clamp(1.5rem, 1.357rem + 0.714vw, 2rem); /* 24 → 32 */
+  --text-h3--line-height: 1.2;
+  --text-h3--letter-spacing: -0.02em;
+  --text-h3--font-weight: 600;
+
+  --text-h4: clamp(1.25rem, 1.179rem + 0.357vw, 1.5rem); /* 20 → 24 */
+  --text-h4--line-height: 1.3;
+  --text-h4--letter-spacing: -0.015em;
+  --text-h4--font-weight: 600;
+
+  --text-h5: clamp(1.125rem, 1.089rem + 0.179vw, 1.25rem); /* 18 → 20 */
+  --text-h5--line-height: 1.4;
+  --text-h5--letter-spacing: -0.01em;
+  --text-h5--font-weight: 600;
+
+  --text-h6: clamp(1rem, 0.982rem + 0.089vw, 1.0625rem); /* 16 → 17 */
+  --text-h6--line-height: 1.45;
+  --text-h6--letter-spacing: -0.005em;
+  --text-h6--font-weight: 600;
+
+  --text-body-lg: clamp(1.0625rem, 1.027rem + 0.179vw, 1.1875rem); /* 17 → 19 */
+  --text-body-lg--line-height: 1.65;
+  --text-body-lg--letter-spacing: -0.005em;
+
+  --text-body: 1rem;
+  --text-body--line-height: 1.7;
+  --text-body--letter-spacing: 0em;
+
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.6;
+  --text-body-sm--letter-spacing: 0em;
+
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.5;
+  --text-caption--letter-spacing: 0.02em;
+
+  /* Section eyebrow / kicker label. */
+  --text-overline: 0.75rem;
+  --text-overline--line-height: 1.2;
+  --text-overline--letter-spacing: 0.12em;
+  --text-overline--font-weight: 600;
+
+  /* ---- Rhythm, elevation and motion, exposed as utilities ------------- */
+  --spacing-gutter: var(--gutter);
+  --spacing-section-sm: var(--section-py-sm);
+  --spacing-section: var(--section-py);
+  --spacing-section-lg: var(--section-py-lg);
+  --spacing-header: var(--header-height);
+
+  --container-content: var(--container-max);
+  --container-page: var(--container-wide);
+  --container-prose: var(--container-narrow);
+
+  --shadow-e1: var(--elevation-1);
+  --shadow-e2: var(--elevation-2);
+  --shadow-e3: var(--elevation-3);
+  --shadow-e4: var(--elevation-4);
+
+  /* Declared here (not :root) so Tailwind emits both the CSS variable and the
+     matching `ease-*` / `duration-*` utilities from a single source. */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
 }

@@ -63,21 +63,38 @@ export function getCookie(name: string): string | undefined {
   if (typeof document === "undefined") return undefined;
 
   const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(";").shift();
-  return undefined;
+  const parts = value.split(`; ${encodeURIComponent(name)}=`);
+  if (parts.length !== 2) return undefined;
+
+  const raw = parts.pop()?.split(";").shift();
+  if (raw === undefined) return undefined;
+
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    // A cookie written by another tool may not be percent-encoded.
+    return raw;
+  }
 }
 
 export function setCookie(name: string, value: string, maxAge = DEFAULT_MAX_AGE): void {
   if (typeof document === "undefined") return;
 
-  document.cookie = `${name}=${value}; path=/; max-age=${maxAge}`;
+  // SameSite=Lax so the cookie survives top-level navigations back to the site
+  // (the server needs it to stamp the theme before first paint), while still
+  // being withheld from cross-site subrequests. Secure only on HTTPS so local
+  // http:// development keeps working.
+  const secure = typeof location !== "undefined" && location.protocol === "https:" ? "; Secure" : "";
+
+  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(
+    value
+  )}; path=/; max-age=${maxAge}; SameSite=Lax${secure}`;
 }
 
 export function removeCookie(name: string): void {
   if (typeof document === "undefined") return;
 
-  document.cookie = `${name}=; path=/; max-age=0`;
+  document.cookie = `${encodeURIComponent(name)}=; path=/; max-age=0; SameSite=Lax`;
 }
 
 /**

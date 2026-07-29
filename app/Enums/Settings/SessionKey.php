@@ -8,6 +8,7 @@ enum SessionKey: string
 {
     use EnumTrait;
     case PASSWORD_RESET             = 'password_reset';
+    /** @deprecated The theme now lives in the `qtech_theme` cookie, see theme_preference(). */
     case THEME                      = 'theme';
     case LOCALE_ID                  = 'locale_id';
     case LOCALE                     = 'locale';
