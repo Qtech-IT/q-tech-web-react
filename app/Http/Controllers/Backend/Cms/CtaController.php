@@ -128,4 +128,32 @@ class CtaController extends Controller
             ->withMessage(translate('Call to action deleted successfully'))
             ->build();
     }
+
+    /**
+     * Restore from trash.
+     */
+    public function restore(Cta $cta): RedirectResponse
+    {
+        $this->authorize('restore', Cta::class);
+
+        $this->service->restore($cta);
+
+        return AppResponse::asSuccess()
+            ->withMessage(translate('Call to action restored successfully'))
+            ->build();
+    }
+
+    /**
+     * Permanently delete.
+     */
+    public function forceDestroy(Cta $cta): RedirectResponse
+    {
+        $this->authorize('forceDelete', Cta::class);
+
+        $this->service->forceDestroy($cta);
+
+        return AppResponse::asSuccess()
+            ->withMessage(translate('Call to action permanently deleted successfully'))
+            ->build();
+    }
 }

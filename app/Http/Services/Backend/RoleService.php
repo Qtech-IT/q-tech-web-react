@@ -40,7 +40,6 @@ class RoleService
     {
         $search = request()->input('search');
         $status = request()->input('status');
-        $type   = request()->input('type');
 
         return $query
             ->when($search, function (Builder $q) use ($search) {
@@ -49,8 +48,7 @@ class RoleService
                         ->orWhere('display_name', 'like', "%{$search}%");
                 });
             })
-            ->when($status, fn (Builder $q) => $q->where('status', $status))
-            ->when($type, fn (Builder $q) => $q->where('type', $type));
+            ->when($status, fn (Builder $q) => $q->where('status', $status));
     }
 
     /**
@@ -79,7 +77,6 @@ class RoleService
                     'description'    => $data['description'] ?? null,
                     'order_index'    => $data['order_index'] ?? 0,
                     'is_super_admin' => false,
-                    'type'           => $data['type']   ?? RoleType::DEFAULT->value,
                     'status'         => $data['status'] ?? Status::ACTIVE->value,
                 ]);
 
@@ -122,7 +119,6 @@ class RoleService
             'description'  => $data['description']  ?? $role->description,
             'order_index'  => $data['order_index']  ?? $role->order_index,
             'status'       => $data['status']       ?? $role->status,
-             'type'        => $data['type']         ?? $role->type,
         ]);
 
         // Sync permissions if provided
@@ -295,15 +291,6 @@ class RoleService
     public function getAdvanceFilterOptions(): array
     {
         return [
-             [
-                'key'     => 'type',
-                'label'   => translate('Role Type'),
-                'type'    => InputEnum::SELECT->value,
-                'options' => [
-                                ['value' => '',         'label' => translate('All Types')],
-                                ...RoleType::options(),
-                            ],
-                        ],
             [
                 'key'     => 'status',
                 'label'   => translate('Status'),

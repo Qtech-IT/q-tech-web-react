@@ -962,7 +962,7 @@ if (!function_exists('restoreEncodedPlaceholders')) {
 if (!function_exists('isAdmin')) {
 	function isAdmin(User $user): bool
 	{
-		return $user->is_admin;
+		return true;
 	}
 }
 

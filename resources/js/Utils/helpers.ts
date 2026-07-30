@@ -406,6 +406,25 @@ export function getGridColSpan(gridColumn: string | undefined): string {
 
 
 /**
+ * Sentinel for a Radix `SelectItem` that means "no value".
+ *
+ * Radix throws `A <Select.Item /> must have a value prop that is not an empty
+ * string`, because it reserves `''` for clearing the trigger. Option lists —
+ * both the CRUD configs and every server-built `advanceFilterOptions` /
+ * "All statuses" list — legitimately contain an empty-valued entry, so it is
+ * rendered under this sentinel and mapped back to `null` before submit.
+ */
+export const EMPTY_SELECT_VALUE = '__none__';
+
+/** Whether an option or form value represents "nothing selected". */
+export const isEmptySelectValue = (value: unknown): boolean =>
+  value === '' ||
+  value === null ||
+  value === undefined ||
+  value === 'null' ||
+  value === EMPTY_SELECT_VALUE;
+
+/**
  * Check if user has permission for a single item
  * Handles both 'permission' (single) and 'permissionsAny' (multiple OR logic)
  */

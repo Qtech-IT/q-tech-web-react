@@ -46,7 +46,7 @@ export default function ServerError({ message, status, originalStatus }: ServerE
         </ul>
 
         {/* Development Info */}
-        {isDevelopment && originalStatus === 0 && (
+        {/* {isDevelopment && originalStatus === 0 && (
           <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
             <p className="text-xs text-yellow-800 dark:text-yellow-200 font-semibold mb-1">
               {t('Development Info')}:
@@ -56,6 +56,19 @@ export default function ServerError({ message, status, originalStatus }: ServerE
             </p>
           </div>
         )}
+ */}
+
+
+        <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+          <p className="text-xs text-yellow-800 dark:text-yellow-200 font-semibold mb-1">
+            {t('Development Info')}:
+          </p>
+          <p className="text-xs text-yellow-700 dark:text-yellow-300 ">
+            {t('Generic Exception thrown (code: 0) - Message')}: {message}
+          </p>
+        </div>
+
+
       </div>
     </ErrorLayout>
   )

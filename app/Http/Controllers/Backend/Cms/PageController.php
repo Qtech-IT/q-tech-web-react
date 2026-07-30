@@ -132,6 +132,34 @@ class PageController extends Controller
     }
 
     /**
+     * Restore from trash.
+     */
+    public function restore(Page $page): RedirectResponse
+    {
+        $this->authorize('restore', Page::class);
+
+        $this->service->restore($page);
+
+        return AppResponse::asSuccess()
+            ->withMessage(translate('Page restored successfully'))
+            ->build();
+    }
+
+    /**
+     * Permanently delete.
+     */
+    public function forceDestroy(Page $page): RedirectResponse
+    {
+        $this->authorize('forceDelete', Page::class);
+
+        $this->service->forceDestroy($page);
+
+        return AppResponse::asSuccess()
+            ->withMessage(translate('Page permanently deleted successfully'))
+            ->build();
+    }
+
+    /**
      * The admin page tree, flat and depth-ordered so the client nests it
      * without a query per level.
      */

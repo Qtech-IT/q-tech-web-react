@@ -10,6 +10,7 @@ use App\Http\Requests\Backend\AdminUser\UpdateUser2FARequest;
 use App\Http\Requests\Backend\AdminUser\UpdateUserStatusRequest;
 use App\Http\Resources\Backend\Role\RoleResource;
 use App\Http\Resources\Backend\User\UserResource;
+use App\Http\Resources\Backend\UserResource as BackendUserResource;
 use App\Http\Services\Backend\AdminUser\AdminUserService;
 use App\Http\Services\Backend\RoleService;
 use App\Models\User;
@@ -47,7 +48,7 @@ class AdminUserController extends Controller
 	{
 		$users = formatResourceResponse(
 		    $this->service->getAllUsers(),
-		    UserResource::class
+		    BackendUserResource::class
 		);
 		return AppResponse::asSuccess()
 					->withComponent($this->modelProperty['pagePrefix'] . 'Index', [

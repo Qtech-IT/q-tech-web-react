@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from '@/Components/UI/Select';
 import { useTranslations } from '@/Hooks/useTranslations';
+import { isEmptySelectValue } from '@/Utils/helpers';
 
 interface PaginatedSelectProps {
   options: Array<{ value: string; label: string }>;
@@ -133,7 +134,10 @@ export const PaginatedSelect: React.FC<PaginatedSelectProps> = ({
                 {t("No options found")}
               </div>
             ) : (
-              options.map((option) => (
+              /* Radix rejects `value=""` — a placeholder-style option from the
+                 caller is dropped rather than allowed to throw. */
+              options.filter((option) => !isEmptySelectValue(option.value))
+                .map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>

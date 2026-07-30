@@ -157,6 +157,20 @@ class MediaService
     }
 
     /**
+     * Restore a soft-deleted asset.
+     *
+     * Cheap precisely because destroy() left the file on disk: the row comes
+     * back pointing at bytes that were never removed. Every media_id FK is
+     * SET NULL, so the content that referenced this asset before the delete
+     * does NOT reattach itself — an editor re-picks it. That is deliberate;
+     * inferring old references from nulled columns is not possible.
+     */
+    public function restore(Media $media): bool
+    {
+        return (bool) $media->restore();
+    }
+
+    /**
      * Permanently delete an asset and its file.
      */
     public function forceDestroy(Media $media): bool
@@ -334,6 +348,40 @@ class MediaService
 
             return $updated;
         });
+    }
+
+    /**
+     * Drop every attachment pivot row belonging to a set of owners that are
+     * being permanently deleted.
+     *
+     * This exists because `mediables.mediable_id` is polymorphic and therefore
+     * carries no foreign key — `mediables_media_id_foreign` covers the media
+     * side only. When a page, section or repeater item is force-deleted, the
+     * database removes the owner and leaves its pivot rows behind pointing at
+     * an id that no longer exists. Nothing reads them, so they are invisible
+     * until an id is reused and a stale gallery reappears on unrelated
+     * content.
+     *
+     * Deliberately does NOT go through guardOwner(): the owner rows are gone
+     * or going, and refusing to clean up after a model that has since dropped
+     * the HasMedia trait would strand the very rows this is here to remove.
+     * One indexed DELETE per owner type on the leftmost prefix of
+     * IDX mediables_owner.
+     *
+     * @param  class-string<Model>  $ownerClass
+     * @param  array<int, int|string>  $ownerIds
+     * @return int Pivot rows deleted.
+     */
+    public function purgeAttachments(string $ownerClass, array $ownerIds): int
+    {
+        if ($ownerIds === []) {
+            return 0;
+        }
+
+        return DB::table('mediables')
+            ->where('mediable_type', Relation::getMorphAlias($ownerClass))
+            ->whereIn('mediable_id', array_map('intval', $ownerIds))
+            ->delete();
     }
 
     /**

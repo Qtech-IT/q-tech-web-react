@@ -18,6 +18,7 @@ use App\Http\Services\Backend\Cms\MediaFolderService;
 use App\Http\Services\Backend\Cms\MediaService;
 use App\Models\Media;
 use App\Traits\Common\ModelProperty;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Response;
 
@@ -111,6 +112,21 @@ class MediaController extends Controller
     }
 
     /**
+     * Bring a trashed asset back. The file was never unlinked, so this is only
+     * the row.
+     */
+    public function restore(Media $media): RedirectResponse
+    {
+        $this->authorize('restore', Media::class);
+
+        $this->service->restore($media);
+
+        return AppResponse::asSuccess()
+            ->withMessage(translate('File restored successfully'))
+            ->build();
+    }
+
+    /**
      * Permanently delete the row and unlink the file.
      */
     public function forceDestroy(Media $media): RedirectResponse
@@ -145,7 +161,14 @@ class MediaController extends Controller
      * Where an asset is used, so "delete this image?" can answer itself before
      * an editor breaks a live page.
      */
-    public function usage(Media $media): RedirectResponse
+    /*
+     * Return type is a union because `AppResponse::build()` decides the
+     * response class from the REQUEST: a JsonResponse when the caller wants
+     * JSON, a RedirectResponse otherwise. This endpoint is fetched with axios
+     * rather than the Inertia router, so it always takes the JSON branch —
+     * declaring `RedirectResponse` alone made every call a TypeError 500.
+     */
+    public function usage(Media $media): JsonResponse|RedirectResponse
     {
         $this->authorize('view', Media::class);
 

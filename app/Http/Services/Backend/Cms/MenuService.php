@@ -20,6 +20,7 @@ class MenuService
 
     public function __construct(
         protected MenuTreeService $tree,
+        protected MediaService $media,
     ) {}
 
     /**
@@ -232,6 +233,56 @@ class MenuService
             }
 
             return $deleted;
+        });
+    }
+
+    /**
+     * Restore a soft-deleted menu.
+     *
+     * Its items were never soft-deleted by destroy(), so the tree comes back
+     * intact — only the menu record itself was in the trash.
+     */
+    public function restore(Menu $menu): bool
+    {
+        return DB::transaction(function () use ($menu): bool {
+            $restored = (bool) $menu->restore();
+
+            $this->forgetMenu($menu);
+
+            return $restored;
+        });
+    }
+
+    /**
+     * Permanently delete a menu and its whole item tree.
+     *
+     * `menu_items` are removed by InnoDB — `menu_items_menu_id_foreign` and
+     * `menu_items_parent_id_foreign` are both CASCADE, so nested children go
+     * too and none of that is repeated here. `mediables` is: `mediable_id` is
+     * polymorphic and carries no foreign key, so pivot rows for the items would
+     * outlive them as orphans.
+     */
+    public function forceDestroy(Menu $menu): bool
+    {
+        if ($menu->is_locked) {
+            throw ValidationException::withMessages([
+                'id' => translate('This menu is locked because the site layout depends on it.'),
+            ]);
+        }
+
+        return DB::transaction(function () use ($menu): bool {
+            // withTrashed(): a soft-deleted item is still a live row the
+            // CASCADE will take, so its pivot rows still need clearing.
+            $itemIds = MenuItem::withTrashed()
+                ->where('menu_id', $menu->id)
+                ->pluck('id')
+                ->all();
+
+            $this->media->purgeAttachments(MenuItem::class, $itemIds);
+
+            $this->forgetMenu($menu);
+
+            return (bool) $menu->forceDelete();
         });
     }
 

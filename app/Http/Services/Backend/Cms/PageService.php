@@ -8,6 +8,7 @@ use App\Enums\Cms\RedirectSource;
 use App\Enums\Common\Status;
 use App\Enums\System\CacheKey;
 use App\Models\Page;
+use App\Models\PageSection;
 use App\Traits\Cms\CacheInvalidation;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -24,6 +25,9 @@ class PageService
     public function __construct(
         protected PageTreeService $tree,
         protected RedirectService $redirects,
+        protected PageSectionService $sections,
+        protected MediaService $media,
+        protected SeoService $seo,
     ) {}
 
     /**
@@ -243,6 +247,80 @@ class PageService
         $this->forgetPage($page);
 
         return $deleted;
+    }
+
+    /**
+     * Restore a soft-deleted page.
+     *
+     * A page under a trashed parent is refused: its `path` is materialised from
+     * the ancestor chain, so restoring it alone would publish a live URL whose
+     * parent segment resolves to nothing.
+     */
+    public function restore(Page $page): bool
+    {
+        if ($page->parent_id !== null && ! Page::whereKey($page->parent_id)->exists()) {
+            throw ValidationException::withMessages([
+                'id' => translate('Restore the parent page first.'),
+            ]);
+        }
+
+        return DB::transaction(function () use ($page): bool {
+            $restored = (bool) $page->restore();
+
+            $this->forgetPage($page);
+
+            return $restored;
+        });
+    }
+
+    /**
+     * Permanently delete a page and everything the database cannot reach.
+     *
+     * What InnoDB already handles, and is therefore NOT repeated here:
+     *  - `page_sections` — CASCADE on page_sections_page_id_foreign.
+     *  - `section_blocks` under those sections — CASCADE, twice over
+     *    (page_section_id and parent_id).
+     *  - `ctas.page_id` and `menu_items.page_id` — SET NULL, so a button or a
+     *    nav item degrades to a dead link rather than vanishing.
+     *
+     * What it must handle by hand, because both columns are polymorphic and
+     * carry no foreign key at all:
+     *  - `mediables` for the page, its sections, and their repeater items.
+     *  - `seo_meta` for the page, which additionally does not soft-delete.
+     */
+    public function forceDestroy(Page $page): bool
+    {
+        if (in_array($page->page_type->value, PageType::undeletable(), true)) {
+            throw ValidationException::withMessages([
+                'id' => translate('System pages cannot be deleted.'),
+            ]);
+        }
+
+        // pages_parent_id_foreign is RESTRICT and counts soft-deleted rows, so
+        // a trashed child would abort this as an opaque driver error. Caught
+        // here as a message an editor can act on.
+        if ($page->children()->withTrashed()->exists()) {
+            throw ValidationException::withMessages([
+                'id' => translate('Permanently delete or re-parent the child pages first.'),
+            ]);
+        }
+
+        return DB::transaction(function () use ($page): bool {
+            $sectionIds = PageSection::withTrashed()
+                ->where('page_id', $page->id)
+                ->pluck('id')
+                ->all();
+
+            $this->sections->purgeDependents($sectionIds);
+            $this->media->purgeAttachments(Page::class, [$page->id]);
+            $this->seo->purgeForOwners(Page::class, [$page->id]);
+
+            $deleted = (bool) $page->forceDelete();
+
+            $this->forgetPage($page);
+
+            return $deleted;
+        });
     }
 
     /**

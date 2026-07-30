@@ -20,6 +20,11 @@ class BlockService
 {
     use CacheInvalidation;
 
+    public function __construct(
+        protected PageSectionService $sections,
+        protected MediaService $media,
+    ) {}
+
     /**
      * The admin block list.
      *
@@ -96,6 +101,69 @@ class BlockService
         $this->forgetBlock($block);
 
         return $deleted;
+    }
+
+    /**
+     * Restore a soft-deleted block.
+     *
+     * The block's body row is a separate `page_sections` record and was never
+     * soft-deleted by destroy(), so it is already there waiting.
+     */
+    public function restore(Block $block): bool
+    {
+        return DB::transaction(function () use ($block): bool {
+            $restored = (bool) $block->restore();
+
+            $this->forgetBlock($block);
+
+            return $restored;
+        });
+    }
+
+    /**
+     * Permanently delete a block.
+     *
+     * `page_sections.block_id` is SET NULL, which is right for a *page's*
+     * section — it degrades to a local copy of the content rather than
+     * vaporizing the page. It is wrong for the block's own body row, which has
+     * `page_id` NULL as well: nulling its `block_id` leaves a section owned by
+     * nothing at all, unreachable from every screen and invisible to every
+     * query. The body is therefore force-deleted here, with its repeater tree
+     * and pivot rows, before the block itself goes.
+     */
+    public function forceDestroy(Block $block): bool
+    {
+        if ($block->is_locked) {
+            throw ValidationException::withMessages([
+                'id' => translate('This block is locked because a layout depends on it.'),
+            ]);
+        }
+
+        return DB::transaction(function () use ($block): bool {
+            $bodyIds = PageSection::withTrashed()
+                ->where('block_id', $block->id)
+                ->whereNull('page_id')
+                ->pluck('id')
+                ->all();
+
+            $this->sections->purgeDependents($bodyIds);
+
+            PageSection::withTrashed()
+                ->whereIn('id', $bodyIds)
+                ->forceDelete();
+
+            // Blocks carry no library media today — the model does not use
+            // HasMedia — but `block` is a permitted mediable_type, so any row
+            // that does exist is cleared rather than orphaned.
+            $this->media->purgeAttachments(Block::class, [$block->id]);
+
+            // Before the delete, not after: forgetBlock() resolves the pages
+            // embedding this block through page_sections.block_id, and that is
+            // exactly the column the SET NULL is about to wipe.
+            $this->forgetBlock($block);
+
+            return (bool) $block->forceDelete();
+        });
     }
 
     /**

@@ -29,24 +29,36 @@ class FormService {
     } = config;
 
     return new Promise<Page>((resolve, reject) => {
-      // cast to any to bypass TS strict type
-      (router as any)[method.toLowerCase()](
-        url,
+      /*
+       * `router.visit(url, { method, data, ...callbacks })` rather than
+       * `router[method](url, data, options)`.
+       *
+       * Inertia's per-verb helpers do NOT share one signature: `post`, `put`
+       * and `patch` take `(url, data, options)`, but `delete` takes
+       * `(url, options)` — there is no data argument. Calling it positionally
+       * meant `data` was consumed AS the options object and the real options
+       * became an ignored third argument, so `onSuccess`/`onError` never fired
+       * on any DELETE. Every delete confirmation dialog in the app stayed open
+       * with its spinner running while the row was, in fact, deleted.
+       *
+       * `visit` accepts `method` and `data` together for every verb, so one
+       * call site cannot drift from a per-verb signature again.
+       */
+      router.visit(url, {
+        method: method.toLowerCase() as 'get' | 'post' | 'put' | 'patch' | 'delete',
         data,
-        {
-          preserveState,
-          preserveScroll,
-          onStart: () => onStart?.(),
-          onSuccess: (page: Page) => {
-            onSuccess?.(page);
-            resolve(page);
-          },
-          onError: (errors: FormErrors) => {
-            onError?.(errors);
-            reject(errors);
-          },
-        } as any
-      );
+        preserveState,
+        preserveScroll,
+        onStart: () => onStart?.(),
+        onSuccess: (page: Page) => {
+          onSuccess?.(page);
+          resolve(page);
+        },
+        onError: (errors: FormErrors) => {
+          onError?.(errors);
+          reject(errors);
+        },
+      } as any);
     });
   }
 

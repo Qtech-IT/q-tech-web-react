@@ -44,7 +44,6 @@ class AdminUserService
 		$isSuperAdmin = isSuperAdminUser($user);
 
 		return User::with(['file', 'createdBy:id,name', 'updatedBy:id,name'])
-		                ->admin()
 						->when(!$isSuperAdmin, fn (Builder $q): Builder => $q->withNonSuperAdminRoles())
 						->with('roles')
 						->sortDefault()
@@ -64,7 +63,6 @@ class AdminUserService
 	public function getAllUsersList(array $columns = ['id', 'name', 'email']): \Illuminate\Database\Eloquent\Collection
 	{
 		return User::select($columns)
-							->admin()
 							->active()
 							->orderBy('name')
 							->fetch();
@@ -78,10 +76,10 @@ class AdminUserService
 	public function getUserStats(): array
 	{
 		return [
-			'total'          => User::admin()->withNonSuperAdminRoles()->count(),
-			'active'         => User::admin()->withNonSuperAdminRoles()->active()->count(),
-			'inactive'       => User::admin()->withNonSuperAdminRoles()->inactive()->count(),
-			'two_fa_enabled' => User::admin()->withNonSuperAdminRoles()->where('two_factor_enabled', true)->count(),
+			'total'          => User::withNonSuperAdminRoles()->count(),
+			'active'         => User::withNonSuperAdminRoles()->active()->count(),
+			'inactive'       => User::withNonSuperAdminRoles()->inactive()->count(),
+			'two_fa_enabled' => User::withNonSuperAdminRoles()->where('two_factor_enabled', true)->count(),
 		];
 	}
 
@@ -101,18 +99,15 @@ class AdminUserService
 						->firstOrfail();
 
 			$user = $id ? User::with(['file'])
-							  ->admin()
 							  ->withNonSuperAdminRoles()
 							  ->findOrFail($id) : new User();
 
-			$user->name            = $request->input('name');
-			$user->username        = $request->input('username');
-			$user->email           = $request->input('email');
-			$user->phone           = $request->input('phone');
-			$user->address         = $request->input('address');
-			$user->status          = $request->input('status');
-			$user->is_admin        = true;
-			$user->is_kyc_verified = true;
+			$user->name     = $request->input('name');
+			$user->username = $request->input('username');
+			$user->email    = $request->input('email');
+			$user->phone    = $request->input('phone');
+			$user->address  = $request->input('address');
+			$user->status   = $request->input('status');
 
 			if ($request->filled('password')) {
 				$user->password = $request->input('password');
@@ -150,7 +145,6 @@ class AdminUserService
 	{
 		$user = User::with(['file'])
 						->withNonSuperAdminRoles()
-						->admin()
 						->findOrFailByUuid($uuid);
 
 		abortIfAuthUser($user);
@@ -165,16 +159,15 @@ class AdminUserService
 	 *
 	 * @param array $ids
 	 * @param string $action
-	 * @return mixed
+	 * @return void
 	 * @throws \Exception
 	 */
-	public function handleBulkAction(array $ids, string $action): mixed
+	public function handleBulkAction(array $ids, string $action): void
 	{
-		$query = User::admin()
-					  ->withNonSuperAdminRoles()
+		$query = User::withNonSuperAdminRoles()
 					  ->whereIn('id', $ids);
 
-		return match ($action) {
+		match ($action) {
 			BulkActionType::ACTIVE->value   => $this->bulkStatusChange($query, Status::ACTIVE),
 			BulkActionType::INACTIVE->value => $this->bulkStatusChange($query, Status::INACTIVE),
 			BulkActionType::DELETE->value   => $this->bulkDelete($query),

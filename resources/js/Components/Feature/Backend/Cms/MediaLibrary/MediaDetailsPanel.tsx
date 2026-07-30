@@ -126,7 +126,7 @@ export function MediaDetailsPanel({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-lg flex flex-col gap-0 p-0">
-        <SheetHeader className="p-6 pb-4 border-b">
+        <SheetHeader className="p-6 pb-4 border-b shrink-0">
           <SheetTitle className="truncate">
             {media?.original_name ?? t('Asset')}
           </SheetTitle>
@@ -138,7 +138,12 @@ export function MediaDetailsPanel({
           </SheetDescription>
         </SheetHeader>
 
-        <ScrollArea className="flex-1">
+        {/* `min-h-0` is load-bearing: a flex item's default `min-height: auto`
+            makes this column refuse to shrink below its content, which pushed
+            the footer — and the only Save button — past the bottom of a short
+            viewport. `overflow-y-auto` keeps the body scrollable even if the
+            ScrollArea primitive fails to hydrate. */}
+        <ScrollArea className="flex-1 min-h-0 overflow-y-auto">
           <div className="p-6 space-y-5">
             {media && isImage ? (
               <FocalPointPicker
@@ -251,34 +256,45 @@ export function MediaDetailsPanel({
                 <CmsError message={usage.error} onRetry={usage.reload} />
               ) : null}
 
+
+
               {!usage.loading && !usage.error ? (
-                (usage.data ?? []).length === 0 ? (
+                Object.keys(usage.data ?? {}).length === 0 ? (
                   <p className="text-sm text-muted-foreground">
                     {t('Not attached to anything — safe to delete.')}
                   </p>
                 ) : (
                   <ul className="space-y-1.5">
-                    {(usage.data ?? []).map((entry, index) => (
+                    {Object.entries(usage.data ?? {}).map(([type, count]) => (
                       <li
-                        key={index}
-                        className="flex items-center gap-2 p-2 text-sm border rounded-lg border-border"
+                        key={type}
+                        className="flex items-center justify-between p-2 text-sm border rounded-lg border-border"
                       >
-                        <Badge variant="outline" className="text-[10px] capitalize shrink-0">
-                          {String(entry.type ?? '').replace(/_/g, ' ')}
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] capitalize shrink-0"
+                        >
+                          {type.replace(/_/g, ' ')}
                         </Badge>
-                        <span className="truncate text-muted-foreground">
-                          {entry.label ?? entry.url ?? t('Unnamed')}
+
+                        <span className="font-medium">
+                          {count as any}
                         </span>
                       </li>
                     ))}
                   </ul>
                 )
               ) : null}
+
+
+
+
+
             </section>
           </div>
         </ScrollArea>
 
-        <SheetFooter className="flex-row gap-2 p-6 pt-4 border-t">
+        <SheetFooter className="sticky bottom-0 z-10 flex-row gap-2 p-6 pt-4 border-t shrink-0 bg-background">
           <Can permission="media.edit">
             <Button
               type="button"

@@ -39,8 +39,18 @@ class PageResource extends BaseResource
             // getBaseAttributes() already emits `status`; publish_status is a
             // different column with a different owner and must be added here.
             'publish_status' => $this->publish_status,
-            'published_at' => $this->published_at ? get_date_time($this->published_at) : null,
-            'expires_at' => $this->expires_at ? get_date_time($this->expires_at) : null,
+            // Machine format: these feed `datetime-local` inputs, which only
+            // parse `Y-m-d\TH:i`. `get_date_time()` returns the site's
+            // DISPLAY format, which the input silently rejects (renders
+            // blank) and then posts back verbatim, failing `date`.
+            'published_at' => $this->published_at?->format('Y-m-d\TH:i'),
+            'published_at_label' => $this->published_at ? get_date_time($this->published_at) : null,
+            // Machine format: these feed `datetime-local` inputs, which only
+            // parse `Y-m-d\TH:i`. `get_date_time()` returns the site's
+            // DISPLAY format, which the input silently rejects (renders
+            // blank) and then posts back verbatim, failing `date`.
+            'expires_at' => $this->expires_at?->format('Y-m-d\TH:i'),
+            'expires_at_label' => $this->expires_at ? get_date_time($this->expires_at) : null,
             'sort_order' => $this->sort_order,
 
             // Mirrors the ->published() scope exactly, in memory, so the admin

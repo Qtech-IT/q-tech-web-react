@@ -86,6 +86,31 @@ class CtaService
     }
 
     /**
+     * Restore a soft-deleted button.
+     *
+     * The FKs that pointed at it were SET NULL on delete and are not
+     * reconstructible, so the button returns to the library and an editor
+     * re-picks it where it is wanted.
+     */
+    public function restore(Cta $cta): bool
+    {
+        return (bool) $cta->restore();
+    }
+
+    /**
+     * Permanently delete a button.
+     *
+     * Nothing to clean up by hand: `page_sections.cta_id`,
+     * `page_sections.secondary_cta_id` and `section_blocks.cta_id` are all SET
+     * NULL, and a CTA owns neither library media nor an SEO record — it is not
+     * a permitted `mediable_type` or `seoable_type`.
+     */
+    public function forceDestroy(Cta $cta): bool
+    {
+        return (bool) $cta->forceDelete();
+    }
+
+    /**
      * The single link-resolution implementation.
      *
      * Returns null for `none` and `modal` — the component decides what to

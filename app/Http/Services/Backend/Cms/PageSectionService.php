@@ -367,6 +367,71 @@ class PageSectionService
     }
 
     /**
+     * Restore a soft-deleted section.
+     */
+    public function restore(PageSection $section): bool
+    {
+        return DB::transaction(function () use ($section): bool {
+            $restored = (bool) $section->restore();
+
+            $this->forgetSection($section);
+
+            return $restored;
+        });
+    }
+
+    /**
+     * Permanently delete a section, after clearing the dependents the database
+     * cannot reach.
+     */
+    public function forceDestroy(PageSection $section): bool
+    {
+        return DB::transaction(function () use ($section): bool {
+            $this->purgeDependents([(int) $section->id]);
+
+            // Before the delete: forgetSection() resolves the block's page
+            // usages through page_sections.block_id, and page_sections.block_id
+            // is SET NULL on the block FK.
+            $this->forgetSection($section);
+
+            return (bool) $section->forceDelete();
+        });
+    }
+
+    /**
+     * Clear the dependents of a set of sections that are about to be
+     * permanently deleted.
+     *
+     * Deletes no `section_blocks` rows: `section_blocks_page_section_id_foreign`
+     * and `section_blocks_parent_id_foreign` are both CASCADE, so the whole
+     * repeater tree — nested children included — is removed by InnoDB. What
+     * InnoDB cannot remove is `mediables`, whose `mediable_id` is polymorphic
+     * and carries no foreign key, so those pivot rows are cleared here for the
+     * sections and for every repeater item under them.
+     *
+     * Reused by PageService and BlockService, which force-delete sections
+     * indirectly through a CASCADE they never see.
+     *
+     * @param  array<int, int>  $sectionIds
+     */
+    public function purgeDependents(array $sectionIds): void
+    {
+        if ($sectionIds === []) {
+            return;
+        }
+
+        // withTrashed(): a soft-deleted repeater item is still a live row that
+        // the CASCADE will take, so its pivot rows still need clearing.
+        $blockIds = SectionBlock::withTrashed()
+            ->whereIn('page_section_id', $sectionIds)
+            ->pluck('id')
+            ->all();
+
+        $this->media->purgeAttachments(SectionBlock::class, $blockIds);
+        $this->media->purgeAttachments(PageSection::class, $sectionIds);
+    }
+
+    /**
      * Resolve which of page_id / block_id owns this row.
      *
      * The invariant — exactly one owner — is enforced here rather than by a

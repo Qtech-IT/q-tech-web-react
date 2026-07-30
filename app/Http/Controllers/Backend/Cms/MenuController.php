@@ -118,4 +118,32 @@ class MenuController extends Controller
             ->withMessage(translate('Menu deleted successfully'))
             ->build();
     }
+
+    /**
+     * Restore from trash.
+     */
+    public function restore(Menu $menu): RedirectResponse
+    {
+        $this->authorize('restore', Menu::class);
+
+        $this->service->restore($menu);
+
+        return AppResponse::asSuccess()
+            ->withMessage(translate('Menu restored successfully'))
+            ->build();
+    }
+
+    /**
+     * Permanently delete.
+     */
+    public function forceDestroy(Menu $menu): RedirectResponse
+    {
+        $this->authorize('forceDelete', Menu::class);
+
+        $this->service->forceDestroy($menu);
+
+        return AppResponse::asSuccess()
+            ->withMessage(translate('Menu permanently deleted successfully'))
+            ->build();
+    }
 }

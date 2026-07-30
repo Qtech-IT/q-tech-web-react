@@ -4,7 +4,6 @@ import {
   Blocks,
   Clock,
   Cog,
-  Coins,
   DatabaseBackup,
   Files,
   FolderTree,
@@ -16,15 +15,13 @@ import {
   ListChecks,
   ListTree,
   MousePointerClick,
+  Network,
   Signpost,
   LucideMailCheck,
-  LucideTrendingUpDown,
   Settings,
   Shield,
   User,
   UserCog,
-  Users,
-  Wallet,
   Zap
 } from 'lucide-react';
 import { route } from 'ziggy-js';
@@ -95,6 +92,14 @@ export const sidebarData: SidebarData = {
           title: 'Pages',
           url: route('backend.pages.index'),
           icon: Files,
+          permission: 'page.view',
+        },
+        {
+          /* The same rows as Pages, nested by parent — the only screen that
+             shows a page's place in the hierarchy and can reparent it. */
+          title: 'Page Tree',
+          url: route('backend.pages.tree'),
+          icon: Network,
           permission: 'page.view',
         },
         {

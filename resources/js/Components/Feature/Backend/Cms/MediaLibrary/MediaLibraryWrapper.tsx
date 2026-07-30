@@ -30,7 +30,9 @@ import {
   FolderTree,
   ImageIcon,
   Images,
+  RotateCcw,
   Search,
+  Trash2,
   Upload,
   X,
 } from 'lucide-react';
@@ -76,10 +78,51 @@ export function MediaLibraryWrapper(props: MediaLibraryProps) {
 
   const { submit, loading } = useInertiaForm();
 
+  /**
+   * Trash mode is a SERVER concern, driven by `?is_trash=1`.
+   *
+   * `MediaService::getMedia()` applies `Filterable::recycle()`, which swaps the
+   * query to `onlyTrashed()` when that key is present — so the toggle is a
+   * navigation, not a client-side filter. Reading it from the URL rather than
+   * from state means a reload, a back button, or a shared link all land in the
+   * same view the user was looking at.
+   */
+  const isTrash = useMemo(
+    () =>
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).get('is_trash') === '1',
+    // `props.data` changes on every visit, which is the signal the URL moved.
+    [props.data]
+  );
+
   const refresh = useCallback((): void => {
     setSelected([]);
     router.reload({ only: ['data', 'folders'] });
   }, []);
+
+  const setTrashMode = useCallback((next: boolean): void => {
+    setSelected([]);
+    setActive(null);
+    setDeleting(null);
+
+    router.get(
+      route('backend.media.index'),
+      next ? { is_trash: 1 } : {},
+      { preserveScroll: true, preserveState: false }
+    );
+  }, []);
+
+  /** Bring one trashed asset back. The file was never unlinked. */
+  const restoreMedia = (item: CmsMedia): void => {
+    submit({
+      method: 'POST',
+      url: route('backend.media.restore', { media: item.uuid }),
+      onSuccess: () => {
+        setActive(null);
+        refresh();
+      },
+    }).catch(() => undefined);
+  };
 
   /**
    * Filtering is client-side over the current page only. The server owns
@@ -138,7 +181,11 @@ export function MediaLibraryWrapper(props: MediaLibraryProps) {
 
     submit({
       method: 'DELETE',
-      url: route('backend.media.destroy', { media: target.uuid }),
+      // In trash the row is already soft-deleted, so `destroy` would be a
+      // no-op — the only meaningful delete left is the permanent one.
+      url: isTrash
+        ? route('backend.media.force.destroy', { media: target.uuid })
+        : route('backend.media.destroy', { media: target.uuid }),
       onSuccess: () => {
         setDeleting(null);
         setActive(null);
@@ -161,31 +208,57 @@ export function MediaLibraryWrapper(props: MediaLibraryProps) {
           { label: t('Dashboard'), href: route('backend.dashboard') },
           { label: t('Media Library') },
         ]}
-        title={t('Media Library')}
-        description={t('Every image, video and document the site uses.')}
-        icon={Images}
+        title={isTrash ? t('Media Library — Trash') : t('Media Library')}
+        description={
+          isTrash
+            ? t('Deleted files. Restore them, or delete them permanently.')
+            : t('Every image, video and document the site uses.')
+        }
+        icon={isTrash ? Trash2 : Images}
+        badges={isTrash ? [{ label: t('Trash'), variant: 'destructive' }] : []}
         primaryAction={
-          can('media.create')
+          // Uploading into the trash makes no sense, so the action is the way
+          // out of it instead.
+          isTrash
             ? {
+              label: t('Back to Library'),
+              icon: Images,
+              onClick: () => setTrashMode(false),
+              variant: 'default',
+            }
+            : can('media.create')
+              ? {
                 label: t('Upload'),
                 icon: Upload,
                 onClick: () => setUploadOpen(true),
                 variant: 'default',
               }
-            : null
+              : null
         }
-        secondaryActions={
-          can('folder.view')
-            ? [
+        secondaryActions={[
+          ...(isTrash
+            ? []
+            : can('media.delete')
+              ? [
                 {
-                  label: t('Manage Folders'),
-                  icon: FolderTree,
-                  onClick: () => router.visit(route('backend.media-folders.index')),
-                  variant: 'outline',
+                  label: t('Trash'),
+                  icon: Trash2,
+                  onClick: () => setTrashMode(true),
+                  variant: 'outline' as const,
                 },
               ]
-            : []
-        }
+              : []),
+          ...(can('folder.view') && !isTrash
+            ? [
+              {
+                label: t('Manage Folders'),
+                icon: FolderTree,
+                onClick: () => router.visit(route('backend.media-folders.index')),
+                variant: 'outline' as const,
+              },
+            ]
+            : []),
+        ]}
       />
 
       {/* An image with no alt text is an accessibility defect waiting to ship,
@@ -208,11 +281,10 @@ export function MediaLibraryWrapper(props: MediaLibraryProps) {
               type="button"
               onClick={() => setFolderId(null)}
               aria-current={folderId === null ? 'true' : undefined}
-              className={`flex items-center w-full gap-2 px-3 py-2 text-sm text-left rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                folderId === null
-                  ? 'bg-primary/10 text-primary font-medium'
-                  : 'hover:bg-muted text-muted-foreground'
-              }`}
+              className={`flex items-center w-full gap-2 px-3 py-2 text-sm text-left rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${folderId === null
+                ? 'bg-primary/10 text-primary font-medium'
+                : 'hover:bg-muted text-muted-foreground'
+                }`}
             >
               <Images className="w-4 h-4 shrink-0" aria-hidden="true" />
               {t('All files')}
@@ -231,11 +303,10 @@ export function MediaLibraryWrapper(props: MediaLibraryProps) {
                 onClick={() => setFolderId(folder.id)}
                 aria-current={folderId === folder.id ? 'true' : undefined}
                 style={{ paddingInlineStart: `${0.75 + folder.depth * 0.75}rem` }}
-                className={`flex items-center w-full gap-2 px-3 py-2 text-sm text-left rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  folderId === folder.id
-                    ? 'bg-primary/10 text-primary font-medium'
-                    : 'hover:bg-muted text-muted-foreground'
-                }`}
+                className={`flex items-center w-full gap-2 px-3 py-2 text-sm text-left rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${folderId === folder.id
+                  ? 'bg-primary/10 text-primary font-medium'
+                  : 'hover:bg-muted text-muted-foreground'
+                  }`}
               >
                 <Folder className="w-4 h-4 shrink-0" aria-hidden="true" />
                 <span className="flex-1 truncate">{folder.name}</span>
@@ -326,23 +397,37 @@ export function MediaLibraryWrapper(props: MediaLibraryProps) {
           ) : null}
 
           {visible.length === 0 ? (
-            <CmsEmpty
-              icon={Images}
-              title={search || folderId !== null ? t('Nothing matches') : t('The library is empty')}
-              description={
-                search || folderId !== null
-                  ? t('Try a different search or folder.')
-                  : t('Upload your first file to get started.')
-              }
-              action={
-                can('media.create') ? (
-                  <Button type="button" onClick={() => setUploadOpen(true)}>
-                    <Upload className="w-4 h-4 mr-2" aria-hidden="true" />
-                    {t('Upload')}
+            isTrash ? (
+              <CmsEmpty
+                icon={Trash2}
+                title={t('Trash is empty')}
+                description={t('Deleted files appear here until you remove them permanently.')}
+                action={
+                  <Button type="button" variant="outline" onClick={() => setTrashMode(false)}>
+                    <Images className="w-4 h-4 mr-2" aria-hidden="true" />
+                    {t('Back to Library')}
                   </Button>
-                ) : null
-              }
-            />
+                }
+              />
+            ) : (
+              <CmsEmpty
+                icon={Images}
+                title={search || folderId !== null ? t('Nothing matches') : t('The library is empty')}
+                description={
+                  search || folderId !== null
+                    ? t('Try a different search or folder.')
+                    : t('Upload your first file to get started.')
+                }
+                action={
+                  can('media.create') ? (
+                    <Button type="button" onClick={() => setUploadOpen(true)}>
+                      <Upload className="w-4 h-4 mr-2" aria-hidden="true" />
+                      {t('Upload')}
+                    </Button>
+                  ) : null
+                }
+              />
+            )
           ) : (
             <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {visible.map((item) => {
@@ -354,11 +439,10 @@ export function MediaLibraryWrapper(props: MediaLibraryProps) {
                     <button
                       type="button"
                       onClick={() => setActive(item)}
-                      className={`w-full overflow-hidden text-left transition border rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                        isSelected
-                          ? 'border-primary ring-2 ring-primary/40'
-                          : 'border-border hover:border-primary/50'
-                      }`}
+                      className={`w-full overflow-hidden text-left transition border rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${isSelected
+                        ? 'border-primary ring-2 ring-primary/40'
+                        : 'border-border hover:border-primary/50'
+                        }`}
                     >
                       <div className="flex items-center justify-center overflow-hidden aspect-square bg-muted">
                         {isImage ? (
@@ -410,6 +494,50 @@ export function MediaLibraryWrapper(props: MediaLibraryProps) {
                         {t('Select :name', { name: item.original_name })}
                       </span>
                     </label>
+
+                    {/* Trash actions live on the card, not in the details panel:
+                        a trashed asset is not editable, so opening the panel to
+                        restore it would be a detour. */}
+                    {isTrash ? (
+                      <div className="absolute flex items-center gap-1 top-2 right-2">
+                        {can('media.restore') ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="secondary"
+                            className="h-7 px-2"
+                            disabled={loading}
+                            onClick={() => restoreMedia(item)}
+                            title={t('Restore')}
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+                            <span className="sr-only">
+                              {t('Restore :name', { name: item.original_name })}
+                            </span>
+                          </Button>
+                        ) : null}
+
+                        {/* `media.force-delete` — hyphen, matching both the
+                            seeder and MediaPolicy::forceDelete(). An underscore
+                            here silently hides the button. */}
+                        {can('media.force-delete') ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="destructive"
+                            className="h-7 px-2"
+                            disabled={loading}
+                            onClick={() => setDeleting(item)}
+                            title={t('Delete Permanently')}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                            <span className="sr-only">
+                              {t('Permanently delete :name', { name: item.original_name })}
+                            </span>
+                          </Button>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </li>
                 );
               })}
@@ -427,10 +555,10 @@ export function MediaLibraryWrapper(props: MediaLibraryProps) {
               }}
               {...(props.data.links
                 ? {
-                    links: props.data.links as NonNullable<
-                      Parameters<typeof Pagination>[0]['links']
-                    >,
-                  }
+                  links: props.data.links as NonNullable<
+                    Parameters<typeof Pagination>[0]['links']
+                  >,
+                }
                 : {})}
             />
           ) : null}
@@ -461,10 +589,14 @@ export function MediaLibraryWrapper(props: MediaLibraryProps) {
         item={deleting}
         isSubmitting={loading}
         config={{
-          title: t('Move To Trash'),
-          description: t('The file is moved to trash. It can be restored, or permanently deleted later.'),
+          title: isTrash ? t('Delete Permanently') : t('Move To Trash'),
+          description: isTrash
+            ? t('The file and its row are removed for good. This cannot be undone.')
+            : t('The file is moved to trash. It can be restored, or permanently deleted later.'),
           itemType: 'File',
-          warningMessage: t('Anything currently using this file will lose its image.'),
+          warningMessage: isTrash
+            ? t('The file is unlinked from disk. Any page still referencing it cannot recover it.')
+            : t('Anything currently using this file will lose its image.'),
           showWarningAlert: true,
           showItemDetails: true,
           itemDisplayFields: [

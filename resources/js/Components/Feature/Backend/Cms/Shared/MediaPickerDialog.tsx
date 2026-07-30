@@ -170,7 +170,7 @@ export function MediaPickerDialog({
           ) : null}
         </div>
 
-        <ScrollArea className="flex-1 -mx-2">
+        <ScrollArea className="flex-1 min-h-0 -mx-2">
           <div className="px-2 py-1">
             {loading ? <CmsLoading rows={4} /> : null}
 

@@ -149,6 +149,18 @@ export interface CmsSectionType {
   };
 }
 
+/**
+ * Every shape the section-type registry can arrive in.
+ *
+ * `SectionTypeResource::collection()` is given an array keyed by section-type
+ * key, and a keyed PHP array becomes a JSON object — so the record forms are
+ * what production actually sends. Always read it through `unwrapList()`.
+ */
+export type CmsSectionTypesProp =
+  | CmsSectionType[]
+  | Record<string, CmsSectionType>
+  | { data: CmsSectionType[] | Record<string, CmsSectionType> };
+
 /** `SectionTypeRegistry::grouped()` — the section picker's menu. */
 export type CmsSectionTypeGroups = Record<
   string,
@@ -437,9 +449,42 @@ export interface CmsPageBaseProps {
 export interface PageBuilderProps extends CmsPageBaseProps {
   data: CmsPaginated<CmsPageSection> | CmsPageSection[];
   page: { data: CmsPage } | CmsPage;
-  sectionTypes: CmsSectionType[] | { data: CmsSectionType[] };
+  /**
+   * `SectionTypeResource::collection($registry->all())`. The registry is keyed
+   * by section-type key, so this arrives as `{ data: { 'hero.split': {…} } }`
+   * — a JSON object, not an array. `unwrapList()` accepts both shapes; never
+   * index this prop directly.
+   */
+  sectionTypes: CmsSectionTypesProp;
   sectionTypeGroups: CmsSectionTypeGroups;
   publishStatuses: CmsOption[];
+}
+
+/**
+ * A node of `backend.pages.tree`. Shaped by `PageTreeResource`, which nests
+ * `children` server-side so the whole hierarchy arrives without a query per
+ * level — do not re-derive nesting from `parent_id` on the client.
+ */
+export interface CmsPageTreeNode {
+  id: number;
+  uuid: string;
+  parent_id: number | null;
+  title: string;
+  slug: string;
+  path: string;
+  depth: number;
+  locale: string;
+  page_type: string | null;
+  is_homepage: boolean;
+  status: string | null;
+  publish_status: string | null;
+  sort_order: number;
+  children?: CmsPageTreeNode[];
+}
+
+/** `backend.pages.tree` — read-only hierarchy view. */
+export interface PageTreeProps extends CmsPageBaseProps {
+  data: { data: CmsPageTreeNode[] } | CmsPageTreeNode[];
 }
 
 /** `backend.menus.items` — the menu builder. */

@@ -62,6 +62,8 @@ export function useCmsPageConfig(props: CrudPageProps): CrudConfig {
       update: `${routePrefix}.update`,
       destroy: `${routePrefix}.destroy`,
       updateStatus: `${routePrefix}.update.status`,
+      restore: `${routePrefix}.restore`,
+      forceDestroy: `${routePrefix}.force.destroy`,
     },
 
     formDisplayMode: 'page',

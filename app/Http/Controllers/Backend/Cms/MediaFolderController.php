@@ -90,4 +90,32 @@ class MediaFolderController extends Controller
             ->withMessage(translate('Folder deleted successfully'))
             ->build();
     }
+
+    /**
+     * Restore from trash.
+     */
+    public function restore(MediaFolder $mediaFolder): RedirectResponse
+    {
+        $this->authorize('restore', MediaFolder::class);
+
+        $this->service->restore($mediaFolder);
+
+        return AppResponse::asSuccess()
+            ->withMessage(translate('Folder restored successfully'))
+            ->build();
+    }
+
+    /**
+     * Permanently delete.
+     */
+    public function forceDestroy(MediaFolder $mediaFolder): RedirectResponse
+    {
+        $this->authorize('forceDelete', MediaFolder::class);
+
+        $this->service->forceDestroy($mediaFolder);
+
+        return AppResponse::asSuccess()
+            ->withMessage(translate('Folder permanently deleted successfully'))
+            ->build();
+    }
 }

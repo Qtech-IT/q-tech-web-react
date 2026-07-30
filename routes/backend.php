@@ -224,6 +224,9 @@ Route::middleware(['sanitization', 'throttle:60,1'])->group(function (): void {
 				Route::post('update-status', 'updateStatus')->name('update.status');
 				Route::post('{page}/publish', 'publish')->name('publish');
 				Route::post('{page}/make-homepage', 'makeHomepage')->name('make.homepage');
+
+				Route::post('{page}/restore', 'restore')->name('restore')->withTrashed();
+				Route::delete('{page}/force', 'forceDestroy')->name('force.destroy')->withTrashed();
 			});
 
 		// Sections are always addressed through their owning page.
@@ -281,7 +284,70 @@ Route::middleware(['sanitization', 'throttle:60,1'])->group(function (): void {
 				Route::post('attachments/reorder', 'reorderAttachments')->name('attachments.reorder');
 
 				Route::get('{media}/usage', 'usage')->name('usage');
-				Route::delete('{media}/force', 'forceDestroy')->name('force.destroy');
+
+				Route::post('{media}/restore', 'restore')->name('restore')->withTrashed();
+				Route::delete('{media}/force', 'forceDestroy')->name('force.destroy')->withTrashed();
+			});
+
+		/**
+		 * =========================
+		 * CMS TRASH ROUTES
+		 * =========================
+		 * Restore and permanent delete for the soft-deleting CMS resources that
+		 * have no controller group of their own. `pages` and `media` carry the
+		 * same pair inside their own groups above.
+		 *
+		 * `->withTrashed()` is not optional on any of these. Implicit
+		 * route-model binding filters soft-deleted models out of the query, so
+		 * without it every one of these routes 404s on precisely the rows it
+		 * exists to act on — the trash view's buttons would all fail.
+		 *
+		 * The parameter names are not interchangeable either: implicit binding
+		 * matches a route parameter to the controller method's argument NAME,
+		 * so `{block}` binds `Block $block` and a generic `{model}` would bind
+		 * nothing at all.
+		 */
+		Route::controller(BlockController::class)
+			->prefix('blocks')
+			->name('blocks.')
+			->group(function () {
+				Route::post('{block}/restore', 'restore')->name('restore')->withTrashed();
+				Route::delete('{block}/force', 'forceDestroy')->name('force.destroy')->withTrashed();
+			});
+
+		Route::controller(CtaController::class)
+			->prefix('ctas')
+			->name('ctas.')
+			->group(function () {
+				Route::post('{cta}/restore', 'restore')->name('restore')->withTrashed();
+				Route::delete('{cta}/force', 'forceDestroy')->name('force.destroy')->withTrashed();
+			});
+
+		Route::controller(RedirectController::class)
+			->prefix('redirects')
+			->name('redirects.')
+			->group(function () {
+				Route::post('{redirect}/restore', 'restore')->name('restore')->withTrashed();
+				Route::delete('{redirect}/force', 'forceDestroy')->name('force.destroy')->withTrashed();
+			});
+
+		Route::controller(MenuController::class)
+			->prefix('menus')
+			->name('menus.')
+			->group(function () {
+				Route::post('{menu}/restore', 'restore')->name('restore')->withTrashed();
+				Route::delete('{menu}/force', 'forceDestroy')->name('force.destroy')->withTrashed();
+			});
+
+		// `{media_folder}` — the snake_case form the resource routes already
+		// use, which is what ImplicitRouteBinding matches `$mediaFolder`
+		// against.
+		Route::controller(MediaFolderController::class)
+			->prefix('media-folders')
+			->name('media-folders.')
+			->group(function () {
+				Route::post('{media_folder}/restore', 'restore')->name('restore')->withTrashed();
+				Route::delete('{media_folder}/force', 'forceDestroy')->name('force.destroy')->withTrashed();
 			});
 
 		/**

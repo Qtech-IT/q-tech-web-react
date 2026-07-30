@@ -135,4 +135,32 @@ class BlockController extends Controller
             ->withMessage(translate('Block deleted successfully'))
             ->build();
     }
+
+    /**
+     * Restore from trash.
+     */
+    public function restore(Block $block): RedirectResponse
+    {
+        $this->authorize('restore', Block::class);
+
+        $this->service->restore($block);
+
+        return AppResponse::asSuccess()
+            ->withMessage(translate('Block restored successfully'))
+            ->build();
+    }
+
+    /**
+     * Permanently delete.
+     */
+    public function forceDestroy(Block $block): RedirectResponse
+    {
+        $this->authorize('forceDelete', Block::class);
+
+        $this->service->forceDestroy($block);
+
+        return AppResponse::asSuccess()
+            ->withMessage(translate('Block permanently deleted successfully'))
+            ->build();
+    }
 }

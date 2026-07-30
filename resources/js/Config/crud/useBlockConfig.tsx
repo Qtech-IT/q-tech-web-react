@@ -52,6 +52,8 @@ export function useBlockConfig(props: CrudPageProps): CrudConfig {
       store: `${routePrefix}.store`,
       update: `${routePrefix}.update`,
       destroy: `${routePrefix}.destroy`,
+      restore: `${routePrefix}.restore`,
+      forceDestroy: `${routePrefix}.force.destroy`,
     },
 
     formDisplayMode: 'page',

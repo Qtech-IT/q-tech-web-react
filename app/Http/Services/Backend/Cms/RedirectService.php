@@ -81,6 +81,45 @@ class RedirectService
     }
 
     /**
+     * Restore a soft-deleted redirect and drop the resolver cache for its site.
+     *
+     * The invalidation matters more here than on the delete: a restored rule
+     * that is not in the cache simply does not redirect, and the editor sees a
+     * row that claims to be live and is not.
+     *
+     * No uniqueness risk — `redirects_from_hash_unique` counts soft-deleted
+     * rows too, so this row never stopped occupying its own slot.
+     */
+    public function restore(Redirect $redirect): bool
+    {
+        $siteId = (int) $redirect->site_id;
+
+        $restored = (bool) $redirect->restore();
+
+        $this->forgetRedirects($siteId);
+
+        return $restored;
+    }
+
+    /**
+     * Permanently delete a redirect and drop the resolver cache for its site.
+     *
+     * Nothing references a redirect — it is a leaf row with no inbound FK — so
+     * there are no dependents to clear. Freeing `from_hash` is the point: only
+     * a force delete lets a new rule claim that source path.
+     */
+    public function forceDestroy(Redirect $redirect): bool
+    {
+        $siteId = (int) $redirect->site_id;
+
+        $deleted = (bool) $redirect->forceDelete();
+
+        $this->forgetRedirects($siteId);
+
+        return $deleted;
+    }
+
+    /**
      * Record a redirect for a path that just moved.
      *
      * Called from PageService inside the same transaction as the slug change,

@@ -266,14 +266,16 @@ export function SectionEditorSheet({
         side="right"
         className="w-full sm:max-w-2xl flex flex-col gap-0 p-0"
       >
-        <SheetHeader className="p-6 pb-4 border-b">
+        <SheetHeader className="p-6 pb-4 border-b shrink-0">
           <SheetTitle>{section?.name || sectionType?.label || t('Section')}</SheetTitle>
           <SheetDescription>
             {sectionType?.description ?? t('Edit this section’s content.')}
           </SheetDescription>
         </SheetHeader>
 
-        <ScrollArea className="flex-1">
+        {/* `min-h-0` — see MediaDetailsPanel: without it this column keeps its
+            content height and the pinned footer scrolls off a short viewport. */}
+        <ScrollArea className="flex-1 min-h-0 overflow-y-auto">
           <div className="p-6 space-y-6">
             {/* A section whose type left the registry has no schema to render
                 a form from. Say so instead of showing an empty panel. */}
@@ -384,7 +386,7 @@ export function SectionEditorSheet({
           </div>
         </ScrollArea>
 
-        <SheetFooter className="flex-row gap-2 p-6 pt-4 border-t">
+        <SheetFooter className="sticky bottom-0 z-10 flex-row gap-2 p-6 pt-4 border-t shrink-0 bg-background">
           <Button
             type="button"
             onClick={handleSave}

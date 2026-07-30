@@ -99,23 +99,40 @@ export function useCrudManager({ config, onSuccess, onError }: UseCrudManagerOpt
       setState((prev) => ({ ...prev, isDeleting: true }));
 
       const isTrashMode = window.location.search.includes('is_trash=1');
-      const routeName = isTrashMode ? config.routes.forceDestroy! : config.routes.destroy!
+
+      /*
+       * Fall back to `destroy` when a config declares no `forceDestroy`.
+       * Previously this was `config.routes.forceDestroy!` — a non-null
+       * assertion over a genuinely optional key. In trash mode on any resource
+       * without that route, `route(undefined)` threw synchronously, so the
+       * request never left the browser, `onSuccess` never ran, and the delete
+       * dialog stayed open with its spinner stuck on.
+       */
+      const routeName = (isTrashMode ? config.routes.forceDestroy : config.routes.destroy)
+        ?? config.routes.destroy;
 
       const destroyParams = isTrashMode ? config?.routeParams?.forceDestroy : config?.routeParams?.destroy;
 
-      const url = (() => {
-        if (destroyParams) {
-          const params = buildRouteParams(destroyParams, [
-            { pattern: '{item.id}', value: id },
-          ]);
+      let finalUrl: string;
 
-          return route(routeName, params);
+      try {
+        if (!routeName) {
+          throw new Error('No destroy route is configured for this resource.');
         }
 
-        return route(routeName, id);
-      })();
+        const url = destroyParams
+          ? route(routeName, buildRouteParams(destroyParams, [{ pattern: '{item.id}', value: id }]))
+          : route(routeName, id);
 
-      const finalUrl = isTrashMode ? `${url}?is_trash=1` : url;
+        finalUrl = isTrashMode ? `${url}?is_trash=1` : url;
+      } catch (error) {
+        // Never leave the dialog wedged: surface the failure and release it.
+        setState((prev) => ({ ...prev, isDeleting: false }));
+        toast.error('Delete is not configured for this resource');
+        onError?.('delete', error as any);
+
+        return;
+      }
 
       router.delete(finalUrl, {
         preserveScroll: true,

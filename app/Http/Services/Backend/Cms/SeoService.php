@@ -132,6 +132,42 @@ class SeoService
     }
 
     /**
+     * Delete the SEO records of owners that are being permanently deleted.
+     *
+     * `seo_meta.seoable_id` is polymorphic and carries no foreign key, and the
+     * table does not soft-delete, so absolutely nothing removes these rows when
+     * their owner is force-deleted. They then hold `seo_meta_owner_unique`
+     * against any future row that lands on the same id.
+     *
+     * The cached payloads go first, while the rows are still readable — the
+     * cache key is built from each row's own `locale`, which cannot be
+     * reconstructed once the row is gone.
+     *
+     * @param  class-string<Model>  $ownerClass
+     * @param  array<int, int|string>  $ownerIds
+     * @return int SEO rows deleted.
+     */
+    public function purgeForOwners(string $ownerClass, array $ownerIds): int
+    {
+        if ($ownerIds === []) {
+            return 0;
+        }
+
+        $alias = Relation::getMorphAlias($ownerClass);
+        $ownerIds = array_map('intval', $ownerIds);
+
+        // Hits IDX seo_meta_owner_unique on (seoable_type, seoable_id).
+        $scope = fn () => SeoMeta::query()
+            ->where('seoable_type', $alias)
+            ->whereIn('seoable_id', $ownerIds);
+
+        $scope()->get(['seoable_id', 'locale'])
+            ->each(fn (SeoMeta $meta) => $this->forgetSeo($alias, $meta->seoable_id, $meta->locale));
+
+        return $scope()->delete();
+    }
+
+    /**
      * Forget a resolved SEO payload.
      */
     public function forgetSeo(string $alias, int|string $id, string $locale): void

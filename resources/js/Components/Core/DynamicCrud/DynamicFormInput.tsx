@@ -16,7 +16,7 @@ import RichTextEditor from '@/Components/UI/TextEditor';
 import ValidationRulesInput from '@/Components/UI/ValidationRulesInput';
 import { useTranslations } from '@/Hooks/useTranslations';
 import type { FormField } from '@/Types/crud';
-import { limitText } from '@/Utils/helpers';
+import { EMPTY_SELECT_VALUE, isEmptySelectValue, limitText } from '@/Utils/helpers';
 import { CheckCircle, Download, File as FileIcon, Image, X } from 'lucide-react';
 import React, { useState } from 'react';
 import LazyMultiSelect from './LazyMultiSelect';
@@ -281,13 +281,34 @@ export function DynamicFormInput({
         );
       }
 
-      // const wrapperClass = "w-full";
+      /**
+       * Radix forbids `value=""` on a `SelectItem` — the empty string is
+       * reserved for clearing the trigger — so an option meaning "nothing
+       * selected" (`{ value: '', label: '— No parent —' }`, which several
+       * configs and every server-built option list ship) is rendered as the
+       * `EMPTY_SELECT_VALUE` sentinel and mapped back to `null` on change.
+       * Filtering it out instead would silently drop the only way to unset a
+       * nullable relation.
+       */
+      const emptyOption = options.find((option) => isEmptySelectValue(option.value));
+      const realOptions = options.filter((option) => !isEmptySelectValue(option.value));
+      const showEmptyOption = !field.required || emptyOption !== undefined;
+      const selectValue = isEmptySelectValue(value)
+        ? showEmptyOption
+          ? EMPTY_SELECT_VALUE
+          : undefined
+        : String(value);
+
       return (
         <div className="flex gap-2">
           <div className="flex-1 w-full">
             <Select
-              value={value?.toString() ?? undefined}
-              onValueChange={(val) => onChange(val === 'null' ? null : val)}
+              /* `exactOptionalPropertyTypes` — an unset select must omit
+                 `value` entirely rather than pass `undefined`. */
+              {...(selectValue === undefined ? {} : { value: selectValue })}
+              onValueChange={(val) =>
+                onChange(val === EMPTY_SELECT_VALUE || val === 'null' ? null : val)
+              }
               disabled={disabled ?? false}
             >
               <SelectTrigger
@@ -297,23 +318,23 @@ export function DynamicFormInput({
                 <SelectValue placeholder={field.placeholder || `Select ${field.label}`} />
               </SelectTrigger>
               <SelectContent>
-                {!field.required && (
-                  <SelectItem value="null" className="text-muted-foreground">
-                    {t('None')}
+                {showEmptyOption && (
+                  <SelectItem value={EMPTY_SELECT_VALUE} className="text-muted-foreground">
+                    {emptyOption?.label ?? t('None')}
                   </SelectItem>
                 )}
-                {options.map((option) => (
-                  <SelectItem key={option.value} value={option.value.toString()}>
+                {realOptions.map((option) => (
+                  <SelectItem key={String(option.value)} value={String(option.value)}>
                     {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          {!field.required && value && (
+          {!field.required && !isEmptySelectValue(value) && (
             <button
               type="button"
-              onClick={() => onChange('')}
+              onClick={() => onChange(null)}
               disabled={disabled}
               className="px-3 py-2 border rounded-md hover:bg-destructive/10 transition-colors"
               title={t('Clear selection')}

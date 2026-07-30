@@ -257,12 +257,19 @@ export function SectionRepeater({
                   busy={loading}
                 >
                   {/* Children of this item, capped against this item rather
-                      than against the section. */}
+                      than against the section.
+
+                      `item.children` — NOT `items`. `PageSection::blocks()`
+                      filters `whereNull('parent_id')`, so `items` at the top
+                      level contains only root rows; passing it down meant the
+                      nested filter `parent_id === item.id` never matched and
+                      every child was invisible. Rows were still created, so
+                      "Add item" reported success and showed nothing. */}
                   <SectionRepeater
                     pageSectionId={pageSectionId}
                     blockType={blockType}
                     definition={definition}
-                    items={items}
+                    items={item.children ?? []}
                     parentId={item.id}
                     depth={depth + 1}
                     onChanged={onChanged}
@@ -423,25 +430,21 @@ function RepeaterRow({
             </p>
           ) : null}
 
-          {fields.map((field) => (
-            <CmsDynamicField
-              key={`${field.store}.${field.name}`}
-              field={field}
-              value={readValue(field)}
-              disabled={busy}
-              media={field.name === 'media_id' ? (item.media ?? null) : null}
-              cta={field.name === 'cta_id' ? (item.cta ?? null) : null}
-              onChange={(value) =>
-                commit(field, value, ['media', 'cta', 'select', 'switch', 'boolean'].includes(field.type))
-              }
-              onMediaChange={() => undefined}
-              onCtaChange={() => undefined}
-            />
-          ))}
-
-          {/* Text fields flush on blur rather than per keystroke. */}
+          {/*
+            Text fields flush on blur rather than per keystroke, so typing does
+            not fire a request per character. The handler MUST sit on the
+            element that CONTAINS the fields: React's onBlur is the delegated
+            focusout, so it only fires for descendants. An empty sibling div
+            here would never fire at all, and every staged keystroke would be
+            silently discarded.
+          */}
           <div
+            className="space-y-4"
             onBlur={() => {
+              if (Object.keys(draft).length === 0) {
+                return;
+              }
+
               for (const field of fields) {
                 if (field.name in draft) {
                   onUpdate(patchFor(field, draft[field.name], item));
@@ -450,7 +453,23 @@ function RepeaterRow({
 
               setDraft({});
             }}
-          />
+          >
+            {fields.map((field) => (
+              <CmsDynamicField
+                key={`${field.store}.${field.name}`}
+                field={field}
+                value={readValue(field)}
+                disabled={busy}
+                media={field.name === 'media_id' ? (item.media ?? null) : null}
+                cta={field.name === 'cta_id' ? (item.cta ?? null) : null}
+                onChange={(value) =>
+                  commit(field, value, ['media', 'cta', 'select', 'switch', 'boolean'].includes(field.type))
+                }
+                onMediaChange={() => undefined}
+                onCtaChange={() => undefined}
+              />
+            ))}
+          </div>
 
           {children}
         </div>

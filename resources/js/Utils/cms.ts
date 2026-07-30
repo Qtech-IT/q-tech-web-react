@@ -4,6 +4,7 @@ import type {
   CmsSectionField,
   CmsSectionType,
 } from '@/Types/cms';
+import { isEmptySelectValue } from '@/Utils/helpers';
 
 /**
  * Unwrap a list prop.
@@ -32,10 +33,40 @@ export function unwrapList<T>(raw: unknown): T[] {
       if (Array.isArray(deeper)) {
         return deeper as T[];
       }
+
+      return recordValues<T>(inner);
     }
+
+    return recordValues<T>(raw);
   }
 
   return [];
+}
+
+/**
+ * Values of a keyed collection, or `[]` when `raw` is not one.
+ *
+ * `SectionTypeResource::collection($registry->all())` is handed a PHP array
+ * keyed by section-type key, and a keyed PHP array serialises to a JSON
+ * *object*, not an array — so `sectionTypes` arrives as
+ * `{ data: { 'hero.split': {...} } }`. Treating that as "no list" is what made
+ * every section report "Unknown section type" while the registry was fine.
+ *
+ * The every-value-is-an-object guard is what keeps this from mistaking a single
+ * resource (`{ data: { id: 1, name: 'x' } }`) for a collection.
+ */
+function recordValues<T>(raw: object): T[] {
+  const values = Object.values(raw as Record<string, unknown>);
+
+  if (values.length === 0) {
+    return [];
+  }
+
+  const allObjects = values.every(
+    (value) => value !== null && typeof value === 'object' && !Array.isArray(value)
+  );
+
+  return allObjects ? (values as T[]) : [];
 }
 
 /** Unwrap a single-resource prop, which Inertia wraps as `{ data: {...} }`. */
@@ -126,11 +157,19 @@ export function isFieldVisible(
   return values[field.conditional.field] === field.conditional.value;
 }
 
-/** Normalise `options`, which may be a static array or an enum class name. */
+/**
+ * Normalise `options`, which may be a static array or an enum class name.
+ *
+ * An empty-valued entry is dropped: Radix throws on `<SelectItem value="">`,
+ * and a descriptor that ships a placeholder-style option would otherwise take
+ * the whole editor down. The trigger's own placeholder covers that case.
+ */
 export function fieldOptions(
   field: CmsSectionField
 ): Array<{ value: string | number; label: string }> {
-  return Array.isArray(field.options) ? field.options : [];
+  return Array.isArray(field.options)
+    ? field.options.filter((option) => !isEmptySelectValue(option.value))
+    : [];
 }
 
 /* ------------------------------------------------------------------ */

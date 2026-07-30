@@ -89,6 +89,53 @@ class MediaFolderService
     }
 
     /**
+     * Restore a soft-deleted folder.
+     *
+     * Refused while the parent is still trashed: `path` is materialised from
+     * the ancestor chain, so the folder would come back into a tree that has no
+     * branch to hang it on.
+     *
+     * `media_folders_slug_unique` (site_id, parent_id, slug) counts
+     * soft-deleted rows, so this row never stopped holding its own slot and the
+     * restore cannot collide.
+     */
+    public function restore(MediaFolder $folder): bool
+    {
+        if ($folder->parent_id !== null && ! MediaFolder::whereKey($folder->parent_id)->exists()) {
+            throw ValidationException::withMessages([
+                'id' => translate('Restore the parent folder first.'),
+            ]);
+        }
+
+        return (bool) $folder->restore();
+    }
+
+    /**
+     * Permanently delete a folder, which must be empty first.
+     *
+     * Two independent reasons, either one sufficient:
+     *  - `media_folders_parent_id_foreign` is RESTRICT and counts soft-deleted
+     *    rows, so a trashed child folder aborts the statement inside the driver
+     *    with no message an editor could act on.
+     *  - `media.folder_id` is SET NULL, so a folder force-deleted with assets
+     *    in it would silently dump them into the unfiled root — the assets
+     *    survive, but every trace of where they lived is gone.
+     *
+     * Same rule as destroy(), extended to count trashed contents, because those
+     * are precisely the rows a force delete has to reckon with.
+     */
+    public function forceDestroy(MediaFolder $folder): bool
+    {
+        if ($folder->children()->withTrashed()->exists() || $folder->media()->withTrashed()->exists()) {
+            throw ValidationException::withMessages([
+                'id' => translate('Permanently delete or move the contents of this folder first, including anything in its trash.'),
+            ]);
+        }
+
+        return (bool) $folder->forceDelete();
+    }
+
+    /**
      * Rewrite path and depth for every descendant, in one pass.
      */
     protected function rebuildSubtree(MediaFolder $folder): void

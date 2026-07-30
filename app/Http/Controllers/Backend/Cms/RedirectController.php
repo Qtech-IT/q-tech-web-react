@@ -125,4 +125,32 @@ class RedirectController extends Controller
             ->withMessage(translate('Redirect deleted successfully'))
             ->build();
     }
+
+    /**
+     * Restore from trash.
+     */
+    public function restore(Redirect $redirect): RedirectResponse
+    {
+        $this->authorize('restore', Redirect::class);
+
+        $this->service->restore($redirect);
+
+        return AppResponse::asSuccess()
+            ->withMessage(translate('Redirect restored successfully'))
+            ->build();
+    }
+
+    /**
+     * Permanently delete.
+     */
+    public function forceDestroy(Redirect $redirect): RedirectResponse
+    {
+        $this->authorize('forceDelete', Redirect::class);
+
+        $this->service->forceDestroy($redirect);
+
+        return AppResponse::asSuccess()
+            ->withMessage(translate('Redirect permanently deleted successfully'))
+            ->build();
+    }
 }

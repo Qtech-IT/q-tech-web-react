@@ -100,7 +100,7 @@ class AuthenticateController extends Controller
 					return back()->with(response_status('Your account is inactive. Please contact support.', 'error'));
 				}
 
-				if ($user->is_admin && $user->two_factor_enabled) {
+				if ($user->two_factor_enabled) {
 					session()->put(SessionKey::TWO_STEP_VERIFICATION_INFO->value, [
 						'model_id' => $user->id,
 						'remember' => $remember,

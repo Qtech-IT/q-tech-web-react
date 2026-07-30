@@ -141,12 +141,13 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
                         <LanguageSwitch languageSettings={languageSettings} />
                       </div>
                     )}
-                    {/* Hide theme switch on mobile */}
-                    {can('setting.view') && (
-                      <div className="hidden sm:block">
-                        <ThemeSwitch dbTheme={themeConfig?.theme_mode} />
-                      </div>
-                    )}
+                    {/* The theme switch is a personal, cookie-only preference —
+                        it writes nothing to the server, so it needs no
+                        `setting.*` permission. Hidden on the smallest screens
+                        only for space. */}
+                    <div className="hidden sm:block">
+                      <ThemeSwitch dbTheme={themeConfig?.theme_mode} />
+                    </div>
                   </>
                 )}
                 {/* Config and profile always visible */}

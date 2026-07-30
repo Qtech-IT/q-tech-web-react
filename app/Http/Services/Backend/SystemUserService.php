@@ -36,7 +36,6 @@ class SystemUserService
 	public function getAllUsers(): LengthAwarePaginator | Collection
 	{
 		return User::with(['file', 'createdBy:id,name', 'updatedBy:id,name'])
-		                ->nonAdmin()
 						->sortDefault()
 						->booleanFilters(['is_kyc_verified'])
 						->date()
@@ -54,7 +53,6 @@ class SystemUserService
 	public function getAllUsersList(array $columns = ['id', 'name', 'email']): \Illuminate\Database\Eloquent\Collection
 	{
 		return User::select($columns)
-							->nonAdmin()
 							->active()
 							->orderBy('name')
 							->fetch();
@@ -68,9 +66,9 @@ class SystemUserService
 	public function getUserStats(): array
 	{
 		return [
-			'total'    => User::nonAdmin()->count(),
-			'active'   => User::nonAdmin()->active()->count(),
-			'inactive' => User::nonAdmin()->inactive()->count()
+			'total'    => User::count(),
+			'active'   => User::active()->count(),
+			'inactive' => User::inactive()->count()
         ];
 	}
 
@@ -88,30 +86,18 @@ class SystemUserService
 							  ->nonAdmin()
 							  ->findOrFail($id) : new User();
 
-			$user->name            = $request->input('name');
-			$user->username        = $request->input('username');
-			$user->email           = $request->input('email');
-			$user->phone           = $request->input('phone');
-			$user->address         = $request->input('address');
-			$user->status          = $request->input('status');
-			$user->is_admin        = false;
-			$user->is_kyc_verified = $request->input('is_kyc_verified');
+			$user->name     = $request->input('name');
+			$user->username = $request->input('username');
+			$user->email    = $request->input('email');
+			$user->phone    = $request->input('phone');
+			$user->address  = $request->input('address');
+			$user->status   = $request->input('status');
 
 			if ($request->filled('password')) {
 				$user->password = $request->input('password');
 			}
 
 			$user->save();
-
-			$wallet = UserBalance::where('user_id', $user->id)->first();
-
-			if (!$wallet) {
-				UserBalance::create([
-					'user_id'           => $user->id,
-					'wallet_address'    => UserBalance::generateUniqueWallet(),
-					'available_balance' => 0,
-				]);
-			}
 
 			// Handle profile image upload
 			if ($request->hasFile('image')) {
@@ -140,7 +126,6 @@ class SystemUserService
 	public function deleteUser(string $uuid): void
 	{
 		$user = User::with(['file'])
-						->nonAdmin()
 						->findOrFailByUuid($uuid);
 
 		DB::transaction(function () use ($user) {
@@ -153,15 +138,14 @@ class SystemUserService
 	 *
 	 * @param array $ids
 	 * @param string $action
-	 * @return mixed
+	 * @return void
 	 * @throws \Exception
 	 */
-	public function handleBulkAction(array $ids, string $action): mixed
+	public function handleBulkAction(array $ids, string $action): void
 	{
-		$query = User::nonAdmin()
-					  ->whereIn('id', $ids);
+		$query = User::whereIn('id', $ids);
 
-		return match ($action) {
+		match ($action) {
 			BulkActionType::ACTIVE->value   => $this->bulkStatusChange($query, Status::ACTIVE),
 			BulkActionType::INACTIVE->value => $this->bulkStatusChange($query, Status::INACTIVE),
 			BulkActionType::DELETE->value   => $this->bulkDelete($query),
@@ -212,11 +196,6 @@ class SystemUserService
 			// Detach all roles (Spatie)
 			$user->syncRoles([]);
 
-			UserBalance::where('user_id', $user->id)->delete();
-
-			KycLog::where('user_id', $user->id)->delete();
-
-			// Force delete the user
 			DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
 			$user->delete();
