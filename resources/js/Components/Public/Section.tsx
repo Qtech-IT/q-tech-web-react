@@ -19,23 +19,73 @@ const sectionVariants = cva('relative w-full', {
   variants: {
     spacing: {
       none: '',
-      sm: 'py-(--section-py-sm)',
-      default: 'py-(--section-py)',
-      lg: 'py-(--section-py-lg)',
+      sm: 'py-fx-band-sm',
+      default: 'py-fx-band',
+      lg: 'py-fx-band-lg',
     },
     background: {
       /** Inherits the page background. */
       default: '',
-      /** Subtle band for alternating sections. */
-      subtle: 'bg-(--surface-subtle)',
-      /** Card-coloured band. */
-      muted: 'bg-muted',
       /**
-       * Flips to the opposite end of the scale in each theme. Sets `--` tokens
-       * locally so nested components stay legible without prop drilling.
+       * Subtle band for alternating sections.
+       *
+       * `--fx-canvas` is rebound for the same reason `inverted` rebinds it:
+       * the token means "the surface behind me", and a band that paints a
+       * different surface without saying so makes every consumer of it lie.
+       * A gradient feathering into the canvas — the split hero's panel edge,
+       * its bottom horizon — was drawing near-white over a grey band and
+       * reading as a smear rather than dissolving into anything.
+       *
+       * Only the paint token moves; ink, lines and accents are unchanged
+       * because `surface-2` is a step, not a flip, and still carries the
+       * canvas contrast ratios.
        */
-      inverted:
-        'bg-(--surface-inverted) text-(--surface-inverted-foreground) [--foreground:var(--surface-inverted-foreground)] [--muted-foreground:color-mix(in_oklab,var(--surface-inverted-foreground)_72%,transparent)] [--border:color-mix(in_oklab,var(--surface-inverted-foreground)_18%,transparent)]',
+      subtle: 'bg-fx-surface-2 [--fx-canvas:var(--fx-surface-2)]',
+      /** Raised-surface band. Same reasoning as `subtle`. */
+      muted: 'bg-fx-surface-3 [--fx-canvas:var(--fx-surface-3)]',
+      /**
+       * Flips to the opposite end of the scale in each theme.
+       *
+       * Rather than restating colours on every descendant, the band rebinds the
+       * public ink and line tokens *locally*. Anything nested inside — a stat,
+       * a caption, a hairline — stays legible with no prop drilling and no
+       * `dark:` branch, because it is still asking for `--fx-ink` and simply
+       * getting the inverted value.
+       */
+      inverted: [
+        'bg-fx-inverse text-fx-inverse-ink',
+        // `--fx-canvas` flips too, so anything asking for "the surface behind
+        // me" (a knocked-out button label, a scrim) gets the right answer.
+        '[--fx-canvas:var(--fx-inverse)]',
+        '[--fx-ink:var(--fx-inverse-ink)]',
+        '[--fx-ink-soft:color-mix(in_oklab,var(--fx-inverse-ink)_74%,transparent)]',
+        '[--fx-ink-faint:color-mix(in_oklab,var(--fx-inverse-ink)_60%,transparent)]',
+        '[--fx-line:color-mix(in_oklab,var(--fx-inverse-ink)_16%,transparent)]',
+        '[--fx-line-strong:color-mix(in_oklab,var(--fx-inverse-ink)_28%,transparent)]',
+        '[--fx-surface:color-mix(in_oklab,var(--fx-inverse-ink)_7%,transparent)]',
+        '[--fx-surface-2:color-mix(in_oklab,var(--fx-inverse-ink)_11%,transparent)]',
+        // The accent and the focus ring have to flip too, or the one coloured
+        // element on the band becomes the only thing that fails contrast.
+        '[--fx-accent-text:var(--fx-accent-on-inverse)]',
+        '[--fx-focus:var(--fx-accent-on-inverse)]',
+        // Buttons are admin-authored for the CANVAS. The default primary fill
+        // is near-black, which on a near-black band would be an invisible
+        // control, so the band takes its buttons back from the settings and
+        // paints them from its own ink/fill pair — the same reasoning as
+        // `--fx-accent-on-inverse` above, and the same result the `inverse`
+        // tone produces by hand.
+        //
+        // The hover cuts are restated rather than inherited on purpose: a
+        // custom property is substituted where it is DECLARED, so the root's
+        // `--fx-btn-primary-hover` was already resolved against the root's
+        // fill and would not follow these rebindings on its own.
+        '[--fx-btn-primary:var(--fx-inverse-ink)]',
+        '[--fx-btn-primary-ink:var(--fx-inverse)]',
+        '[--fx-btn-primary-hover:color-mix(in_oklab,var(--fx-inverse-ink)_88%,var(--fx-inverse))]',
+        '[--fx-btn-secondary:transparent]',
+        '[--fx-btn-secondary-ink:var(--fx-inverse-ink)]',
+        '[--fx-btn-secondary-hover:color-mix(in_oklab,var(--fx-inverse-ink)_10%,transparent)]',
+      ].join(' '),
     },
     /** Clips decorative overflow (gradients, blurred orbs) to the section. */
     clip: {

@@ -380,6 +380,21 @@ class PageService
 
         $this->forgetKeys($keys);
 
+        /*
+         * The public renderer caches under a DIFFERENT key shape than the keys
+         * above: `PageRenderService::cachedPayload()` writes
+         * `CMS_PAGE->for('render', $uuid, $locale)`, while `$keys` here is
+         * addressed by `(site_id, locale, path)`. Forgetting one never touched
+         * the other, so an editor could save a section and the public page
+         * would keep serving the old copy until the 12h TTL expired.
+         *
+         * Flushing the whole family is deliberate rather than adding the render
+         * key by hand: the render payload is also invalidated by section, block,
+         * CTA and media writes, and every one of those call sites would
+         * otherwise have to know the renderer's private key format.
+         */
+        $this->forgetFamily(CacheKey::CMS_PAGE->value);
+
         // Menus embed page paths, so any page write can stale a menu tree.
         $this->forgetFamily(CacheKey::CMS_MENU->value);
     }

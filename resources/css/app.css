@@ -4,6 +4,10 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import './theme.css';
+/* Public-site design system. Imported AFTER theme.css so its public-only
+   layout tokens win, and scoped to `[data-site="public"]` so nothing in it can
+   reach an admin screen. See the header of that file for the reasoning. */
+@import './frontend.css';
 
 @custom-variant dark (&:is(.dark *));
 

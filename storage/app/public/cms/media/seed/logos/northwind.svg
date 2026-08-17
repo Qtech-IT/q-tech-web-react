@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="176" height="36" viewBox="0 0 176 36" fill="none" role="img" aria-label="Northwind">
+  <g fill="#F59E0B">
+    <circle cx="18" cy="18" r="6"/>
+    <g stroke="#F59E0B" stroke-width="2.6" stroke-linecap="round">
+      <path d="M18 2.5v4"/><path d="M18 29.5v4"/>
+      <path d="M2.5 18h4"/><path d="M29.5 18h4"/>
+      <path d="M7 7l2.8 2.8"/><path d="M26.2 26.2L29 29"/>
+      <path d="M29 7l-2.8 2.8"/><path d="M9.8 26.2L7 29"/>
+    </g>
+  </g>
+  <text x="44" y="24.5" font-family="Inter, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0F172A" letter-spacing="-0.4">Northwind</text>
+</svg>

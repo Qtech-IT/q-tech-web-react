@@ -1,6 +1,10 @@
 import type {
+  CmsCta,
+  CmsMedia,
   CmsMenuItem,
+  CmsPageSection,
   CmsPaginated,
+  CmsSectionBlock,
   CmsSectionField,
   CmsSectionType,
 } from '@/Types/cms';
@@ -82,6 +86,57 @@ export function unwrapItem<T>(raw: unknown): T | null {
   }
 
   return raw as T;
+}
+
+/**
+ * Strip the resource envelopes from one section, recursively.
+ *
+ * WHY THIS IS NEEDED AT ALL
+ * -------------------------
+ * `PageSectionResource` nests other API Resources — `MediaResource`,
+ * `CtaResource`, `SectionBlockResource::collection()` — and Laravel applies
+ * `JsonResource::$wrap` to each of them independently. `->resolve()` in
+ * `PageRenderService` unwraps only the OUTER collection, so what actually
+ * reaches the client is `blocks: { data: [...] }` and `cta: { data: {...} }`
+ * while `CmsPageSection` in `Types/cms.ts` declares them as a bare array and a
+ * bare object.
+ *
+ * The types and the wire format disagreed, so `tsc` was happy and the runtime
+ * was not: `blocksOfType` calls `.filter` on what it is told is an array, got
+ * an object, threw, and `SectionBoundary` caught it — which is why a fully
+ * populated hero rendered as nothing at all with no error in sight.
+ *
+ * Normalising here, once, is the same argument `unwrapList` already makes: the
+ * alternative is every section component growing its own `?.data` chain, and
+ * the first one to forget reintroduces exactly this bug.
+ */
+export function normalizeSection<T extends CmsPageSection>(raw: T): T {
+  return {
+    ...raw,
+    media: unwrapItem<CmsMedia>(raw.media),
+    cta: unwrapItem<CmsCta>(raw.cta),
+    secondary_cta: unwrapItem<CmsCta>(raw.secondary_cta),
+    gallery: unwrapList<CmsMedia>(raw.gallery),
+    blocks: unwrapList<CmsSectionBlock>(raw.blocks).map(normalizeSectionBlock),
+  };
+}
+
+/**
+ * The same treatment for one block, and for its nested rows.
+ *
+ * Recursive because a repeater may nest: `children` is another wrapped
+ * collection at every level, and a section that renders nesting would hit the
+ * identical `.filter` crash one level down.
+ */
+function normalizeSectionBlock(block: CmsSectionBlock): CmsSectionBlock {
+  return {
+    ...block,
+    media: unwrapItem<CmsMedia>(block.media),
+    cta: unwrapItem<CmsCta>(block.cta),
+    children: unwrapList<CmsSectionBlock>(block.children).map(
+      normalizeSectionBlock
+    ),
+  };
 }
 
 /** Pagination meta, when the payload carries any. */

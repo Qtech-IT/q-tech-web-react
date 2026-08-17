@@ -29,7 +29,6 @@ class JobController extends Controller
             resourcePagePrefix: 'Job',
             routePrefix: 'backend.jobs'
         );
-
     }
 
     /**
@@ -37,7 +36,6 @@ class JobController extends Controller
      */
     public function index(): Response
     {
-
         $this->authorize('view', 'job');
 
         $data = formatResourceResponse(
@@ -46,16 +44,15 @@ class JobController extends Controller
         );
 
         return AppResponse::asSuccess()
-            ->withComponent($this->modelProperty['pagePrefix'] . 'Index', [
-                'title'                => translate('Jobs'),
-                'data'                 => $data,
-                'stats'                => $this->service->getStats(),
-                'modelProperty'        => $this->modelProperty,
-                'advanceFilterOptions' => $this->service->getAdvanceFilterOptions()
+            ->withComponent($this->modelProperty['pagePrefix'].'Index', [
+                'title' => translate('Jobs'),
+                'data' => $data,
+                'stats' => $this->service->getStats(),
+                'modelProperty' => $this->modelProperty,
+                'advanceFilterOptions' => $this->service->getAdvanceFilterOptions(),
             ])->build();
     }
 
-   
     /**
      * Remove the specified job
      */
@@ -67,14 +64,12 @@ class JobController extends Controller
             $this->service->deleteJob($id);
 
             return AppResponse::asSuccess()
-                        ->withMessage('Job deleted successfully.')
-                        ->build();
-
+                ->withMessage('Job deleted successfully.')
+                ->build();
         } catch (\Exception $e) {
-
             return AppResponse::asError()
-                        ->withMessage($e->getMessage())
-                        ->build();
+                ->withMessage($e->getMessage())
+                ->build();
         }
     }
 
@@ -89,17 +84,14 @@ class JobController extends Controller
             $this->service->retryJob($id);
 
             return AppResponse::asSuccess()
-                    ->withMessage('Job queued for retry.')
-                    ->build();
-
+                ->withMessage('Job queued for retry.')
+                ->build();
         } catch (\Exception $e) {
-
             return AppResponse::asError()
-                    ->withMessage($e->getMessage())
-                    ->build();
+                ->withMessage($e->getMessage())
+                ->build();
         }
     }
-
 
     /**
      * Run/Execute a specific job immediately
@@ -109,13 +101,11 @@ class JobController extends Controller
         $this->authorize('run', 'job');
 
         try {
-            
             $this->service->runJob($id);
 
             return AppResponse::asSuccess()
                 ->withMessage('Job executed successfully.')
                 ->build();
-
         } catch (\Exception $e) {
             return AppResponse::asError()
                 ->withMessage($e->getMessage())
@@ -129,26 +119,24 @@ class JobController extends Controller
     public function bulkAction(Request $request): RedirectResponse
     {
         $request->validate([
-            'ids'    => ['required', 'array'],
-            'ids.*'  => ['required'],
-            'action' => ['required', new Enum(\App\Enums\Settings\BulkActionType::class)]
+            'ids' => ['required', 'array'],
+            'ids.*' => ['required'],
+            'action' => ['required', new Enum(\App\Enums\Settings\BulkActionType::class)],
         ]);
 
         $action = $request->input('action');
-        $ids    = $request->input('ids');
+        $ids = $request->input('ids');
 
         try {
             $this->service->handleBulkAction($ids, $action);
 
             return AppResponse::asSuccess()
-                            ->withMessage('Bulk action performed successfully.')
-                            ->build();
-
+                ->withMessage('Bulk action performed successfully.')
+                ->build();
         } catch (\Exception $e) {
-
             return AppResponse::asError()
-                            ->withMessage($e->getMessage())
-                            ->build();
+                ->withMessage($e->getMessage())
+                ->build();
         }
     }
 }

@@ -69,13 +69,8 @@ class MenuItemResource extends BaseResource
      */
     protected function resolveHref(): ?string
     {
-        return match ($this->link_type) {
-            MenuLinkType::URL, MenuLinkType::ANCHOR => $this->url,
-            MenuLinkType::PAGE => $this->relationLoaded('page') ? $this->page?->path : null,
-            MenuLinkType::ROUTE => $this->route_name && app('router')->has($this->route_name)
-                ? route($this->route_name, (array) $this->route_params, false)
-                : null,
-            default => null,
-        };
+        // Delegates to the model so the admin and the public navigation cannot
+        // resolve the same item to two different URLs.
+        return $this->resource->resolveHref();
     }
 }

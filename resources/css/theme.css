@@ -164,6 +164,89 @@
   --elevation-ring: 0 0 0 1px oklch(1 0 0 / 0.08);
 }
 
+/* =============================================================================
+   Admin brand adoption — ACCENT POINTS ONLY
+   -----------------------------------------------------------------------------
+   `BaseLayout` publishes the admin-authored brand as INPUT properties
+   (`--admin-brand-*`) on `<html>` and flags the element with `data-admin-brand`.
+   Nothing here fires unless that flag is present, so an install with no brand
+   settings keeps the palette above byte for byte.
+
+   WHY INPUTS AND NOT `--primary` DIRECTLY
+   ---------------------------------------
+   `.dark` also lives on `<html>`, and an inline declaration beats every
+   selector. Writing the resolved `--primary` inline would pin the light colour
+   into dark mode with no way to override it — the same trap `PublicLayout`
+   documents. The layout therefore only writes the authored inputs; the two
+   blocks below are what choose per theme.
+
+   WHAT IS DELIBERATELY NOT REBOUND
+   --------------------------------
+   `--background`, `--card`, `--popover`, `--secondary`, `--muted`,
+   `--muted-foreground`, `--accent` / `--accent-foreground` (the admin's neutral
+   hover surface, NOT the site accent), `--border`, `--input`, `--border-strong`,
+   `--surface-*`, `--destructive` and the chart ramp. Those are a tuned neutral
+   scale carrying dense tabular data; a colour picked for a landing page must
+   not be able to break contrast there. Only the accent points move.
+
+   `--sidebar-primary`, `--sidebar-primary-foreground` and `--sidebar-ring` are
+   declared as `var(--primary)` / `var(--ring)` on the same element, so they
+   follow automatically and must NOT be repeated here.
+   ========================================================================== */
+[data-admin-brand] {
+  --primary: var(--admin-brand-primary, oklch(0.208 0.042 265.755));
+  --primary-foreground: var(
+    --admin-brand-primary-ink,
+    oklch(0.984 0.003 247.858)
+  );
+
+  /* The focus ring is the one accent point that cannot take the authored
+     colour raw: a pale brand on a white canvas would drop under the 3:1
+     non-text minimum (WCAG 2.2 / 1.4.11). Pulling it toward the theme's
+     foreground keeps the hue recognisable while anchoring lightness, so the
+     ring can only ever get MORE contrast than the neutral default, never
+     less. */
+  --ring: color-mix(
+    in oklab,
+    var(--admin-brand-primary, oklch(0.55 0.05 256.788)) 62%,
+    var(--foreground)
+  );
+
+  --radius: var(--admin-brand-radius, 0.625rem);
+}
+
+.dark[data-admin-brand] {
+  /* There is ONE authored pair for both themes, and its default (#111827 on
+     #ffffff) is a light-theme fill: painted unchanged here it would be a
+     near-black button on a near-black canvas — invisible as a control (1.4.11)
+     even though its label still passed against it.
+
+     This is the same re-seating `frontend.css` applies to the public primary
+     button, reused rather than reinvented so the two surfaces cannot drift:
+     the fill is pulled toward this theme's ink and the label the same distance
+     toward the canvas. Both move together, so whatever contrast the editor
+     approved in the preview survives the flip, the chosen hue is still
+     recognisable, and a light fill authored for light mode simply stays light.
+     No second setting, no `dark:` branch in any component. */
+  --primary: color-mix(
+    in oklab,
+    var(--admin-brand-primary, oklch(0.929 0.013 255.508)) 28%,
+    var(--foreground)
+  );
+  --primary-foreground: color-mix(
+    in oklab,
+    var(--admin-brand-primary-ink, oklch(0.208 0.042 265.755)) 28%,
+    var(--background)
+  );
+  /* Same guard, mirrored: here the ring has to be LIGHTER than the canvas, so
+     it is seated toward the (near-white) foreground instead. */
+  --ring: color-mix(
+    in oklab,
+    var(--admin-brand-primary, oklch(0.7 0.03 264.364)) 45%,
+    var(--foreground)
+  );
+}
+
 @theme inline {
   --font-sans: 'Inter', 'Open Sans', ui-sans-serif, system-ui, sans-serif;
   --font-manrope: 'Inter', 'Open Sans', ui-sans-serif, system-ui, sans-serif;

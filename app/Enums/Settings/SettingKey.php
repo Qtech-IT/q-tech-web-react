@@ -86,6 +86,44 @@ enum SettingKey: string
     // ordering, media, or translation, gets its own table. So the default OG
     // image is a setting; social links are menu_items on a `social` menu.
     case SITE_TAGLINE = 'site_tagline';
+
+    /*
+     * Public brand theming. These drive the `--fx-*` accent tokens on the
+     * marketing site at runtime, so an admin can rebrand without a deploy.
+     *
+     * Stored as raw CSS colour values (any syntax the browser accepts: hex,
+     * oklch, hsl) because they are injected straight into a custom property.
+     * They deliberately do NOT touch the admin palette — the two design systems
+     * are separate, and an accent that works on a hero is rarely right for a
+     * dense data table.
+     */
+    case BRAND_ACCENT = 'brand_accent';
+
+    case BRAND_ACCENT_INK = 'brand_accent_ink';
+
+    case BRAND_ACCENT_DARK = 'brand_accent_dark';
+
+    case BRAND_ACCENT_INK_DARK = 'brand_accent_ink_dark';
+
+    case BRAND_RADIUS = 'brand_radius';
+
+    /*
+     * Public button colours.
+     *
+     * Separate from the accent on purpose: a hero CTA is a large filled slab
+     * and the accent is also used for small text, underlines and the focus
+     * ring. The value that reads well as a 3px underline is frequently the
+     * wrong value for a 56px button, so tying them together forces one of the
+     * two to be a compromise. `*_INK` is the label colour on that button and
+     * must stay legible against it.
+     */
+    case BRAND_BUTTON_PRIMARY = 'brand_button_primary';
+
+    case BRAND_BUTTON_PRIMARY_INK = 'brand_button_primary_ink';
+
+    case BRAND_BUTTON_SECONDARY = 'brand_button_secondary';
+
+    case BRAND_BUTTON_SECONDARY_INK = 'brand_button_secondary_ink';
     case DEFAULT_META_TITLE_SUFFIX = 'default_meta_title_suffix';
     case DEFAULT_META_DESCRIPTION = 'default_meta_description';
     case DEFAULT_OG_MEDIA = 'default_og_media';

@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { toast as reactHotToast } from "react-hot-toast";
-import { twMerge } from "tailwind-merge";
+import { extendTailwindMerge } from "tailwind-merge";
 
 /**
  * Get asset URL
@@ -11,6 +11,53 @@ export const getAssetUrl = (path: string): string => `/${path}`;
  * Get uploaded image URL
  */
 export const getUploadUrl = (path: string): string => `/images/uploads/${path}`;
+
+/**
+ * The project's fluid type scale, declared in `resources/css/theme.css`.
+ *
+ * tailwind-merge only knows Tailwind's stock font sizes, so it classifies
+ * `text-display` / `text-h2` / `text-overline` as TEXT COLOUR utilities. That
+ * put them in the same conflict group as `text-muted-foreground`, and
+ * `cn('text-overline text-muted-foreground')` silently dropped the size —
+ * which is invisible in review and only shows up as ragged typography on the
+ * page. Registering them as font sizes is what makes the tokens usable
+ * alongside a colour class.
+ */
+const TYPE_SCALE = [
+  "display",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "body-lg",
+  "body",
+  "body-sm",
+  "caption",
+  "overline",
+  // Public-site scale, declared in `resources/css/frontend.css`. Same reason:
+  // without these, `cn('text-fx-display text-fx-ink')` would drop the size.
+  "fx-display",
+  "fx-title",
+  "fx-heading",
+  "fx-subheading",
+  "fx-stat",
+  "fx-lead",
+  "fx-body",
+  "fx-body-sm",
+  "fx-meta",
+  "fx-label",
+  "fx-eyebrow",
+] as const;
+
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      "font-size": [{ text: [...TYPE_SCALE] }],
+    },
+  },
+});
 
 /**
  * Merge class names

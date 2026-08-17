@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  Brain,
   Briefcase,
   Building2,
   Cloud,
@@ -14,6 +15,7 @@ import {
   Layers,
   LifeBuoy,
   Linkedin,
+  Lock,
   Mail,
   MapPin,
   Newspaper,
@@ -22,10 +24,13 @@ import {
   Rocket,
   ShieldCheck,
   ShoppingCart,
+  Smartphone,
   Sparkles,
   Truck,
+  User,
   Users,
   Youtube,
+  Zap,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -48,6 +53,7 @@ import { cn } from '@/Utils/helpers'
  */
 const ICON_REGISTRY = {
   ArrowRight,
+  Brain,
   Briefcase,
   Building2,
   Cloud,
@@ -62,6 +68,7 @@ const ICON_REGISTRY = {
   Layers,
   LifeBuoy,
   Linkedin,
+  Lock,
   Mail,
   MapPin,
   Newspaper,
@@ -70,10 +77,13 @@ const ICON_REGISTRY = {
   Rocket,
   ShieldCheck,
   ShoppingCart,
+  Smartphone,
   Sparkles,
   Truck,
+  User,
   Users,
   Youtube,
+  Zap,
 } satisfies Record<string, LucideIcon>
 
 export type NavIconName = keyof typeof ICON_REGISTRY

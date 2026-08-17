@@ -75,8 +75,12 @@ class StatsCounterType implements SectionTypeContract
                 rules: ['max:500'],
             ),
 
+            // Singular by contract: a repeater field's name must equal the
+            // `blockTypes()` key it owns, or the admin editor binds it to the
+            // wrong type. This type has only one block type, so a mismatch
+            // here was masked by the editor's fallback rather than absent.
             SectionField::make(
-                name: 'stats',
+                name: 'stat',
                 label: translate('Stats'),
                 type: FieldType::REPEATER->value,
                 store: FieldStore::BLOCK,

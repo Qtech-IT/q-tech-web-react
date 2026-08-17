@@ -342,13 +342,26 @@ export function SectionEditorSheet({
                         {group === t('Items') ? (
                           <div className="space-y-6">
                             {repeaterFields.map((field) => {
-                              /* Each repeater field names the block_type it
-                                 owns; the definition carries the per-level
-                                 min/max the service enforces. */
-                              const blockType =
-                                Object.keys(sectionType.block_types ?? {}).find(
-                                  (key) => key === field.name
-                                ) ?? Object.keys(sectionType.block_types ?? {})[0];
+                              /* CONTRACT: a repeater field's `name` IS the
+                                 `block_types` key it owns — exact string
+                                 match, nothing else. The definition found
+                                 under that key carries the per-level min/max
+                                 the service enforces.
+
+                                 There is deliberately no fallback. This used
+                                 to fall back to the first declared block type,
+                                 which turned a naming mistake into a silent
+                                 mis-binding rather than an absent field: with
+                                 `stats`/`badges` named against `stat`/`badge`
+                                 keys, BOTH repeaters bound to `stat`, so the
+                                 "Trust Badges" editor created statistics and
+                                 badges could never be authored at all. A
+                                 repeater that renders nothing is a bug an
+                                 editor reports in a minute; one that writes
+                                 the wrong rows is a bug that ships. */
+                              const blockType = Object.keys(
+                                sectionType.block_types ?? {}
+                              ).find((key) => key === field.name);
 
                               if (!blockType) {
                                 return null;

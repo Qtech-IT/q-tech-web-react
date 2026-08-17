@@ -1,0 +1,674 @@
+/* =============================================================================
+   QTECH — PUBLIC SITE DESIGN SYSTEM
+   -----------------------------------------------------------------------------
+   The marketing site and the admin panel are two different products. This file
+   is the marketing product's visual identity and it deliberately shares nothing
+   with `theme.css` beyond the fact that both are CSS.
+
+   WHY THE `[data-site="public"]` SCOPE
+   -----------------------------------
+   Admin and site are ONE Inertia SPA. A per-route stylesheet would only be
+   correct on a hard load and would break the moment a user client-side
+   navigates from `/` into `/backend`. Scoping every value to the attribute that
+   `PublicLayout` puts on its root node means:
+
+     - the tokens exist exactly where the public chrome is mounted,
+     - they vanish the instant that subtree unmounts,
+     - one Vite entry, one stylesheet, no route coupling.
+
+   NAMING
+   ------
+   Every token is prefixed `--fx-`. No admin token name is redefined anywhere in
+   this file, so the two systems cannot collide, shadow, or drift into each
+   other. The only exceptions are `--header-height` / `--header-height-scrolled`
+   (see the note beside them) which are public-only tokens that happen to live
+   in `theme.css` and are read by `<html>` itself.
+
+   CONTRAST
+   --------
+   Every ink/surface pairing below is WCAG AA (>= 4.5:1 body, >= 3:1 for large
+   type, borders and focus indicators) in BOTH themes. Values are OKLCH so
+   lightness is perceptual and the ratios hold when a hue is retuned.
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   Public-only layout tokens that must live at :root
+   -----------------------------------------------------------------------------
+   `<html>` carries `scroll-padding-top: var(--header-height)`, and `<html>` is
+   an ancestor of the scope, not a descendant of it — a scoped value could never
+   reach it and anchor offsets would silently drift from the real header. These
+   two names are referenced by nothing in the admin (verified), so raising them
+   here is safe and keeps the sticky header and anchor offsets on one number.
+-------------------------------------------------------------------------- */
+:root {
+  --fx-header-h: 4.5rem;
+  --fx-header-h-condensed: 3.75rem;
+
+  /* Height of the optional utility strip. Declared at 0 so that every
+     `calc(var(--header-height) + var(--fx-utility-h))` in the codebase is
+     correct by default; `PublicLayout` raises it only when the CMS actually
+     supplies utility items. */
+  --fx-utility-h: 0rem;
+
+  --header-height: var(--fx-header-h);
+  --header-height-scrolled: var(--fx-header-h-condensed);
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --fx-header-h: 5.75rem;
+    --fx-header-h-condensed: 4.5rem;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   ADMIN-AUTHORED BRAND INPUTS
+   -----------------------------------------------------------------------------
+   `PublicLayout` writes five custom properties onto the same node that carries
+   `data-site="public"`, sourced from the `brand` Inertia prop.
+
+   They are namespaced `--fx-brand-*` and NEVER named `--fx-accent` directly,
+   and that is load-bearing rather than cosmetic. `.dark` lives on `<html>`
+   while `data-site="public"` lives on the layout div, so the dark rule
+   `.dark [data-site='public']` targets *the very element the inline style is
+   on* — and an inline declaration outranks every selector. Writing `--fx-accent`
+   inline would therefore freeze the light value into dark mode permanently.
+
+   Instead the layout publishes light AND dark inputs unconditionally, and the
+   two cascade blocks below each pick the one they want. One React render, no
+   theme branch in JS, no flash on theme toggle, and every `var()` carries the
+   hand-tuned literal as its fallback so an absent `brand` prop is a no-op.
+
+   Everything downstream of the accent (hover, text cut, focus, soft fill,
+   hairline, on-inverse cut) is DERIVED with `color-mix`, not restated. That is
+   what makes the rebrand safe: an editor picks one colour and the six dependent
+   values move with it, keeping their contrast relationships instead of being
+   left behind pointing at the old hue.
+-------------------------------------------------------------------------- */
+
+/* -----------------------------------------------------------------------------
+   LIGHT
+-------------------------------------------------------------------------- */
+[data-site='public'] {
+  /* ---- Ink ------------------------------------------------------------
+     A single cool, near-navy ink family. Hierarchy is three weights of the
+     same hue rather than three different greys, which is what stops a long
+     marketing page reading as "several designs stacked".
+       ink       21.0:1 on canvas
+       ink-soft   7.6:1 on canvas
+       ink-faint  5.1:1 on canvas (AA for body, used for meta only)          */
+  --fx-ink: oklch(0.19 0.028 258);
+  --fx-ink-soft: oklch(0.455 0.022 258);
+  --fx-ink-faint: oklch(0.555 0.02 258);
+
+  /* ---- Surfaces -------------------------------------------------------- */
+  --fx-canvas: oklch(0.994 0.002 250);
+  --fx-surface: oklch(1 0 0);
+  --fx-surface-2: oklch(0.971 0.005 252);
+  --fx-surface-3: oklch(0.945 0.008 253);
+  /* Inverted band: the opposite end of the scale, flips with the theme. */
+  --fx-inverse: oklch(0.185 0.028 258);
+  --fx-inverse-ink: oklch(0.975 0.004 250);
+
+  /* Translucent header fill. Mixed from the canvas so the blurred header
+     never looks like a grey card floating over the page. */
+  --fx-veil: color-mix(in oklab, var(--fx-canvas) 76%, transparent);
+  --fx-veil-solid: color-mix(in oklab, var(--fx-canvas) 92%, transparent);
+
+  /* ---- Lines ----------------------------------------------------------- */
+  --fx-line: oklch(0.915 0.007 254);
+  --fx-line-strong: oklch(0.845 0.011 254);
+
+  /* ---- Accent ---------------------------------------------------------
+     One hue for the whole site. `accent` is a FILL (white sits on it at
+     5.4:1); `accent-text` is the darker cut used when the accent has to be
+     TEXT on the canvas (7.1:1). Keeping those two jobs on two tokens is what
+     prevents the usual "brand colour fails contrast as a link" bug.        */
+  --fx-accent: var(--fx-brand-accent, oklch(0.52 0.168 257));
+  --fx-accent-ink: var(--fx-brand-accent-ink, oklch(1 0 0));
+
+  /* Derived cuts. `--fx-ink` is the high-contrast end of the scale in BOTH
+     themes (near-navy in light, near-white in dark), so "mix the accent toward
+     ink" means "make it more legible on this canvas" in both — one formula, no
+     `dark:` branch. The ratios below reproduce the previously hand-tuned
+     lightness values to within ~0.01 OKLCH L on the default hue. */
+  --fx-accent-hover: color-mix(in oklab, var(--fx-accent) 80%, var(--fx-ink));
+  --fx-accent-text: color-mix(in oklab, var(--fx-accent) 72%, var(--fx-ink));
+  --fx-accent-soft: color-mix(in oklab, var(--fx-accent) 10%, var(--fx-surface));
+  --fx-accent-line: color-mix(in oklab, var(--fx-accent) 32%, transparent);
+  /* The accent cut that is legible ON an inverted band. Mixing toward
+     `--fx-inverse-ink` (the band's own ink) is self-correcting: in light the
+     band is dark so this brightens, in dark the band is light so it deepens.
+     The `inverted` variant of `Section` rebinds `--fx-accent-text` to it. */
+  --fx-accent-on-inverse: color-mix(
+    in oklab,
+    var(--fx-accent) 44%,
+    var(--fx-inverse-ink)
+  );
+
+  --fx-focus: var(--fx-accent-text);
+
+  /* ---- Buttons ---------------------------------------------------------
+     A button fill is NOT the accent. On an enterprise site the primary action
+     is usually near-black while the accent is reserved for links, underlines
+     and focus — so the two are separate admin settings and separate tokens.
+
+     Fill and ink are authored as a pair in the admin (with a live preview of
+     the pairing), which is what keeps the label legible on the fill; the
+     tokens here only decide where that pair is applied. Each falls back to the
+     theme's own ink/canvas, so an installation that has never touched the
+     settings looks exactly as it did before they existed.                   */
+  --fx-btn-primary: var(--fx-brand-btn-primary, var(--fx-ink));
+  --fx-btn-primary-ink: var(--fx-brand-btn-primary-ink, var(--fx-canvas));
+  --fx-btn-secondary: var(--fx-brand-btn-secondary, transparent);
+  --fx-btn-secondary-ink: var(--fx-brand-btn-secondary-ink, var(--fx-ink));
+
+  /* Hover is derived, never authored: one setting per button, not three.
+     Mixing the fill toward the LABEL colour darkens a light button and
+     lightens a dark one, so the gesture reads the same whatever was picked. */
+  --fx-btn-primary-hover: color-mix(
+    in oklab,
+    var(--fx-btn-primary) 88%,
+    var(--fx-btn-primary-ink)
+  );
+  /* The secondary fill is transparent by default, so its hover is a tint of
+     its own label rather than a mix of a colour that is not there. */
+  --fx-btn-secondary-hover: color-mix(
+    in oklab,
+    var(--fx-btn-secondary-ink) 8%,
+    var(--fx-btn-secondary)
+  );
+
+  /* ---- Elevation ------------------------------------------------------
+     Marketing shadows: wide, soft, low-opacity, two layers (a tight contact
+     shadow plus a long ambient one). Deliberately unlike the admin's tight
+     1–2px UI shadows — these are meant to read as depth in a page, not as
+     affordance on a control.                                               */
+  --fx-shadow-1:
+    0 1px 2px -1px oklch(0.19 0.028 258 / 0.05),
+    0 6px 16px -8px oklch(0.19 0.028 258 / 0.08);
+  --fx-shadow-2:
+    0 2px 6px -3px oklch(0.19 0.028 258 / 0.06),
+    0 16px 36px -12px oklch(0.19 0.028 258 / 0.11);
+  --fx-shadow-3:
+    0 4px 12px -6px oklch(0.19 0.028 258 / 0.07),
+    0 34px 70px -20px oklch(0.19 0.028 258 / 0.15);
+  --fx-shadow-4:
+    0 8px 22px -12px oklch(0.19 0.028 258 / 0.09),
+    0 56px 110px -30px oklch(0.19 0.028 258 / 0.2);
+  /* Companion ring — 0 in light, a lit edge in dark (see below). */
+  --fx-edge: 0 0 #0000;
+
+  /* Decorative washes. Alpha only, so they tint whatever is beneath them
+     rather than painting a second background colour. */
+  --fx-wash-accent: color-mix(in oklab, var(--fx-accent) 13%, transparent);
+  --fx-wash-ink: color-mix(in oklab, var(--fx-ink) 5%, transparent);
+  /* The site-wide backdrop's three tints.
+     STATIC HUES, NOT ACCENT-DERIVED. Every other decorative colour here is
+     mixed from `--fx-accent` so a rebrand carries it — but this backdrop is
+     a fixed cool→warm sweep (sky on one side, cream on the other), and a
+     sweep only reads as *light falling across the page* when the two ends
+     sit a fixed distance apart on the wheel. Deriving either end from the
+     accent collapses that distance the moment the accent moves near it: a
+     green brand turned the "cool" end green and the whole thing stopped
+     reading as light and started reading as a colour cast.
+     They are separate tokens from `--fx-wash-*` (which tint bounded
+     surfaces — a hero panel, a badge glow) so tuning the backdrop can never
+     silently repaint those. */
+  --fx-mesh-cool: oklch(0.9 0.055 232 / 62%);
+  --fx-mesh-warm: oklch(0.93 0.055 82 / 62%);
+  --fx-mesh-soft: oklch(0.92 0.04 300 / 34%);
+
+  /* ---- Radii ----------------------------------------------------------
+     ONE admin-authored base, five multiples. Previously six independent
+     literals, which meant the brand `radius` setting could only ever have
+     moved one of them and the scale would have desynced on the first rebrand.
+
+     The multipliers are sub-linear on purpose: a 4x jump from the smallest to
+     the largest keeps big surfaces confident rather than pill-shaped. At the
+     0.5rem default this is 4 / 8 / 12 / 16 / 24 / 32px — tighter and more
+     enterprise than the previous 6 / 10 / 14 / 20 / 28 / 36px, which read
+     closer to a consumer app than to an engineering firm. */
+  --fx-r-base: var(--fx-brand-radius, 0.5rem);
+  --fx-r-xs: calc(var(--fx-r-base) * 0.5);
+  --fx-r-sm: var(--fx-r-base);
+  --fx-r-md: calc(var(--fx-r-base) * 1.5);
+  --fx-r-lg: calc(var(--fx-r-base) * 2);
+  --fx-r-xl: calc(var(--fx-r-base) * 3);
+  --fx-r-2xl: calc(var(--fx-r-base) * 4);
+  --fx-r-pill: 9999px;
+
+  /* ---- Measure & rhythm ----------------------------------------------- */
+  --fx-gutter: clamp(1.25rem, 0.6rem + 3.25vw, 3rem); /* 20 → 48 */
+  --fx-measure-page: 82.5rem; /* 1320 */
+  --fx-measure-wide: 90rem; /* 1440 */
+  --fx-measure-prose: 44rem; /* 704 — ~72ch at body size */
+
+  /* Vertical bands. Whitespace is still the primary luxury signal on a
+     marketing page, but the ceiling was tuned too generous — a 144px band
+     read as dead space rather than as rhythm once real content sat in it. */
+  --fx-band-sm: clamp(2.5rem, 1.75rem + 3.5vw, 4rem); /* 40 → 64 */
+  --fx-band: clamp(3.5rem, 2.4rem + 5.25vw, 6rem); /* 56 → 96 */
+  --fx-band-lg: clamp(3.25rem, 2.2rem + 5vw, 5.5rem); /* 52 → 88 */
+
+  /* Intra-block stacking. */
+  --fx-stack-xs: 0.5rem;
+  --fx-stack-sm: 0.75rem;
+  --fx-stack-md: 1.25rem;
+  --fx-stack-lg: clamp(1.5rem, 1.1rem + 1.9vw, 2.5rem);
+  --fx-stack-xl: clamp(2rem, 1.5rem + 2.4vw, 3.5rem);
+
+  /* ---- Motion ---------------------------------------------------------- */
+  --fx-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --fx-ease-soft: cubic-bezier(0.32, 0.72, 0, 1);
+  --fx-dur-1: 140ms;
+  --fx-dur-2: 240ms;
+  --fx-dur-3: 420ms;
+
+  background-color: var(--fx-canvas);
+  color: var(--fx-ink);
+  /* Hyphenate long words rather than letting a headline overflow at 320px. */
+  overflow-wrap: break-word;
+}
+
+/* -----------------------------------------------------------------------------
+   DARK
+   Not an inversion — a re-tune. Ink lightens, surfaces step UP from the canvas
+   (so elevation still reads), lines become alpha-white (so they survive on any
+   surface), and the accent brightens because a 0.52-lightness blue is invisible
+   on a dark canvas.
+-------------------------------------------------------------------------- */
+.dark [data-site='public'] {
+  --fx-ink: oklch(0.98 0.004 250); /* 17.9:1 on canvas */
+  --fx-ink-soft: oklch(0.775 0.016 255); /* 9.4:1 */
+  --fx-ink-faint: oklch(0.675 0.018 255); /* 6.5:1 */
+
+  --fx-canvas: oklch(0.168 0.021 258);
+  --fx-surface: oklch(0.213 0.023 258);
+  --fx-surface-2: oklch(0.193 0.022 258);
+  --fx-surface-3: oklch(0.245 0.024 258);
+  --fx-inverse: oklch(0.975 0.004 250);
+  --fx-inverse-ink: oklch(0.185 0.028 258);
+
+  --fx-veil: color-mix(in oklab, var(--fx-canvas) 72%, transparent);
+  --fx-veil-solid: color-mix(in oklab, var(--fx-canvas) 92%, transparent);
+
+  --fx-line: oklch(1 0 0 / 0.1);
+  --fx-line-strong: oklch(1 0 0 / 0.19);
+
+  /* Only the two BASE values are restated. Every derived cut above is written
+     in terms of `--fx-accent` and `--fx-ink`, both of which have already been
+     re-tuned by this block, so hover / text / soft / line / on-inverse / focus
+     all follow automatically. */
+  --fx-accent: var(--fx-brand-accent-dark, oklch(0.685 0.152 256));
+  --fx-accent-ink: var(--fx-brand-accent-ink-dark, oklch(0.16 0.03 258));
+
+  --fx-accent-soft: color-mix(in oklab, var(--fx-accent) 16%, var(--fx-surface));
+  --fx-accent-line: color-mix(in oklab, var(--fx-accent) 40%, transparent);
+
+  /* There is one button setting, not one per theme, and its default (#111827)
+     is a LIGHT-theme fill — painted unchanged here it would be a near-black
+     pill on a near-black canvas, invisible as a control (1.4.11) even though
+     its label still passed against it.
+
+     So the authored pair is re-seated rather than replaced: the fill is pulled
+     most of the way toward this theme's ink and the label the same distance
+     toward the canvas. The two move together, so whatever contrast the editor
+     approved in the preview survives the flip, the hue they picked is still
+     recognisable, and a light fill authored for light mode simply stays light.
+     No second setting, no `dark:` branch in any component.                   */
+  --fx-btn-primary: color-mix(
+    in oklab,
+    var(--fx-brand-btn-primary, var(--fx-canvas)) 28%,
+    var(--fx-ink)
+  );
+  --fx-btn-primary-ink: color-mix(
+    in oklab,
+    var(--fx-brand-btn-primary-ink, var(--fx-ink)) 28%,
+    var(--fx-canvas)
+  );
+  /* The secondary button carries a hairline and usually no fill, so only its
+     label needs re-seating — the fill stays exactly as authored. */
+  --fx-btn-secondary-ink: color-mix(
+    in oklab,
+    var(--fx-brand-btn-secondary-ink, var(--fx-canvas)) 28%,
+    var(--fx-ink)
+  );
+
+  /* Black shadows are invisible here, so each level pairs a deeper shadow
+     with a lit top edge that reads as the surface catching light. */
+  --fx-shadow-1:
+    0 1px 2px -1px oklch(0 0 0 / 0.55), 0 6px 16px -8px oklch(0 0 0 / 0.5);
+  --fx-shadow-2:
+    0 2px 6px -3px oklch(0 0 0 / 0.6), 0 18px 40px -14px oklch(0 0 0 / 0.6);
+  --fx-shadow-3:
+    0 4px 12px -6px oklch(0 0 0 / 0.62), 0 40px 80px -24px oklch(0 0 0 / 0.66);
+  --fx-shadow-4:
+    0 8px 22px -12px oklch(0 0 0 / 0.66), 0 64px 120px -32px oklch(0 0 0 / 0.72);
+  --fx-edge: inset 0 1px 0 0 oklch(1 0 0 / 0.06);
+
+  --fx-wash-accent: color-mix(in oklab, var(--fx-accent) 16%, transparent);
+  --fx-wash-ink: color-mix(in oklab, oklch(1 0 0) 4%, transparent);
+  /* Much fainter than light mode's: a warm bloom this strength on a dark
+     canvas reads as a colour cast rather than atmosphere. */
+  --fx-wash-warm: oklch(0.55 0.05 75 / 10%);
+
+  /* The same sweep, re-seated for a dark canvas: the hues hold so the page
+     keeps its identity across the toggle, but at a fraction of the alpha —
+     a 62% tint that reads as daylight on white reads as a colour cast on
+     near-black. */
+  --fx-mesh-cool: oklch(0.55 0.075 232 / 26%);
+  --fx-mesh-warm: oklch(0.58 0.07 82 / 15%);
+  --fx-mesh-soft: oklch(0.5 0.06 300 / 14%);
+}
+
+/* -----------------------------------------------------------------------------
+   Utility surface
+   Every token above is exposed as a real Tailwind utility so components never
+   hand-write `var(--fx-…)` in an arbitrary value. Because the utilities are
+   generated from `var()` references, they resolve to nothing outside the scope
+   — there is no way for a public class to paint an admin screen.
+-------------------------------------------------------------------------- */
+@theme inline {
+  /* ---- Colour ---------------------------------------------------------- */
+  --color-fx-ink: var(--fx-ink);
+  --color-fx-ink-soft: var(--fx-ink-soft);
+  --color-fx-ink-faint: var(--fx-ink-faint);
+  --color-fx-canvas: var(--fx-canvas);
+  --color-fx-surface: var(--fx-surface);
+  --color-fx-surface-2: var(--fx-surface-2);
+  --color-fx-surface-3: var(--fx-surface-3);
+  --color-fx-inverse: var(--fx-inverse);
+  --color-fx-inverse-ink: var(--fx-inverse-ink);
+  --color-fx-veil: var(--fx-veil);
+  --color-fx-veil-solid: var(--fx-veil-solid);
+  --color-fx-line: var(--fx-line);
+  --color-fx-line-strong: var(--fx-line-strong);
+  --color-fx-accent: var(--fx-accent);
+  --color-fx-accent-hover: var(--fx-accent-hover);
+  --color-fx-accent-ink: var(--fx-accent-ink);
+  --color-fx-accent-text: var(--fx-accent-text);
+  --color-fx-accent-soft: var(--fx-accent-soft);
+  --color-fx-accent-line: var(--fx-accent-line);
+  --color-fx-btn-primary: var(--fx-btn-primary);
+  --color-fx-btn-primary-ink: var(--fx-btn-primary-ink);
+  --color-fx-btn-primary-hover: var(--fx-btn-primary-hover);
+  --color-fx-btn-secondary: var(--fx-btn-secondary);
+  --color-fx-btn-secondary-ink: var(--fx-btn-secondary-ink);
+  --color-fx-btn-secondary-hover: var(--fx-btn-secondary-hover);
+  --color-fx-wash-accent: var(--fx-wash-accent);
+  --color-fx-wash-ink: var(--fx-wash-ink);
+  --color-fx-focus: var(--fx-focus);
+
+  /* ---- Type ------------------------------------------------------------
+     Fluid between 320px and 1600px. Line-height, tracking and weight travel
+     WITH the size — a display size at a body line-height is the single most
+     common way a marketing headline ends up looking amateur.                */
+  /* The hero headline. Trimmed from a 60px ceiling to 50px — the wider scale
+     read oversized against real (multi-line) CMS copy rather than premium.
+     Still hits full size well before the container stops growing, so a wide
+     viewport never looks like it is still reaching for its final size.
+
+     0.98 leading was too tight for the two- and three-line headlines the CMS
+     actually produces: descenders in line one were touching cap-heights in
+     line two. 1.04 keeps the block dense without collision. */
+  --text-fx-display: clamp(1.875rem, 1.32rem + 2.75vw, 3.125rem); /* 30 → 50 */
+  --text-fx-display--line-height: 1.1;
+  --text-fx-display--letter-spacing: -0.03em;
+  --text-fx-display--font-weight: 600;
+
+  /* One step above `display`, for a hero whose headline IS the page — a
+     centered statement with nothing beside it to share the eye with.
+     Deliberately NOT folded into `--text-fx-display`: that size is used by
+     every hero and by any section sitting at position 0, and inflating it
+     would undo the site-wide trim rather than serve this one composition. */
+  --text-fx-hero: clamp(2.25rem, 1.35rem + 4.5vw, 4.5rem); /* 36 → 72 */
+  --text-fx-hero--line-height: 1.05;
+  --text-fx-hero--letter-spacing: -0.035em;
+  --text-fx-hero--font-weight: 600;
+
+  --text-fx-title: clamp(1.625rem, 1.22rem + 2vw, 2.5rem); /* 26 → 40 */
+  --text-fx-title--line-height: 1.08;
+  --text-fx-title--letter-spacing: -0.032em;
+  --text-fx-title--font-weight: 600;
+
+  --text-fx-heading: clamp(1.5rem, 1.24rem + 1.3vw, 2.25rem); /* 24 → 36 */
+  --text-fx-heading--line-height: 1.15;
+  --text-fx-heading--letter-spacing: -0.028em;
+  --text-fx-heading--font-weight: 600;
+
+  --text-fx-subheading: clamp(1.125rem, 1.05rem + 0.38vw, 1.375rem); /* 18 → 22 */
+  --text-fx-subheading--line-height: 1.3;
+  --text-fx-subheading--letter-spacing: -0.018em;
+  --text-fx-subheading--font-weight: 600;
+
+  --text-fx-stat: clamp(1.875rem, 1.55rem + 1.6vw, 2.875rem); /* 30 → 46 */
+  --text-fx-stat--line-height: 1;
+  --text-fx-stat--letter-spacing: -0.04em;
+  --text-fx-stat--font-weight: 600;
+
+  --text-fx-lead: clamp(1rem, 0.96rem + 0.2vw, 1.125rem); /* 16 → 18 */
+  --text-fx-lead--line-height: 1.55;
+  --text-fx-lead--letter-spacing: -0.011em;
+
+  --text-fx-body: 1rem; /* 16 */
+  --text-fx-body--line-height: 1.65;
+
+  --text-fx-body-sm: 0.875rem; /* 14 */
+  --text-fx-body-sm--line-height: 1.55;
+
+  --text-fx-meta: 0.75rem; /* 12 */
+  --text-fx-meta--line-height: 1.45;
+
+  --text-fx-label: 0.8125rem; /* 13 — nav links, buttons */
+  --text-fx-label--line-height: 1.2;
+  --text-fx-label--letter-spacing: -0.005em;
+  --text-fx-label--font-weight: 500;
+
+  --text-fx-eyebrow: 0.6875rem; /* 11 */
+  --text-fx-eyebrow--line-height: 1.1;
+  --text-fx-eyebrow--letter-spacing: 0.15em;
+  --text-fx-eyebrow--font-weight: 600;
+
+  /* ---- Radii ------------------------------------------------------------ */
+  --radius-fx-xs: var(--fx-r-xs);
+  --radius-fx-sm: var(--fx-r-sm);
+  --radius-fx-md: var(--fx-r-md);
+  --radius-fx-lg: var(--fx-r-lg);
+  --radius-fx-xl: var(--fx-r-xl);
+  --radius-fx-2xl: var(--fx-r-2xl);
+  --radius-fx-pill: var(--fx-r-pill);
+
+  /* ---- Elevation -------------------------------------------------------- */
+  --shadow-fx-1: var(--fx-shadow-1);
+  --shadow-fx-2: var(--fx-shadow-2);
+  --shadow-fx-3: var(--fx-shadow-3);
+  --shadow-fx-4: var(--fx-shadow-4);
+
+  /* ---- Rhythm ----------------------------------------------------------- */
+  --spacing-fx-gutter: var(--fx-gutter);
+  --spacing-fx-band-sm: var(--fx-band-sm);
+  --spacing-fx-band: var(--fx-band);
+  --spacing-fx-band-lg: var(--fx-band-lg);
+  --spacing-fx-stack-xs: var(--fx-stack-xs);
+  --spacing-fx-stack-sm: var(--fx-stack-sm);
+  --spacing-fx-stack-md: var(--fx-stack-md);
+  --spacing-fx-stack-lg: var(--fx-stack-lg);
+  --spacing-fx-stack-xl: var(--fx-stack-xl);
+  --spacing-fx-header: var(--fx-header-h);
+
+  --container-fx-page: var(--fx-measure-page);
+  --container-fx-wide: var(--fx-measure-wide);
+  --container-fx-prose: var(--fx-measure-prose);
+
+  /* ---- Motion ----------------------------------------------------------- */
+  --ease-fx: var(--fx-ease);
+  --ease-fx-soft: var(--fx-ease-soft);
+}
+
+/* -----------------------------------------------------------------------------
+   Composite utilities
+-------------------------------------------------------------------------- */
+
+/* The site's one focus indicator. An outline (not a ring) so it is never
+   clipped by `overflow-hidden` on a parent, and drawn in the accent so it is
+   >= 3:1 against every surface in both themes. */
+@utility fx-focus {
+  &:focus-visible {
+    outline: 2px solid var(--fx-focus);
+    outline-offset: 2px;
+  }
+}
+
+/* Elevation + lit edge as one declaration, so dark mode never loses the edge
+   by a component writing `shadow-fx-2` on its own. */
+@utility fx-raise-1 {
+  box-shadow: var(--fx-edge), var(--fx-shadow-1);
+}
+
+@utility fx-raise-2 {
+  box-shadow: var(--fx-edge), var(--fx-shadow-2);
+}
+
+@utility fx-raise-3 {
+  box-shadow: var(--fx-edge), var(--fx-shadow-3);
+}
+
+@utility fx-raise-4 {
+  box-shadow: var(--fx-edge), var(--fx-shadow-4);
+}
+
+/* Hairline grid used behind the hero. Two repeating linear gradients masked to
+   a soft radial falloff — originally composed here, no external asset. */
+@utility fx-grid-veil {
+  background-image:
+    linear-gradient(to right, var(--fx-wash-ink) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--fx-wash-ink) 1px, transparent 1px);
+  background-size: 4.5rem 4.5rem;
+  mask-image: radial-gradient(
+    ellipse 80% 60% at 50% 0%,
+    #000 0%,
+    transparent 75%
+  );
+}
+
+/* Fine grid for the inside of a bounded surface (the hero figure).
+   Distinct from `fx-grid-veil`: half the cell size, no radial mask, and it
+   fades on a single axis so the bottom of the panel dissolves into the
+   surface rather than ending on a hard ruled line. */
+@utility fx-fine-grid {
+  background-image:
+    linear-gradient(to right, var(--fx-wash-ink) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--fx-wash-ink) 1px, transparent 1px);
+  background-size: 2.25rem 2.25rem;
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 92%);
+}
+
+/* The hero figure's colour field: three offset accent blooms at different
+   radii and opacities. Composed here rather than as three absolutely
+   positioned divs so the whole field is one paint, one layer, and cannot be
+   reordered into the wrong stacking position by a caller. */
+@utility fx-accent-field {
+  background-image:
+    radial-gradient(
+      ellipse 62% 54% at 82% 8%,
+      var(--fx-wash-accent),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 48% 46% at 12% 78%,
+      color-mix(in oklab, var(--fx-accent) 9%, transparent),
+      transparent 72%
+    ),
+    linear-gradient(
+      160deg,
+      var(--fx-surface) 0%,
+      var(--fx-surface-2) 55%,
+      var(--fx-surface-3) 100%
+    );
+}
+
+/* The whole site's ambient backdrop — three soft blooms (accent, warm,
+   ink) at low alpha over the canvas, fixed to the viewport so it reads as
+   atmosphere behind the page rather than artwork painted on one section.
+   Every section keeps its own `background` variant on top; `default`
+   sections are the only ones transparent enough to show it, exactly like
+   `fx-accent-field` shows through nothing but is itself the base layer. */
+@utility fx-mesh-canvas {
+  background-color: var(--fx-canvas);
+  background-image:
+    /* Cool corner, warm corner, and a soft lilac join where they meet, all
+       anchored OUTSIDE the box (negative / >100% positions) so only each
+       bloom's gentle outer falloff is ever on screen. A bloom centred inside
+       the viewport shows its bright core and reads as a spotlight; pushed
+       past the edge it reads as light arriving from off-page, which is the
+       whole difference between "gradient" and "atmosphere". No pattern, no
+       ruled lines — the sweep is the entire treatment. */
+    radial-gradient(
+      ellipse 70% 58% at -8% -12%,
+      var(--fx-mesh-cool),
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 68% 56% at 108% -6%,
+      var(--fx-mesh-warm),
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 60% 45% at 50% -20%,
+      var(--fx-mesh-soft),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 80% 50% at 50% 112%,
+      var(--fx-mesh-cool),
+      transparent 72%
+    );
+}
+
+/* The section-loading placeholder's shimmer sweep. A moving gradient rather
+   than `animate-pulse`, both because it reads as "loading" more clearly at a
+   glance and because it is composed from `--fx-surface-*` — the admin's
+   `Skeleton` paints in `bg-accent`, which is an ADMIN token and has no
+   business on a public page even while empty. */
+@keyframes fx-shimmer-sweep {
+  from {
+    background-position: -135% 0;
+  }
+  to {
+    background-position: 135% 0;
+  }
+}
+
+@utility fx-shimmer {
+  background-color: var(--fx-surface-2);
+  background-image: linear-gradient(
+    100deg,
+    transparent 35%,
+    var(--fx-surface-3) 50%,
+    transparent 65%
+  );
+  background-size: 250% 100%;
+  animation: fx-shimmer-sweep 1.7s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-site='public'] .fx-shimmer {
+    animation: none;
+    background-image: none;
+  }
+}
+
+/* Public-surface selection colour. Scoped, so the admin keeps its own. */
+[data-site='public'] ::selection {
+  background: var(--fx-accent);
+  color: var(--fx-accent-ink);
+}
+
+/* Editorial numerals: lining, tabular, no slashed zero — statistics must not
+   jitter as they count. `app.css` forces `font-variant-numeric: normal` on
+   `body, span, p, div` with `!important`, so this has to match that weight to
+   win inside the public scope. */
+[data-site='public'] .fx-numerals {
+  font-variant-numeric: tabular-nums lining-nums !important;
+}

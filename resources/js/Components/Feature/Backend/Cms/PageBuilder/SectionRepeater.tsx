@@ -81,12 +81,23 @@ export function SectionRepeater({
   const [order, setOrder] = useState<CmsSectionBlock[] | null>(null);
   const [expanded, setExpanded] = useState<number[]>([]);
 
+  /* `items` is the section's WHOLE block list — the editor hands the same
+     array to every repeater on the section — so `block_type` is as much a part
+     of "is this mine?" as `parent_id` is. Without it a section declaring two
+     repeaters shows every row in both: each list renders the other type's rows
+     against its own field schema (a badge edited as a statistic), and counts
+     them against its own `max`, so a full `badge` list can lock the `stat`
+     list out of "Add item" for rows it does not own. */
   const siblings = useMemo(
     () =>
       (order ?? items)
-        .filter((item) => (item.parent_id ?? null) === parentId)
+        .filter(
+          (item) =>
+            item.block_type === blockType &&
+            (item.parent_id ?? null) === parentId
+        )
         .sort((a, b) => a.sort_order - b.sort_order),
-    [order, items, parentId]
+    [order, items, parentId, blockType]
   );
 
   const max = definition.max ?? 0;
@@ -302,8 +313,8 @@ interface RepeaterRowProps {
  * `blockTypes()` declares a `fields` array per block type using exactly the
  * same `SectionField::make()` shape a section uses, so the item form is driven
  * by the registry for the same reason the section form is: a new block type
- * needs no frontend change. A `stat` item gets value/label/description/icon
- * and a `logo` item gets name/media, because that is what the PHP says — not
+ * needs no frontend change. A `stat` item gets value/label/prefix/suffix and a
+ * `badge` item gets label/icon/media, because that is what the PHP says — not
  * because this component knows the difference.
  */
 function RepeaterRow({

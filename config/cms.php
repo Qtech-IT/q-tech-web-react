@@ -1,7 +1,10 @@
 <?php
 
 use App\Data\Cms\SectionTypes\CtaBandType;
+use App\Data\Cms\SectionTypes\HeroCenteredType;
+use App\Data\Cms\SectionTypes\HeroFlowType;
 use App\Data\Cms\SectionTypes\HeroSplitType;
+use App\Data\Cms\SectionTypes\ServiceGridType;
 use App\Data\Cms\SectionTypes\StatsCounterType;
 
 return [
@@ -32,8 +35,11 @@ return [
 
     'section_types' => [
         HeroSplitType::class,
+        HeroFlowType::class,
+        HeroCenteredType::class,
         StatsCounterType::class,
         CtaBandType::class,
+        ServiceGridType::class,
     ],
 
     /*

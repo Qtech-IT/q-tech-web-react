@@ -509,6 +509,19 @@ class PageSectionService
      */
     public function forgetSection(PageSection $section): void
     {
+        /*
+         * FIRST, and unconditionally — this method has early returns on both
+         * the page-owned and block-owned branches, so anything placed at the
+         * bottom is unreachable for the common case.
+         *
+         * The public renderer caches under `CMS_PAGE->for('render', $uuid,
+         * $locale)`, which none of the `(site_id, locale, path)` keys below
+         * match. Without this, a section edit saved successfully and the live
+         * page kept serving the previous copy — the worst failure this cache
+         * can produce, because nothing about it looks broken from the admin.
+         */
+        $this->forgetFamily(CacheKey::CMS_PAGE->value);
+
         if ($section->page_id !== null) {
             $page = $section->relationLoaded('page') ? $section->page : Page::find($section->page_id);
 

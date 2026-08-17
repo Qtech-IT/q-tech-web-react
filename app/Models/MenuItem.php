@@ -130,4 +130,28 @@ class MenuItem extends Model
         return $query->where('menu_id', $node->menu_id)
             ->where('path', 'like', $node->path.$node->id.'/%');
     }
+
+    /**
+     * Destination for this item, or null when it has none.
+     *
+     * Null rather than `'#'`: an anchor with `href="#"` is focusable, announced
+     * as a link, and goes nowhere — a WCAG failure the CMS must not be able to
+     * author. Callers render a non-link element instead.
+     *
+     * Lives on the MODEL, not on `MenuItemResource`, because both the admin
+     * resource and the public `NavigationService` need it. It was resource-only,
+     * so the public navigation read a non-existent `$item->href`, got null, and
+     * every menu link on the site was dead.
+     */
+    public function resolveHref(): ?string
+    {
+        return match ($this->link_type) {
+            MenuLinkType::URL, MenuLinkType::ANCHOR => $this->url,
+            MenuLinkType::PAGE => $this->relationLoaded('page') ? $this->page?->path : null,
+            MenuLinkType::ROUTE => $this->route_name && app('router')->has($this->route_name)
+                ? route($this->route_name, (array) $this->route_params, false)
+                : null,
+            default => null,
+        };
+    }
 }

@@ -25,8 +25,18 @@ enum FieldStore: string
     case BLOCK = 'block';
 
     /**
-     * The only six field names legal for FieldStore::COLUMN — the universal
-     * scalars carried as real columns on `page_sections`.
+     * The only field names legal for FieldStore::COLUMN — the universal scalars
+     * carried as real columns on `page_sections`.
+     *
+     * This list must mirror the `page_sections` migration. `secondary_cta_id`
+     * was missing while the column existed, so any section type declaring a
+     * second CTA failed the registry self-check even though the schema
+     * supported it. If a column is added to `page_sections`, add it here in the
+     * same change.
+     *
+     * Applies to SECTION fields only. Repeater (`block`) fields are checked
+     * against `section_blocks`' own columns, which is why a block field named
+     * `value` or `label` may legally use `column` without appearing here.
      */
     public const UNIVERSAL_SCALARS = [
         'eyebrow',
@@ -35,6 +45,7 @@ enum FieldStore: string
         'body',
         'media_id',
         'cta_id',
+        'secondary_cta_id',
     ];
 
     /**

@@ -1,12 +1,16 @@
-import type { ReactNode } from 'react'
+import { useEffect, useMemo } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { usePage } from '@inertiajs/react'
 
 import { Footer } from '@/Components/Public/Footer'
 import { Header } from '@/Components/Public/Header'
+import { partitionHeaderItems } from '@/Components/Public/navSlots'
+import { SiteLoader } from '@/Components/Public/SiteLoader'
 import { HotToaster } from '@/Components/UI/HotToast'
 import { fallbackNavigation } from '@/Config/navigation'
 import { useTranslations } from '@/Hooks/useTranslations'
 import { cn } from '@/Utils/helpers'
+import type { BrandTokens } from '@/Types/brand'
 import type { SiteNavigation } from '@/Types/navigation'
 
 export interface PublicLayoutProps {
@@ -24,7 +28,55 @@ interface PublicSharedProps {
   site_theme_settings?: Record<string, unknown>
   logos?: Record<string, string>
   copy_right_text?: string
+  brand?: BrandTokens | null
   [key: string]: unknown
+}
+
+/**
+ * Map the `brand` prop onto the `--fx-brand-*` inputs `frontend.css` reads.
+ *
+ * WHY BOTH THEMES ARE WRITTEN AT ONCE
+ * -----------------------------------
+ * `.dark` sits on `<html>`; `data-site="public"` sits on this div. The dark
+ * cascade block therefore targets the same element this inline style lands on,
+ * and inline declarations beat every selector — so writing `--fx-accent`
+ * directly would pin the light colour into dark mode with no way to override.
+ *
+ * Publishing light and dark under separate names lets the stylesheet choose.
+ * There is one React render, no `useTheme()` dependency, no second code path,
+ * and toggling the theme is a pure CSS transition with no re-render at all.
+ *
+ * A missing token is omitted rather than emitted empty, because every consumer
+ * reads it as `var(--fx-brand-x, <literal default>)` and a declared-but-empty
+ * custom property is NOT the same as an absent one — it suppresses the
+ * fallback and computes to nothing. Omitting is what makes the fallback fire.
+ */
+function brandStyle(brand: BrandTokens | null | undefined): CSSProperties {
+  if (!brand) {
+    return {}
+  }
+
+  const inputs: Array<[string, string | undefined]> = [
+    ['--fx-brand-accent', brand.accent],
+    ['--fx-brand-accent-ink', brand.accentInk],
+    ['--fx-brand-accent-dark', brand.accentDark],
+    ['--fx-brand-accent-ink-dark', brand.accentInkDark],
+    ['--fx-brand-radius', brand.radius],
+    ['--fx-brand-btn-primary', brand.buttonPrimary],
+    ['--fx-brand-btn-primary-ink', brand.buttonPrimaryInk],
+    ['--fx-brand-btn-secondary', brand.buttonSecondary],
+    ['--fx-brand-btn-secondary-ink', brand.buttonSecondaryInk],
+  ]
+
+  const style: Record<string, string> = {}
+
+  for (const [name, value] of inputs) {
+    if (typeof value === 'string' && value.trim() !== '') {
+      style[name] = value.trim()
+    }
+  }
+
+  return style as CSSProperties
 }
 
 /**
@@ -66,12 +118,105 @@ export default function PublicLayout({
   // `url` lives on the usePage() object, not on `.props`.
   const currentUrl = url
 
+  // Memoised on the prop identity so a navigation that does not change the
+  // brand does not hand React a fresh style object and re-commit the root.
+  const brandTokens = useMemo(() => brandStyle(page.brand), [page.brand])
+
+  /*
+   * The layout is the composition root, so it — not the header — decides which
+   * primary items belong to which header region. The header renders regions;
+   * it does not discover them. That split matters for one concrete reason:
+   * `<main>` has to reserve the utility strip's height, and `<main>` is the
+   * header's SIBLING. If the header partitioned the menu privately, the layout
+   * could not know whether to reserve 0 or 36px and the first section would
+   * slide under the bar the moment an editor added a utility link.
+   */
+  const regions = useMemo(
+    () => partitionHeaderItems(navigation.primary),
+    [navigation.primary]
+  )
+
+  const hasUtility = regions.utility.length > 0
+
+  const rootStyle = useMemo<CSSProperties>(
+    () =>
+      // `--fx-utility-h` defaults to 0 in `frontend.css`; it is raised only
+      // when the strip actually renders, so the header bar, the strip and
+      // `<main>`'s reserved space are all driven off one number and cannot
+      // disagree. The cast is unavoidable — `CSSProperties` has no index
+      // signature for custom properties, though React sets them correctly.
+      hasUtility
+        ? ({ ...brandTokens, '--fx-utility-h': '2.25rem' } as CSSProperties)
+        : brandTokens,
+    [brandTokens, hasUtility]
+  )
+
+  /*
+   * Mirror the brand inputs onto <html> as well as this div.
+   *
+   * Radix portals `SheetContent` (the mobile drawer), dialogs and popovers to
+   * `document.body` — OUTSIDE this subtree. Those portals re-apply
+   * `data-site="public"`, which restores the `--fx-*` token DEFINITIONS from
+   * `frontend.css`, but definitions are not values: `--fx-btn-primary` reads
+   * `var(--fx-brand-btn-primary, var(--fx-ink))`, and the input it needs was
+   * only ever an inline style on this element, which a portal cannot inherit.
+   *
+   * The result was a mobile CTA that ignored the configured button colour and
+   * silently fell back to near-black ink, while the identical button on the
+   * page behind it was correctly branded. Publishing the inputs on the root
+   * element is the same fix `BaseLayout` already uses for the admin, and for
+   * exactly the same reason.
+   *
+   * Only the brand inputs move. `--fx-utility-h` stays on the div because it
+   * describes this layout's own geometry, not the brand.
+   */
+  useEffect(() => {
+    const root = document.documentElement
+    const names = Object.keys(brandTokens)
+
+    if (names.length === 0) {
+      return
+    }
+
+    for (const name of names) {
+      root.style.setProperty(name, (brandTokens as Record<string, string>)[name] as string)
+    }
+
+    return () => {
+      for (const name of names) {
+        root.style.removeProperty(name)
+      }
+    }
+  }, [brandTokens])
+
   return (
-    <div className="flex min-h-svh flex-col bg-background text-foreground">
+    // `data-site="public"` is what activates the entire public design system.
+    // Every `--fx-*` token in `resources/css/frontend.css` is scoped to this
+    // attribute, so the marketing identity exists exactly as long as this
+    // subtree is mounted and can never reach an admin screen — which matters
+    // because admin and site are one Inertia SPA sharing one stylesheet.
+    <div
+      data-site="public"
+      // The admin-authored accent and radius enter the design system here and
+      // nowhere else. `frontend.css` derives hover, text, focus, soft fill,
+      // hairline and on-inverse cuts from them, so this handful of properties
+      // repaints the entire public site.
+      style={rootStyle}
+      className="flex min-h-svh flex-col text-fx-ink text-fx-body antialiased"
+    >
+      {/* The site's ambient backdrop. `fixed` rather than a child of the flow,
+          so it reads as atmosphere behind the whole page — header, every
+          section, footer — rather than as one more scrolling layer, and so a
+          very tall page never stretches or repeats the blooms. `-z-10` keeps
+          it beneath content without needing every section to opt in. */}
+      <div aria-hidden="true" className="fixed inset-0 z-0 fx-mesh-canvas" />
+
+      <SiteLoader siteName={siteName} />
+
       {/* First focusable element on the page. Visually hidden until focused. */}
       <a
         href="#main-content"
-        className="sr-only rounded-md bg-background px-4 py-2 text-sm font-medium ring-2 ring-ring focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[60]"
+        className="sr-only rounded-fx-md border border-fx-line bg-fx-surface px-5 py-3 text-fx-label text-fx-ink fx-raise-2 focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[60] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fx-focus"
       >
         {t('Skip to content')}
       </a>
@@ -80,7 +225,9 @@ export default function PublicLayout({
           `favicon`. There is no dark-logo setting yet, so the header falls
           back to the wordmark in dark mode rather than pretending otherwise. */}
       <Header
-        items={navigation.primary}
+        items={regions.nav}
+        utility={regions.utility}
+        search={regions.search}
         ctas={navigation.ctas}
         currentUrl={currentUrl}
         siteName={siteName}
@@ -92,11 +239,20 @@ export default function PublicLayout({
         id="main-content"
         tabIndex={-1}
         className={cn(
-          'flex-1 focus:outline-none',
+          // `relative z-10`: the backdrop is a `position: fixed` sibling, and
+          // a positioned element always paints above the page's normal-flow
+          // content at the same stacking level regardless of DOM order — so
+          // without an explicit stack of its own, `<main>` rendered BELOW the
+          // backdrop and every section vanished under a solid wash. Content
+          // needs its own explicit position to out-rank it on purpose.
+          'relative z-10 flex-1 focus:outline-none',
           // Reserve the sticky header's space unless the page opts into an
-          // overlay hero. Uses the same token the header is sized from, so the
-          // two can never drift apart.
-          !overlayHeader && 'pt-(--header-height)',
+          // overlay hero. Uses the same tokens the header is sized from, so
+          // the two can never drift apart — including the utility strip, which
+          // is inside the fixed header and therefore contributes to the space
+          // `<main>` has to leave for it.
+          !overlayHeader &&
+            'pt-[calc(var(--header-height)+var(--fx-utility-h))]',
           className
         )}
       >

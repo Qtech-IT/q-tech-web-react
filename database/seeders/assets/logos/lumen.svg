@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="164" height="36" viewBox="0 0 164 36" fill="none" role="img" aria-label="Lumen">
+  <g fill="#EF4444">
+    <circle cx="9" cy="11" r="4"/><circle cx="21" cy="8" r="4"/>
+    <circle cx="15" cy="19" r="4"/><circle cx="27" cy="19" r="4"/>
+    <circle cx="9" cy="27" r="4"/><circle cx="22" cy="29" r="4"/>
+  </g>
+  <text x="44" y="24.5" font-family="Inter, Helvetica, Arial, sans-serif" font-size="18" font-weight="800" fill="#0F172A" letter-spacing="-0.5">lumen</text>
+</svg>

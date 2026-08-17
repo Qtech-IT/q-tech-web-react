@@ -74,6 +74,72 @@ class CmsSettingsSeeder extends Seeder
                 'default' => null,
             ],
 
+            /*
+             * Brand theming for the PUBLIC site only.
+             *
+             * Values are injected verbatim into `--fx-accent` etc. on the
+             * public root, so any CSS colour syntax works. Light and dark are
+             * separate keys rather than one value with an opacity trick,
+             * because an accent that passes AA on white almost never passes on
+             * near-black — one value would silently fail contrast in one theme.
+             *
+             * `*_INK` is the text colour that sits ON the accent (button
+             * labels), so the admin can keep the pair legible together.
+             */
+            SettingKey::BRAND_ACCENT->value => [
+                'title' => 'Brand — Accent Colour (Light)',
+                'description' => 'Primary accent on the public site in light mode. Any CSS colour: #1d4ed8, oklch(0.55 0.19 258).',
+                'default' => 'oklch(0.55 0.19 258)',
+            ],
+
+            SettingKey::BRAND_ACCENT_INK->value => [
+                'title' => 'Brand — Accent Text Colour (Light)',
+                'description' => 'Text colour placed on top of the accent. Must reach 4.5:1 against it.',
+                'default' => 'oklch(0.99 0 0)',
+            ],
+
+            SettingKey::BRAND_ACCENT_DARK->value => [
+                'title' => 'Brand — Accent Colour (Dark)',
+                'description' => 'Accent in dark mode. Usually a lighter, less saturated form of the light accent.',
+                'default' => 'oklch(0.72 0.15 258)',
+            ],
+
+            SettingKey::BRAND_ACCENT_INK_DARK->value => [
+                'title' => 'Brand — Accent Text Colour (Dark)',
+                'description' => 'Text colour on the accent in dark mode.',
+                'default' => 'oklch(0.16 0.03 258)',
+            ],
+
+            SettingKey::BRAND_BUTTON_PRIMARY->value => [
+                'title' => 'Brand — Primary Button Colour',
+                'description' => 'Fill of the main call-to-action button on the public site.',
+                'default' => '#111827',
+            ],
+
+            SettingKey::BRAND_BUTTON_PRIMARY_INK->value => [
+                'title' => 'Brand — Primary Button Text',
+                'description' => 'Label colour on the primary button. Must reach 4.5:1 against its fill.',
+                'default' => '#ffffff',
+            ],
+
+            SettingKey::BRAND_BUTTON_SECONDARY->value => [
+                'title' => 'Brand — Secondary Button Colour',
+                'description' => 'Fill of the secondary button. Often transparent with a border.',
+                'default' => 'transparent',
+            ],
+
+            SettingKey::BRAND_BUTTON_SECONDARY_INK->value => [
+                'title' => 'Brand — Secondary Button Text',
+                'description' => 'Label and border colour on the secondary button.',
+                'default' => '#111827',
+            ],
+
+            SettingKey::BRAND_RADIUS->value => [
+                'title' => 'Brand — Corner Radius',
+                'description' => 'Base corner radius for public buttons and cards, e.g. 0.5rem. Larger reads friendlier, smaller reads more corporate.',
+                'default' => '0.5rem',
+            ],
+
             SettingKey::DEFAULT_META_TITLE_SUFFIX->value => [
                 'title' => 'SEO — Default Meta Title Suffix',
                 'description' => 'Appended to every page title that does not override it.',

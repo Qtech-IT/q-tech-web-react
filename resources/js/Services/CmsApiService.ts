@@ -71,11 +71,55 @@ export async function fetchData<T>(
 }
 
 /**
+ * The asset version of the page currently loaded in this tab.
+ *
+ * Inertia publishes it in two places and neither is guaranteed on its own:
+ * `history.state.page` exists only after a client-side navigation, and the
+ * `data-page` attribute is only authoritative on the very first load. Reading
+ * history first and falling back to the attribute covers both.
+ *
+ * Returning `''` when neither is present is deliberate — that is exactly what
+ * this function used to be hard-coded to send, so a browser where neither
+ * source exists is no worse off than before.
+ */
+function currentInertiaVersion(): string {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+
+  const fromHistory = (window.history.state as { page?: { version?: unknown } } | null)
+    ?.page?.version;
+
+  if (fromHistory !== undefined && fromHistory !== null) {
+    return String(fromHistory);
+  }
+
+  const raw = document.getElementById('app')?.getAttribute('data-page');
+
+  if (raw) {
+    try {
+      return String((JSON.parse(raw) as { version?: unknown }).version ?? '');
+    } catch {
+      // A malformed data-page is not this function's problem to report.
+    }
+  }
+
+  return '';
+}
+
+/**
  * GET an Inertia page and return its props, without navigating.
  *
- * `X-Inertia-Version` must match the server's asset version or Inertia answers
- * 409 to force a hard reload. The version is on the current page object, so it
- * is always correct for the session that is already loaded.
+ * `X-Inertia-Version` MUST match the server's asset version or Inertia answers
+ * **409 Conflict** by design, to force a hard reload onto the new assets.
+ *
+ * This used to default to `''`, and every caller relied on that default — so
+ * the header never matched a real Vite manifest hash and every request through
+ * this function 409'd the moment the app was rebuilt. It surfaced as
+ * "Request failed with status code 409" inside the media picker, which looks
+ * like a broken endpoint rather than a protocol handshake.
+ *
+ * Defaulting to the live version means a caller cannot forget it.
  */
 export async function fetchPageProps<T>(
   url: string,
@@ -91,7 +135,7 @@ export async function fetchPageProps<T>(
       headers: {
         Accept: 'text/html, application/xhtml+xml',
         'X-Inertia': 'true',
-        'X-Inertia-Version': String(options.version ?? ''),
+        'X-Inertia-Version': String(options.version ?? currentInertiaVersion()),
       },
       ...(options.signal ? { signal: options.signal } : {}),
     });
