@@ -51,10 +51,34 @@ const TYPE_SCALE = [
   "fx-eyebrow",
 ] as const;
 
+/**
+ * The public site's radius scale, declared in `resources/css/frontend.css`.
+ *
+ * Registered for exactly the reason the type scale above is, and it is not
+ * cosmetic: `Components/UI/Button` carries the admin's `rounded-md` in its
+ * base class string, so a public caller writing
+ * `cn(fxButton(...), 'rounded-fx-pill')` produced BOTH classes — tailwind-merge
+ * had no idea they were the same property — and `rounded-md` is emitted after
+ * `rounded-fx-pill` in the stylesheet, so the admin radius silently won every
+ * time. Every "pill" button on the public site was rendering as a 6px
+ * rectangle. Naming the scale here is what makes the override actually
+ * override.
+ */
+const RADIUS_SCALE = [
+  "fx-xs",
+  "fx-sm",
+  "fx-md",
+  "fx-lg",
+  "fx-xl",
+  "fx-2xl",
+  "fx-pill",
+] as const;
+
 const twMerge = extendTailwindMerge({
   extend: {
     classGroups: {
       "font-size": [{ text: [...TYPE_SCALE] }],
+      rounded: [{ rounded: [...RADIUS_SCALE] }],
     },
   },
 });

@@ -148,6 +148,66 @@
 
   --fx-focus: var(--fx-accent-text);
 
+  /* ---- Media scrim -----------------------------------------------------
+     The veil laid over an image while something is revealed on top of it
+     (the portfolio tile's "view project" button).
+
+     THE ONE ABSOLUTE COLOUR IN THIS FILE, and deliberately so. Every ink and
+     surface token here flips with the theme — that is the whole design — but
+     "veil this screenshot" does not flip: it means DARKEN, in both themes,
+     because the thing being veiled is a photograph or a screenshot with its
+     own palette, not a surface of ours. Painted in `--fx-ink` it darkened a
+     light-mode shot correctly and then BRIGHTENED every dark-mode shot to
+     pale grey, which read as a flash rather than a dim.
+
+     Only the alpha is re-tuned below: a dark canvas needs slightly more of
+     it before a dark screenshot separates from the button on top. */
+  --fx-scrim: oklch(0.12 0.02 258 / 0.5);
+
+  /* ---- Card marks -----------------------------------------------------
+     A card grid reads as one set only if its icon tiles differ by HUE and
+     agree on everything else, so each mark is a solid fill plus the ink that
+     is legible on it — never a per-card opacity or a per-card size.
+
+     `brand` and `ink` are aliases, not literals: they follow the accent an
+     editor picked and the theme's ink, so a rebrand carries them. The four
+     literal hues are the fixed part of the palette and are the only thing a
+     dark block below has to restate, because `--fx-mark-glyph` (the ink that
+     sits on all four) is a single token rather than four.
+
+     Chosen at the fill lightness where white clears 4.5:1 — an icon glyph is
+     non-text content (1.4.11 wants 3:1), so this leaves headroom rather than
+     sitting on the line. */
+  --fx-mark-glyph: oklch(1 0 0);
+
+  --fx-mark-brand: var(--fx-accent);
+  --fx-mark-brand-glyph: var(--fx-accent-ink);
+  --fx-mark-ink: var(--fx-ink);
+  --fx-mark-ink-glyph: var(--fx-canvas);
+  --fx-mark-amber: oklch(0.62 0.168 42);
+  --fx-mark-teal: oklch(0.55 0.105 192);
+  --fx-mark-violet: oklch(0.52 0.192 296);
+  --fx-mark-rose: oklch(0.55 0.183 18);
+
+  /* ---- Form validation --------------------------------------------------
+     The public site had no error colour at all, so the first form on it — the
+     newsletter — had nothing to paint an invalid field with except the
+     ADMIN's `--destructive`, which is a different palette on a different
+     canvas and does not follow a rebrand.
+
+     Three tokens, not one: the LINE on an invalid control and the TEXT of the
+     message have different contrast obligations (3:1 for a non-text boundary,
+     4.5:1 for the message), and a single hue that satisfies the text rule is
+     darker than a border wants to be. `--fx-danger` stays for anything that
+     needs the raw hue.
+
+     Rose, not red-orange: it is the same hue family as `--fx-mark-rose`, so an
+     error state reads as part of this palette rather than as a browser
+     default landing on the page.                                            */
+  --fx-danger: oklch(0.55 0.196 22);
+  --fx-danger-text: oklch(0.5 0.196 22);
+  --fx-danger-line: oklch(0.62 0.17 22);
+
   /* ---- Buttons ---------------------------------------------------------
      A button fill is NOT the accent. On an enterprise site the primary action
      is usually near-black while the accent is reserved for links, underlines
@@ -306,6 +366,27 @@
   --fx-accent-soft: color-mix(in oklab, var(--fx-accent) 16%, var(--fx-surface));
   --fx-accent-line: color-mix(in oklab, var(--fx-accent) 40%, transparent);
 
+  /* The mark hues re-seated for a dark canvas: same hue angles so a card is
+     recognisably the same card across the toggle, lifted in lightness so the
+     tile separates from the surface, and the glyph flipped to near-black —
+     the same trade `--fx-accent-ink` makes one block up. `brand` and `ink`
+     need no restatement: both are aliases of tokens this block already
+     re-tuned. */
+  --fx-scrim: oklch(0.08 0.015 258 / 0.62);
+
+  --fx-mark-glyph: oklch(0.16 0.03 258);
+
+  --fx-mark-amber: oklch(0.76 0.148 62);
+  --fx-mark-teal: oklch(0.72 0.098 192);
+  --fx-mark-violet: oklch(0.7 0.145 296);
+  --fx-mark-rose: oklch(0.7 0.145 20);
+
+  /* Lifted for a dark canvas, same hue angle — the light-theme cuts are
+     near-black-on-near-black here and would fail both obligations at once. */
+  --fx-danger: oklch(0.7 0.16 22);
+  --fx-danger-text: oklch(0.76 0.14 22);
+  --fx-danger-line: oklch(0.66 0.15 22);
+
   /* There is one button setting, not one per theme, and its default (#111827)
      is a LIGHT-theme fill — painted unchanged here it would be a near-black
      pill on a near-black canvas, invisible as a control (1.4.11) even though
@@ -399,6 +480,19 @@
   --color-fx-wash-accent: var(--fx-wash-accent);
   --color-fx-wash-ink: var(--fx-wash-ink);
   --color-fx-focus: var(--fx-focus);
+  --color-fx-scrim: var(--fx-scrim);
+  --color-fx-mark-glyph: var(--fx-mark-glyph);
+  --color-fx-mark-brand: var(--fx-mark-brand);
+  --color-fx-mark-brand-glyph: var(--fx-mark-brand-glyph);
+  --color-fx-mark-ink: var(--fx-mark-ink);
+  --color-fx-mark-ink-glyph: var(--fx-mark-ink-glyph);
+  --color-fx-mark-amber: var(--fx-mark-amber);
+  --color-fx-mark-teal: var(--fx-mark-teal);
+  --color-fx-mark-violet: var(--fx-mark-violet);
+  --color-fx-mark-rose: var(--fx-mark-rose);
+  --color-fx-danger: var(--fx-danger);
+  --color-fx-danger-text: var(--fx-danger-text);
+  --color-fx-danger-line: var(--fx-danger-line);
 
   /* ---- Type ------------------------------------------------------------
      Fluid between 320px and 1600px. Line-height, tracking and weight travel
@@ -656,6 +750,34 @@
   [data-site='public'] .fx-shimmer {
     animation: none;
     background-image: none;
+  }
+}
+
+/* The FAQ answer's entrance.
+   A `<details>` panel cannot have its HEIGHT transitioned in any cross-browser
+   way — the element goes from `display: none` to laid out in one frame — so
+   this animates only what can be animated honestly: opacity and a 4px settle,
+   played once as the panel appears. Faking the height with a
+   `grid-template-rows` wrapper would cost a permanently-rendered subtree and a
+   second layout pass on every toggle, for a gesture nobody asked for. */
+@keyframes fx-panel-in {
+  from {
+    opacity: 0;
+    translate: 0 -4px;
+  }
+  to {
+    opacity: 1;
+    translate: none;
+  }
+}
+
+@utility fx-panel-in {
+  animation: fx-panel-in 220ms var(--fx-ease) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-site='public'] .fx-panel-in {
+    animation: none;
   }
 }
 

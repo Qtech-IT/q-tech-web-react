@@ -37,7 +37,7 @@ class HandleInertiaRequests extends Middleware
 
             // Authenticated user resource
             'auth' => [
-                'user'          => $this->getAuthenticatedUser($request),
+                'user' => $this->getAuthenticatedUser($request),
                 'authorization' => $this->getAuthenticatedUserRolePermissions($request),
             ],
 
@@ -46,17 +46,17 @@ class HandleInertiaRequests extends Middleware
 
             // Site theme and logo settings
             'site_theme_settings' => $this->getSiteThemeSettings(),
-            'logos'               => $this->getSiteLogo(),
+            'logos' => $this->getSiteLogo(),
 
             // Resolved visitor theme (cookie first, app setting as fallback)
-            'theme'           => theme_preference(),
-            'theme_settings'  => $this->getThemeSettings(),
+            'theme' => theme_preference(),
+            'theme_settings' => $this->getThemeSettings(),
             'copy_right_text' => getCopyRightText(),
 
             'language_settings' => [
                 'available_languages' => formatResourceResponse(site_languages(), LanguageResource::class),
-                'current_language'    => fn (): string => app()->getLocale(),
-                'translations'        => fn (): mixed => getTranslationsFlat(),
+                'current_language' => fn (): string => app()->getLocale(),
+                'translations' => fn (): mixed => getTranslationsFlat(),
             ],
 
             /*
@@ -113,26 +113,26 @@ class HandleInertiaRequests extends Middleware
     private function getBrandTokens(): array
     {
         $defaults = [
-            'accent'             => 'oklch(0.55 0.19 258)',
-            'accentInk'          => 'oklch(0.99 0 0)',
-            'accentDark'         => 'oklch(0.72 0.15 258)',
-            'accentInkDark'      => 'oklch(0.16 0.03 258)',
-            'radius'             => '0.5rem',
-            'buttonPrimary'      => '#111827',
-            'buttonPrimaryInk'   => '#ffffff',
-            'buttonSecondary'    => 'transparent',
+            'accent' => 'oklch(0.55 0.19 258)',
+            'accentInk' => 'oklch(0.99 0 0)',
+            'accentDark' => 'oklch(0.72 0.15 258)',
+            'accentInkDark' => 'oklch(0.16 0.03 258)',
+            'radius' => '0.5rem',
+            'buttonPrimary' => '#111827',
+            'buttonPrimaryInk' => '#ffffff',
+            'buttonSecondary' => 'transparent',
             'buttonSecondaryInk' => '#111827',
         ];
 
         $keys = [
-            'accent'             => SettingKey::BRAND_ACCENT,
-            'accentInk'          => SettingKey::BRAND_ACCENT_INK,
-            'accentDark'         => SettingKey::BRAND_ACCENT_DARK,
-            'accentInkDark'      => SettingKey::BRAND_ACCENT_INK_DARK,
-            'radius'             => SettingKey::BRAND_RADIUS,
-            'buttonPrimary'      => SettingKey::BRAND_BUTTON_PRIMARY,
-            'buttonPrimaryInk'   => SettingKey::BRAND_BUTTON_PRIMARY_INK,
-            'buttonSecondary'    => SettingKey::BRAND_BUTTON_SECONDARY,
+            'accent' => SettingKey::BRAND_ACCENT,
+            'accentInk' => SettingKey::BRAND_ACCENT_INK,
+            'accentDark' => SettingKey::BRAND_ACCENT_DARK,
+            'accentInkDark' => SettingKey::BRAND_ACCENT_INK_DARK,
+            'radius' => SettingKey::BRAND_RADIUS,
+            'buttonPrimary' => SettingKey::BRAND_BUTTON_PRIMARY,
+            'buttonPrimaryInk' => SettingKey::BRAND_BUTTON_PRIMARY_INK,
+            'buttonSecondary' => SettingKey::BRAND_BUTTON_SECONDARY,
             'buttonSecondaryInk' => SettingKey::BRAND_BUTTON_SECONDARY_INK,
         ];
 
@@ -141,7 +141,7 @@ class HandleInertiaRequests extends Middleware
         foreach ($keys as $name => $key) {
             $value = trim((string) site_settings($key->value));
 
-            $tokens[$name] = ($value !== '' && !preg_match('/[;{}]|url\s*\(|expression\s*\(/i', $value))
+            $tokens[$name] = ($value !== '' && ! preg_match('/[;{}]|url\s*\(|expression\s*\(/i', $value))
                 ? $value
                 : $defaults[$name];
         }
@@ -169,7 +169,7 @@ class HandleInertiaRequests extends Middleware
         try {
             $user = $request->user();
 
-            if (!$user) {
+            if (! $user) {
                 return [];
             }
 
@@ -177,12 +177,12 @@ class HandleInertiaRequests extends Middleware
 
             $role = $user->roles->first();
 
-            if (!$role) {
+            if (! $role) {
                 return [];
             }
 
             return [
-                'role'        => $this->formatRoleResource($role),
+                'role' => $this->formatRoleResource($role),
                 'permissions' => $role->permissions->pluck('name')->all(),
             ];
         } catch (\Throwable $ex) {
@@ -199,10 +199,10 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             'success' => fn () => $request->session()->get('success'),
-            'error'   => fn () => $request->session()->get('error'),
+            'error' => fn () => $request->session()->get('error'),
             'warning' => fn () => $request->session()->get('warning'),
-            'info'    => fn () => $request->session()->get('info'),
-            'data'    => fn () => $request->session()->get('flash_data', []),
+            'info' => fn () => $request->session()->get('info'),
+            'data' => fn () => $request->session()->get('flash_data', []),
         ];
     }
 
@@ -215,7 +215,7 @@ class HandleInertiaRequests extends Middleware
     {
         $settingKeys = [
             'company_logo' => SettingKey::COMPANY_LOGO,
-            'favicon'      => SettingKey::FAVICON,
+            'favicon' => SettingKey::FAVICON,
         ];
 
         $logos = [];
@@ -244,10 +244,10 @@ class HandleInertiaRequests extends Middleware
     private function getThemeSettings(): array
     {
         return [
-            'preference'     => theme_preference(),
-            'resolved'       => resolved_theme(),
-            'default'        => site_settings(SettingKey::THEME_MODE->value),
-            'cookie_name'    => GlobalConfig::THEME_COOKIE_NAME,
+            'preference' => theme_preference(),
+            'resolved' => resolved_theme(),
+            'default' => site_settings(SettingKey::THEME_MODE->value),
+            'cookie_name' => GlobalConfig::THEME_COOKIE_NAME,
             'cookie_max_age' => GlobalConfig::THEME_COOKIE_MAX_AGE,
         ];
     }
@@ -266,6 +266,17 @@ class HandleInertiaRequests extends Middleware
             SettingKey::LAYOUT->value,
             SettingKey::SIDEBAR->value,
             SettingKey::DIRECTION->value,
+
+            /*
+             * The public footer's contact block. These three were already
+             * editable in the admin and already stored — they were simply
+             * never shared, so the footer's address, phone and email regions
+             * could not render and the brand column was a tall empty box no
+             * matter what an editor filled in.
+             */
+            SettingKey::ADDRESS->value,
+            SettingKey::COMPANY_PHONE->value,
+            SettingKey::COMPANY_EMAIL->value,
         ];
 
         $settings = [];

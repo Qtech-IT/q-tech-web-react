@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react'
 
-import { HomePage } from '@/Components/Frontend/Pages/HomePage'
 import type { HomePageProps } from '@/Components/Frontend/Pages/HomePage'
+import { HomePage } from '@/Components/Frontend/Pages/HomePage'
 import PublicLayout from '@/Layouts/Public/PublicLayout'
 
 export type HomeProps = HomePageProps

@@ -31,6 +31,14 @@ export const fxButton = cva(
     // A 1px lift is the whole hover gesture. It must not survive
     // `prefers-reduced-motion`, and it must not shift layout — transform only.
     'motion-reduce:transition-none motion-reduce:hover:translate-y-0',
+    // Every admin variant this skin repaints carries its OWN hover ink —
+    // `outline` and `ghost` both set `hover:text-accent-foreground`. That is a
+    // different modifier from the `text-*` each tone below declares, so
+    // tailwind-merge keeps BOTH and the admin token wins the moment a pointer
+    // lands: on an inverted band the label flips to near-black on near-black
+    // and disappears. Each tone therefore restates its ink at `hover:` too —
+    // see the individual tones — and this is why a tone may never rely on its
+    // resting `text-*` surviving the hover state.
   ].join(' '),
   {
     variants: {
@@ -47,6 +55,7 @@ export const fxButton = cva(
          */
         solid: [
           'bg-fx-btn-primary text-fx-btn-primary-ink shadow-fx-2',
+          'hover:text-fx-btn-primary-ink',
           'hover:bg-fx-btn-primary-hover hover:shadow-fx-3 hover:-translate-y-px',
           'active:translate-y-0 active:shadow-fx-1',
         ].join(' '),
@@ -60,6 +69,7 @@ export const fxButton = cva(
          */
         outline: [
           'border border-fx-btn-secondary-ink/25 bg-fx-btn-secondary text-fx-btn-secondary-ink',
+          'hover:text-fx-btn-secondary-ink',
           'hover:border-fx-btn-secondary-ink/50 hover:bg-fx-btn-secondary-hover hover:-translate-y-px',
           'active:translate-y-0',
         ].join(' '),
@@ -78,6 +88,7 @@ export const fxButton = cva(
          */
         inverse: [
           'bg-fx-ink text-fx-canvas shadow-fx-2',
+          'hover:text-fx-canvas',
           'hover:-translate-y-px hover:shadow-fx-3',
           'active:translate-y-0',
         ].join(' '),

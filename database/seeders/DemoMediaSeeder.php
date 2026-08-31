@@ -33,6 +33,24 @@ use Illuminate\Support\Facades\Storage;
  *                 photographs — a seeder must not invent the face of a
  *                 customer who does not exist, and a stock face presented as
  *                 a named reviewer is a fabricated testimonial.
+ *   - `work/*`    abstract product shots for the portfolio band. Composed UI
+ *                 — panels, charts, lists — with no readable copy in them, so
+ *                 they read as "a piece of software" without claiming to be
+ *                 any particular client's screen. Each carries its own dark
+ *                 panel palette rather than the site tokens, exactly as a real
+ *                 screenshot would, which is why they sit correctly in both
+ *                 themes.
+ *   - `portfolio/*` landing-page screens for the portfolio wall. Same rules
+ *                 as `work/*`, composed as marketing pages rather than
+ *                 dashboards so the two bands do not read as one library —
+ *                 and `PortfolioGrid` draws the browser bar itself, so none
+ *                 of these has window chrome baked in.
+ *   - `process/*` a workspace collage — board, chart, team, thread,
+ *                 checklist — for the process band. Composed, not
+ *                 photographed: a seeder must not invent a photograph of a
+ *                 team that does not exist, and a stock office photo passed
+ *                 off as "our studio" is the same fabrication in a nicer
+ *                 jacket.
  *
  * SVG rather than raster on purpose: it stays sharp at any size, needs no
  * conversions pipeline, and is a few hundred bytes.
@@ -51,6 +69,13 @@ class DemoMediaSeeder extends Seeder
     {
         $this->publishGroup('logos', 176, 36, 'Client logo');
         $this->publishGroup('avatars', 96, 96, 'Reviewer avatar');
+        // 1280x800 — exactly the 16:10 frame `WorkShowcase` renders, so the
+        // seeded shots fill it with no crop and no reserved-box mismatch.
+        $this->publishGroup('work', 1280, 800, 'Case study preview');
+        $this->publishGroup('portfolio', 1280, 800, 'Project screen');
+        // 4:3 — the frame `ProcessTimeline` renders, so the shot fills it
+        // with no crop and no reserved-box mismatch.
+        $this->publishGroup('process', 1200, 900, 'Working session');
     }
 
     /**

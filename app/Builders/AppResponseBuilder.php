@@ -265,7 +265,25 @@ class AppResponseBuilder
 		);
 
 		if ($this->component) {
-			return Inertia::render($this->component, $props);
+			$page = Inertia::render($this->component, $props);
+
+			/*
+			 * An Inertia page normally goes back as a Responsable and Laravel
+			 * converts it, which is why the status code was silently dropped here
+			 * for so long — every admin screen is a 200, so nothing noticed.
+			 *
+			 * A public error page is the case that breaks: a 404 rendered with a
+			 * 200 status is a soft 404, which crawlers index as a real page and
+			 * which makes a genuinely missing URL invisible in error monitoring.
+			 *
+			 * Converted eagerly ONLY for a non-200, so every existing caller keeps
+			 * returning the exact same object it did before.
+			 */
+			if ($this->code !== Response::HTTP_OK) {
+				return $page->toResponse(request())->setStatusCode($this->code);
+			}
+
+			return $page;
 		}
 
 		$flashKey = $this->success ? 'success' : 'error';

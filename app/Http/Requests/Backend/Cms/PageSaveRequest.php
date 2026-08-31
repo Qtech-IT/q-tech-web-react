@@ -26,6 +26,26 @@ class PageSaveRequest extends FormRequest
             'parent_id' => ['nullable', 'exists:pages,id'],
             'page_type' => ['required', Rule::in(PageType::getValues())],
             'template' => ['required', 'string', 'max:100'],
+
+            /*
+             * Card metadata — used when another page LISTS this one.
+             *
+             * `excerpt` is capped well under the TEXT column: the cap is a
+             * DESIGN constraint, not a storage one. A card clamps to three
+             * lines, so anything past roughly this length is written by an
+             * editor who cannot see that the rest is being thrown away.
+             *
+             * `icon` and `accent` are validated as loose strings on purpose.
+             * Both resolve against registries that live in the front end — the
+             * lucide set in `NavIcon` and the `--fx-mark-*` palette in
+             * `frontend.css` — and an unknown value in either degrades to no
+             * icon and the cycled accent. Enumerating them here would mean a
+             * deploy every time the design system gains a colour, and would
+             * fail a save for something that renders fine.
+             */
+            'excerpt' => ['nullable', 'string', 'max:500'],
+            'icon' => ['nullable', 'string', 'max:100'],
+            'accent' => ['nullable', 'string', 'max:32'],
             'is_homepage' => ['boolean'],
             'is_indexable' => ['boolean'],
             'settings' => ['nullable', 'array'],

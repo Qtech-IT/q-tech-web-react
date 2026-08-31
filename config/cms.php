@@ -1,11 +1,31 @@
 <?php
 
+use App\Data\Cms\SectionTypes\AboutStoryType;
+use App\Data\Cms\SectionTypes\AiInnovationType;
+use App\Data\Cms\SectionTypes\AwardWallType;
+use App\Data\Cms\SectionTypes\CollectionIndexType;
+use App\Data\Cms\SectionTypes\ContentProseType;
+use App\Data\Cms\SectionTypes\ContentSplitType;
 use App\Data\Cms\SectionTypes\CtaBandType;
+use App\Data\Cms\SectionTypes\CtaFinalType;
+use App\Data\Cms\SectionTypes\FaqAccordionType;
 use App\Data\Cms\SectionTypes\HeroCenteredType;
 use App\Data\Cms\SectionTypes\HeroFlowType;
 use App\Data\Cms\SectionTypes\HeroSplitType;
+use App\Data\Cms\SectionTypes\IndustryServeType;
+use App\Data\Cms\SectionTypes\NewsletterSignupType;
+use App\Data\Cms\SectionTypes\PortfolioGridType;
+use App\Data\Cms\SectionTypes\ProcessTimelineType;
+use App\Data\Cms\SectionTypes\ResultsMetricsType;
+use App\Data\Cms\SectionTypes\ServiceFeatureType;
 use App\Data\Cms\SectionTypes\ServiceGridType;
+use App\Data\Cms\SectionTypes\SolutionGridType;
 use App\Data\Cms\SectionTypes\StatsCounterType;
+use App\Data\Cms\SectionTypes\TeamGridType;
+use App\Data\Cms\SectionTypes\TechStackType;
+use App\Data\Cms\SectionTypes\TestimonialWallType;
+use App\Data\Cms\SectionTypes\WhyChooseType;
+use App\Data\Cms\SectionTypes\WorkShowcaseType;
 
 return [
     /*
@@ -40,6 +60,26 @@ return [
         StatsCounterType::class,
         CtaBandType::class,
         ServiceGridType::class,
+        ServiceFeatureType::class,
+        IndustryServeType::class,
+        SolutionGridType::class,
+        TechStackType::class,
+        WhyChooseType::class,
+        ProcessTimelineType::class,
+        WorkShowcaseType::class,
+        PortfolioGridType::class,
+        AiInnovationType::class,
+        ResultsMetricsType::class,
+        TestimonialWallType::class,
+        FaqAccordionType::class,
+        TeamGridType::class,
+        AwardWallType::class,
+        AboutStoryType::class,
+        ContentProseType::class,
+        ContentSplitType::class,
+        CollectionIndexType::class,
+        NewsletterSignupType::class,
+        CtaFinalType::class,
     ],
 
     /*

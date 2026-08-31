@@ -49,6 +49,11 @@ class Page extends Model
         'path',
         'depth',
         'title',
+        // Card metadata — what this page looks like when ANOTHER page lists it.
+        // See the 000160 migration for why these are columns and not `settings`.
+        'excerpt',
+        'icon',
+        'accent',
         'page_type',
         'template',
         'is_homepage',

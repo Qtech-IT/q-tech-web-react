@@ -22,6 +22,16 @@ enum MediaCollection: string
     case ATTACHMENTS = 'attachments';
 
     /**
+     * The image a page shows when another page LISTS it.
+     *
+     * Separate from `og_image`, which is what a social scraper unfurls: those
+     * two want different crops and different amounts of text baked in, and
+     * collapsing them means every service card on the index is a 1200x630
+     * social banner with a headline already burnt into it.
+     */
+    case CARD = 'card';
+
+    /**
      * List all values.
      */
     public static function getValues(): array

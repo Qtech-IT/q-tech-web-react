@@ -62,14 +62,14 @@ class MenuItem extends Model
     protected function casts(): array
     {
         return [
-            'link_type' => MenuLinkType::class,
-            'visibility' => MenuVisibility::class,
-            'status' => Status::class,
-            'route_params' => 'array',
-            'settings' => 'array',
+            'link_type'        => MenuLinkType::class,
+            'visibility'       => MenuVisibility::class,
+            'status'           => Status::class,
+            'route_params'     => 'array',
+            'settings'         => 'array',
             'opens_in_new_tab' => 'boolean',
-            'depth' => 'integer',
-            'sort_order' => 'integer',
+            'depth'            => 'integer',
+            'sort_order'       => 'integer',
         ];
     }
 
@@ -128,7 +128,7 @@ class MenuItem extends Model
     public function scopeDescendantsOf(Builder $query, self $node): Builder
     {
         return $query->where('menu_id', $node->menu_id)
-            ->where('path', 'like', $node->path.$node->id.'/%');
+            ->where('path', 'like', $node->path . $node->id . '/%');
     }
 
     /**
@@ -147,7 +147,7 @@ class MenuItem extends Model
     {
         return match ($this->link_type) {
             MenuLinkType::URL, MenuLinkType::ANCHOR => $this->url,
-            MenuLinkType::PAGE => $this->relationLoaded('page') ? $this->page?->path : null,
+            MenuLinkType::PAGE  => $this->relationLoaded('page') ? $this->page?->path : null,
             MenuLinkType::ROUTE => $this->route_name && app('router')->has($this->route_name)
                 ? route($this->route_name, (array) $this->route_params, false)
                 : null,

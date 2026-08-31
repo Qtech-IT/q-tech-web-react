@@ -204,6 +204,36 @@ class ServiceGridType implements SectionTypeContract
                         help: translate('Falls back to the card image, then to a generic mark, if left empty.'),
                     ),
 
+                    // The icon TILE colour, not the glyph. A select over a
+                    // fixed palette rather than a colour picker: the six
+                    // options are the only fills the design system has an ink
+                    // token for, so an editor cannot land on a tile whose
+                    // glyph fails contrast, and cannot drift the page away
+                    // from one coherent set of hues.
+                    //
+                    // Deliberately NO default. A default would make every card
+                    // one colour until an editor changed each of them by hand,
+                    // which is the exact failure this field exists to prevent.
+                    // Left empty, the renderer cycles the palette by card
+                    // position (`ACCENT_CYCLE` in `ServiceGrid.tsx`), so an
+                    // untouched grid already reads as a set of distinct marks.
+                    SectionField::make(
+                        name: 'accent',
+                        label: translate('Icon Colour'),
+                        type: InputEnum::SELECT->value,
+                        store: FieldStore::DATA,
+                        options: [
+                            ['value' => 'brand', 'label' => translate('Brand')],
+                            ['value' => 'ink', 'label' => translate('Ink')],
+                            ['value' => 'amber', 'label' => translate('Amber')],
+                            ['value' => 'teal', 'label' => translate('Teal')],
+                            ['value' => 'violet', 'label' => translate('Violet')],
+                            ['value' => 'rose', 'label' => translate('Rose')],
+                        ],
+                        group: 'Media',
+                        help: translate('Colour of the icon tile. Leave empty to colour it automatically by the card\'s position in the grid.'),
+                    ),
+
                     SectionField::make(
                         name: 'media_id',
                         label: translate('Icon Image'),

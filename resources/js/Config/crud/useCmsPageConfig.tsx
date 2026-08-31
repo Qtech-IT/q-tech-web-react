@@ -41,6 +41,25 @@ export function useCmsPageConfig(props: CrudPageProps): CrudConfig {
   const statuses: CmsOption[] = props?.statuses ?? [];
   const advanceFilterOptions = props?.advanceFilterOptions ?? [];
 
+  /*
+   * The `--fx-mark-*` palette a listed page's card can spend.
+   *
+   * Defined here rather than shipped from the server because the palette lives
+   * in `resources/css/frontend.css` and in the section types' static class
+   * maps — all front-end. `pages.accent` is a loose VARCHAR for the same
+   * reason: adding a colour should be a CSS change, not a migration. An
+   * unrecognised stored value falls back to the positional cycle at render.
+   */
+  const accentOptions: CmsOption[] = [
+    { value: '', label: t('Automatic') },
+    { value: 'brand', label: t('Brand') },
+    { value: 'ink', label: t('Ink') },
+    { value: 'amber', label: t('Amber') },
+    { value: 'teal', label: t('Teal') },
+    { value: 'violet', label: t('Violet') },
+    { value: 'rose', label: t('Rose') },
+  ];
+
   const baseBreadcrumbs = [
     { label: t('Dashboard'), href: route('backend.dashboard') },
     { label: t('Pages'), href: route(`${routePrefix}.index`) },
@@ -99,6 +118,16 @@ export function useCmsPageConfig(props: CrudPageProps): CrudConfig {
       is_homepage: z.any().optional(),
       is_indexable: z.any().optional(),
 
+      // Card metadata. The 500 cap mirrors `PageSaveRequest` and exists for
+      // design reasons — a card clamps to three lines — not storage ones.
+      excerpt: z
+        .string()
+        .max(500, t('Excerpt must not exceed 500 characters'))
+        .optional()
+        .default(''),
+      icon: z.string().max(100).optional().default(''),
+      accent: z.string().max(32).optional().default(''),
+
       status: z.string().min(1, t('Status is required')),
       publish_status: z.string().min(1, t('Publish status is required')),
       published_at: z.any().optional(),
@@ -126,6 +155,23 @@ export function useCmsPageConfig(props: CrudPageProps): CrudConfig {
           required: false,
           section: 'basic',
         },
+        /*
+         * Card metadata — how this page looks when ANOTHER page lists it
+         * through a Page Index section. Not presentation and not SEO: it is
+         * the summary a visitor reads on `/services` before deciding to click.
+         *
+         * `excerpt` sits with the title rather than in the grid below because
+         * it is written at the same time as the title and reads as part of it.
+         */
+        {
+          name: 'excerpt',
+          label: t('Card Summary'),
+          type: 'textarea',
+          placeholder: t('One or two sentences shown when this page is listed elsewhere'),
+          description: t('Used by Page Index sections. Clamped to three lines when displayed'),
+          required: false,
+          section: 'basic',
+        },
         {
           name: 'page_type',
           label: t('Page Type'),
@@ -133,6 +179,24 @@ export function useCmsPageConfig(props: CrudPageProps): CrudConfig {
           description: t('System pages cannot be deleted'),
           required: true,
           options: pageTypes,
+          section: 'grid',
+        },
+        {
+          name: 'icon',
+          label: t('Card Icon'),
+          type: 'text',
+          placeholder: 'Code2',
+          description: t('Lucide icon name, e.g. Code2. Falls back to the page initial'),
+          required: false,
+          section: 'grid',
+        },
+        {
+          name: 'accent',
+          label: t('Card Colour'),
+          type: 'select',
+          description: t('Leave unset to colour it automatically by position'),
+          required: false,
+          options: accentOptions,
           section: 'grid',
         },
         {

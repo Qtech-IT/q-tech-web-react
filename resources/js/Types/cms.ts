@@ -275,6 +275,27 @@ export interface CmsSectionBlock extends CmsBaseAttributes {
   children?: CmsSectionBlock[];
 }
 
+/**
+ * One page as it appears when ANOTHER page lists it — `PageCardResource`.
+ *
+ * Deliberately not `CmsPage`: that is the admin's shape, and a listing of
+ * thirty services would otherwise ship thirty admin records to a visitor. A
+ * card is addressed by `path`; the primary key is not on the public wire at
+ * all.
+ */
+export interface CmsPageCard {
+  uuid: string;
+  title: string;
+  path: string;
+  excerpt: string | null;
+  /** Lucide registry key, resolved through `NavIcon`. */
+  icon: string | null;
+  /** An `--fx-mark-*` hue, or null to colour it by position. */
+  accent: string | null;
+  page_type: string | null;
+  media?: CmsMedia | null;
+}
+
 export interface CmsPageSection extends CmsBaseAttributes {
   page_id: number | null;
   block_id: number | null;
@@ -296,6 +317,16 @@ export interface CmsPageSection extends CmsBaseAttributes {
   settings: Record<string, unknown> | null;
   blocks?: CmsSectionBlock[];
   gallery?: CmsMedia[];
+  /**
+   * Other PAGES this section lists.
+   *
+   * Present only on section types that implement `ResolvesCollection`
+   * server-side — today that is `collection.index` alone. Attached by
+   * `PageRenderService::withCollections()` AFTER the page cache is read, so it
+   * is fresh even when the rest of the payload is not; see that method for why
+   * that separation matters.
+   */
+  collection?: CmsPageCard[];
   /** Editorial state. Distinct from `status`, which is the kill switch. */
   publish_status: string;
   published_at: string | null;

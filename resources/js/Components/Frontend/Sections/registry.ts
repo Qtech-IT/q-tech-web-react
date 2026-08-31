@@ -37,6 +37,60 @@ export const sectionRegistry: Record<string, SectionComponent> = {
   'service.grid': lazy(
     () => import('@/Components/Frontend/Sections/ServiceGrid')
   ),
+  'process.timeline': lazy(
+    () => import('@/Components/Frontend/Sections/ProcessTimeline')
+  ),
+  'why.choose': lazy(
+    () => import('@/Components/Frontend/Sections/WhyChoose')
+  ),
+  'solution.grid': lazy(
+    () => import('@/Components/Frontend/Sections/SolutionGrid')
+  ),
+  'tech.stack': lazy(
+    () => import('@/Components/Frontend/Sections/TechStack')
+  ),
+  'industry.serve': lazy(
+    () => import('@/Components/Frontend/Sections/IndustryServe')
+  ),
+  'service.featured': lazy(
+    () => import('@/Components/Frontend/Sections/ServiceFeature')
+  ),
+  'portfolio.grid': lazy(
+    () => import('@/Components/Frontend/Sections/PortfolioGrid')
+  ),
+  'work.showcase': lazy(
+    () => import('@/Components/Frontend/Sections/WorkShowcase')
+  ),
+  'ai.innovation': lazy(
+    () => import('@/Components/Frontend/Sections/AiInnovation')
+  ),
+  'results.metrics': lazy(
+    () => import('@/Components/Frontend/Sections/ResultsMetrics')
+  ),
+  'testimonial.wall': lazy(
+    () => import('@/Components/Frontend/Sections/TestimonialWall')
+  ),
+  'faq.accordion': lazy(
+    () => import('@/Components/Frontend/Sections/FaqAccordion')
+  ),
+  'team.grid': lazy(() => import('@/Components/Frontend/Sections/TeamGrid')),
+  'award.wall': lazy(() => import('@/Components/Frontend/Sections/AwardWall')),
+  'about.story': lazy(
+    () => import('@/Components/Frontend/Sections/AboutStory')
+  ),
+  'content.prose': lazy(
+    () => import('@/Components/Frontend/Sections/ContentProse')
+  ),
+  'content.split': lazy(
+    () => import('@/Components/Frontend/Sections/ContentSplit')
+  ),
+  'collection.index': lazy(
+    () => import('@/Components/Frontend/Sections/CollectionIndex')
+  ),
+  'newsletter.signup': lazy(
+    () => import('@/Components/Frontend/Sections/NewsletterSignup')
+  ),
+  'cta.final': lazy(() => import('@/Components/Frontend/Sections/CtaFinal')),
 }
 
 /**

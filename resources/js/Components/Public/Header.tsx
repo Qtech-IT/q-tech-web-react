@@ -112,12 +112,29 @@ export function Header({
       data-scrolled={scrolled ? '' : undefined}
       className={cn(
         'fixed inset-x-0 top-0 z-50 w-full',
-        'transition-[background-color,box-shadow,backdrop-filter,border-color] duration-300 ease-fx motion-reduce:transition-none',
+        // `backdrop-filter` is deliberately NOT in this list. It cannot
+        // interpolate between `blur()` and `none`, so a browser resolves the
+        // change discretely at the halfway point — which lands as a single
+        // frame of sharp, un-blurred page showing through a bar that is still
+        // half transparent. That one frame is the flash.
+        //
+        // 180ms, matching `panelTransition` and the scrim in `DesktopNav`
+        // exactly — same duration, same curve. At 300ms the bar was still
+        // travelling from veil to canvas for 120ms after the opaque panel had
+        // finished drawing under it, so the two surfaces sat at visibly
+        // different greys before the bar caught up.
+        'transition-[background-color,box-shadow,border-color] duration-[180ms] ease-fx motion-reduce:transition-none',
         // An open mega panel is a flat, fully opaque canvas surface. The bar
         // matches it exactly rather than staying translucent, so the two read
         // as one object instead of two subtly different greys stacked.
+        //
+        // The blur stays applied while the panel is open even though an opaque
+        // background hides it. Keeping the property identical across the two
+        // lit states means opening a panel on a scrolled page animates exactly
+        // one thing — the background colour — instead of also tearing the
+        // backdrop layer down and building it again.
         menuOpen
-          ? 'border-b border-transparent bg-fx-canvas'
+          ? 'border-b border-transparent bg-fx-canvas backdrop-blur-xl'
           : isSolid
             ? 'border-b border-fx-line bg-fx-veil-solid backdrop-blur-xl supports-[backdrop-filter]:bg-fx-veil'
             : 'border-b border-transparent bg-transparent',

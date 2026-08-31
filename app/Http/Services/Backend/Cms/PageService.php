@@ -94,6 +94,18 @@ class PageService
             $page->path = $this->tree->buildPath($parent, $slug);
             $page->depth = $depth;
             $page->title = $request->input('title');
+            /*
+             * Card metadata — how this page looks when another page LISTS it.
+             *
+             * Written on every save, including as null, so clearing an excerpt
+             * in the admin actually clears it. `?: null` rather than the raw
+             * input because an emptied text field posts '', and an empty string
+             * is not "no excerpt" to any `filled()` check downstream — it is a
+             * card that renders a blank line where a summary should be.
+             */
+            $page->excerpt = $request->input('excerpt') ?: null;
+            $page->icon = $request->input('icon') ?: null;
+            $page->accent = $request->input('accent') ?: null;
             $page->page_type = $request->input('page_type', PageType::STANDARD->value);
             $page->template = $request->input('template', 'default');
             $page->is_indexable = $request->boolean('is_indexable', true);

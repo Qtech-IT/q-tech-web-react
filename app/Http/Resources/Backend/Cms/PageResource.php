@@ -30,6 +30,14 @@ class PageResource extends BaseResource
                 'path' => $this->parent->path,
             ]),
 
+            // Card metadata — what this page looks like when another page lists
+            // it. The card IMAGE is not here: it hangs off the `mediables`
+            // pivot, and loading it for every row of the page tree would be an
+            // N+1 for a field the tree never renders.
+            'excerpt' => $this->excerpt,
+            'icon' => $this->icon,
+            'accent' => $this->accent,
+
             'page_type' => $this->page_type,
             'template' => $this->template,
             'is_homepage' => $this->is_homepage,

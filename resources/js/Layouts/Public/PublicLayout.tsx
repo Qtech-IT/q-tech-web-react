@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { usePage } from '@inertiajs/react'
 
+import { CookieConsent } from '@/Components/Public/CookieConsent'
 import { Footer } from '@/Components/Public/Footer'
 import { Header } from '@/Components/Public/Header'
 import { partitionHeaderItems } from '@/Components/Public/navSlots'
@@ -11,6 +12,7 @@ import { fallbackNavigation } from '@/Config/navigation'
 import { useTranslations } from '@/Hooks/useTranslations'
 import { cn } from '@/Utils/helpers'
 import type { BrandTokens } from '@/Types/brand'
+import type { PublicLanguage } from '@/Components/Public/LanguageSwitcher'
 import type { SiteNavigation } from '@/Types/navigation'
 
 export interface PublicLayoutProps {
@@ -29,7 +31,69 @@ interface PublicSharedProps {
   logos?: Record<string, string>
   copy_right_text?: string
   brand?: BrandTokens | null
+  /** Shared by `HandleInertiaRequests`. Drives the footer's switcher. */
+  language_settings?: {
+    available_languages?: unknown
+    current_language?: string
+  }
   [key: string]: unknown
+}
+
+/** A non-empty trimmed setting value, or `undefined`. */
+function settingText(
+  settings: Record<string, unknown>,
+  key: string
+): string | undefined {
+  const raw = settings[key]
+
+  if (typeof raw !== 'string') {
+    return undefined
+  }
+
+  const value = raw.trim()
+
+  return value === '' ? undefined : value
+}
+
+/**
+ * The languages the footer switcher may offer.
+ *
+ * `available_languages` arrives as a resource collection, which is a bare
+ * array when it is not paginated and `{ data: [...] }` when it is — the same
+ * ambiguity `unwrapList` exists for on the section payload. Narrowed here
+ * rather than in the switcher so the component takes a plain, typed list and
+ * has no opinion about how the server shipped it.
+ */
+function publicLanguages(raw: unknown): PublicLanguage[] {
+  const list = Array.isArray(raw)
+    ? raw
+    : Array.isArray((raw as { data?: unknown })?.data)
+      ? ((raw as { data: unknown[] }).data)
+      : []
+
+  return list.flatMap((entry) => {
+    if (typeof entry !== 'object' || entry === null) {
+      return []
+    }
+
+    const language = entry as { code?: unknown; name?: unknown; direction?: unknown }
+
+    if (typeof language.code !== 'string' || language.code.trim() === '') {
+      return []
+    }
+
+    return [
+      {
+        code: language.code,
+        name:
+          typeof language.name === 'string' && language.name.trim() !== ''
+            ? language.name
+            : language.code.toUpperCase(),
+        direction:
+          typeof language.direction === 'string' ? language.direction : null,
+      },
+    ]
+  })
 }
 
 /**
@@ -137,6 +201,27 @@ export default function PublicLayout({
   )
 
   const hasUtility = regions.utility.length > 0
+
+  const languages = useMemo(
+    () => publicLanguages(page.language_settings?.available_languages),
+    [page.language_settings?.available_languages]
+  )
+
+  /*
+   * The cookie policy link, found in the legal menu rather than configured
+   * twice. Matching on the HREF and not on the label is what makes it work in
+   * every language: a translated "Politique de cookies" would never match an
+   * English needle, but `/cookie-policy` is the same string in all of them.
+   * Privacy is the fallback because a site without a dedicated cookie page
+   * almost always covers it there.
+   */
+  const cookiePolicy = useMemo(() => {
+    const items = navigation.legal ?? []
+    const byHref = (needle: string) =>
+      items.find((item) => item.href?.toLowerCase().includes(needle))
+
+    return byHref('cookie') ?? byHref('privacy')
+  }, [navigation.legal])
 
   const rootStyle = useMemo<CSSProperties>(
     () =>
@@ -266,6 +351,23 @@ export default function PublicLayout({
         siteName={siteName}
         description={description}
         copyright={page.copy_right_text}
+        logo={page.logos?.['company_logo']}
+        address={settingText(settings, 'address')}
+        phone={settingText(settings, 'company_phone')}
+        email={settingText(settings, 'company_email')}
+        languages={languages}
+        currentLocale={page.language_settings?.current_language}
+      />
+
+      {/*
+       * Mounted at the layout, not inside the footer: it is `position: fixed`
+       * chrome that must survive a page navigation, and the footer's "Cookie
+       * settings" control reaches it through a window event precisely so the
+       * two do not have to be in the same tree.
+       */}
+      <CookieConsent
+        {...(cookiePolicy?.href ? { policyHref: cookiePolicy.href } : {})}
+        {...(cookiePolicy?.label ? { policyLabel: t(cookiePolicy.label) } : {})}
       />
 
       <HotToaster />
