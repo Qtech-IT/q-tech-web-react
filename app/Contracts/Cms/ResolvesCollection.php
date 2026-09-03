@@ -32,12 +32,19 @@ interface ResolvesCollection
     /**
      * The pages this section lists, already shaped for the card renderer.
      *
+     * Returns BOTH the rows and the meta describing them, because a paginated
+     * or searched listing is not fully described by its rows: a page showing
+     * ten of forty-seven results has to say so, and an empty result set means
+     * something different after a search ("nothing matched 'xyz'") than before
+     * one ("nothing published yet"). Splitting that into a second contract
+     * method would let the two drift out of step for the same request.
+     *
      * @param  PageSection  $section  The section row, for its `settings`.
      * @param  Page  $page  The page being rendered — a "children of this page"
      *                      source has no other way to know what to list, and
      *                      resolving it from the page rather than from a stored
      *                      id means renaming or re-parenting never strands it.
-     * @return array<int, array<string, mixed>>
+     * @return array{items: array<int, array<string, mixed>>, meta: array<string, mixed>}
      */
     public function resolveCollection(PageSection $section, Page $page): array;
 }

@@ -16,6 +16,7 @@ use App\Models\Page;
 use App\Models\PageSection;
 use App\Models\SectionBlock;
 use App\Traits\Cms\CacheInvalidation;
+use Database\Seeders\Cms\CarriesSectionUuids;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -54,6 +55,7 @@ class ServicePagesSeeder extends Seeder
     // `PageSectionService`, so it has to do that service's cache invalidation
     // itself — or the 12h cached payload keeps serving pre-seed content.
     use CacheInvalidation;
+    use CarriesSectionUuids;
 
     /** The index page's own path. Everything below hangs off it. */
     private const ROOT_PATH = '/services';
@@ -293,6 +295,7 @@ class ServicePagesSeeder extends Seeder
      */
     protected function buildIndexPage(Page $page, int $siteId): void
     {
+        $this->carrySectionUuids($page);
         $this->clearSections($page);
 
         $primary = $this->cta($siteId, 'services-index-primary', [
@@ -396,6 +399,7 @@ class ServicePagesSeeder extends Seeder
      */
     protected function buildServicePage(Page $page, int $siteId, array $service): void
     {
+        $this->carrySectionUuids($page);
         $this->clearSections($page);
 
         $sort = 0;
@@ -452,7 +456,7 @@ class ServicePagesSeeder extends Seeder
 
         $secondary = $this->cta($siteId, $service['slug'].'-hero-secondary', [
             'label' => 'See Our Work',
-            'url' => '/work',
+            'url' => '/case-studies',
             'variant' => 'outline',
             'size' => 'lg',
             'icon' => null,

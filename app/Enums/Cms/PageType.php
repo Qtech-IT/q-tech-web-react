@@ -29,6 +29,21 @@ enum PageType: string
      */
     case SERVICE = 'service';
     case TECHNOLOGY = 'technology';
+    case INDUSTRY = 'industry';
+    case CASE_STUDY = 'case_study';
+    /*
+     * A PROJECT is not a CASE_STUDY, and keeping them apart is the point.
+     *
+     * A case study is an argument: a constraint, an approach, and a measured
+     * outcome — long-form, written months after delivery, and the thing a
+     * buyer reads when they are comparing vendors. A project is a piece of
+     * work: what it is, what it was built with, and what it looks like. The
+     * homepage has always shown both, in two different bands, and collapsing
+     * them into one type would mean either dressing a screenshot up as an
+     * argument or burying an argument in a gallery.
+     */
+    case PROJECT = 'project';
+    case BLOG = 'blog';
     case LEGAL = 'legal';
 
     /**

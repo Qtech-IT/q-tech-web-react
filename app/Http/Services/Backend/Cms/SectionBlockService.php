@@ -23,6 +23,7 @@ class SectionBlockService
     public function __construct(
         protected SectionTypeRegistry $registry,
         protected PageSectionService $sections,
+        protected RichTextService $richText,
     ) {}
 
     /**
@@ -51,7 +52,10 @@ class SectionBlockService
             $block->label = $request->input('label');
             $block->value = $request->input('value');
             $block->description = $request->input('description');
-            $block->body = $request->input('body');
+            // A repeater row's `body` is rich text on the types that use it —
+            // an FAQ answer, a checklist note — so it takes the same base64
+            // absorb as a section's. See `RichTextService`.
+            $block->body = $this->richText->absorbInlineImages($request->input('body'));
             $block->icon = $request->input('icon');
             $block->media_id = $request->input('media_id');
             $block->cta_id = $request->input('cta_id');

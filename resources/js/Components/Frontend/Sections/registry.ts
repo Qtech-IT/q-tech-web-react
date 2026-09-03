@@ -78,6 +78,12 @@ export const sectionRegistry: Record<string, SectionComponent> = {
   'about.story': lazy(
     () => import('@/Components/Frontend/Sections/AboutStory')
   ),
+  'article.header': lazy(
+    () => import('@/Components/Frontend/Sections/ArticleHeader')
+  ),
+  'content.html': lazy(
+    () => import('@/Components/Frontend/Sections/ContentHtml')
+  ),
   'content.prose': lazy(
     () => import('@/Components/Frontend/Sections/ContentProse')
   ),
@@ -86,6 +92,9 @@ export const sectionRegistry: Record<string, SectionComponent> = {
   ),
   'collection.index': lazy(
     () => import('@/Components/Frontend/Sections/CollectionIndex')
+  ),
+  'media.gallery': lazy(
+    () => import('@/Components/Frontend/Sections/MediaGallery')
   ),
   'newsletter.signup': lazy(
     () => import('@/Components/Frontend/Sections/NewsletterSignup')

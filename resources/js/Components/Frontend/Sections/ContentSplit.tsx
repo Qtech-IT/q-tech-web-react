@@ -255,7 +255,12 @@ export function ContentSplit({ section, index }: SectionComponentProps) {
 
               <div
                 className={cn(
-                  'overflow-hidden rounded-fx-xl border border-fx-line',
+                  // The frame owns the positioning context for the `fill`
+                  // media inside it. This worked before only because the
+                  // `Reveal` above happens to be `relative`; depending on an
+                  // ancestor for that is what broke the same composition in
+                  // `ArticleHeader`.
+                  'relative overflow-hidden rounded-fx-xl border border-fx-line',
                   'bg-fx-surface-2 fx-raise-2',
                   SHAPE_CLASSES[shape]
                 )}

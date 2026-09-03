@@ -93,10 +93,34 @@ export const fxButton = cva(
           'active:translate-y-0',
         ].join(' '),
       },
+      /*
+       * Each scale restates its padding under `has-[>svg]:` as well as plainly.
+       *
+       * The admin cva this skin repaints declares `has-[>svg]:px-3` / `px-2.5`
+       * / `px-4` — a shadcn trick that tightens a button when it holds an icon.
+       * tailwind-merge only drops a class when a LATER class shares its
+       * variant prefix, and this skin had no `has-[>svg]:` padding of its own,
+       * so the admin rule survived every merge. It then beat the plain `px-*`
+       * on specificity, because `.has-\[\>svg\]\:px-4:has(>svg)` is two
+       * compound selectors against one.
+       *
+       * The result was that EVERY public CTA carrying an icon — which is most
+       * of them — silently rendered at half its intended horizontal padding,
+       * jamming the glyph against the edge and against the label. Restating
+       * the value here gives tailwind-merge the later class it needs.
+       *
+       * THE TRAP THIS CREATES, for anyone overriding padding downstream:
+       * `has-[>svg]:px-*` compiles to `:has(> svg)`, a two-compound selector,
+       * so it beats a plain `px-*`/`ps-*`/`pe-*` override on specificity
+       * rather than losing to it on order. A caller that narrows or widens
+       * this button's padding must restate its value at BOTH modifiers or the
+       * override silently applies only to icon-less buttons. `HeroCentered`
+       * is the worked example.
+       */
       scale: {
-        sm: 'h-10 gap-2 px-5 text-fx-label',
-        md: 'h-12 gap-2 px-6 text-fx-label',
-        lg: 'h-14 gap-2.5 px-8 text-fx-body',
+        sm: 'h-10 gap-2 px-5 has-[>svg]:px-5 text-fx-label',
+        md: 'h-12 gap-2 px-6 has-[>svg]:px-6 text-fx-label',
+        lg: 'h-14 gap-2.5 px-8 has-[>svg]:px-8 text-fx-body',
       },
     },
     defaultVariants: {

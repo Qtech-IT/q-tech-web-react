@@ -219,9 +219,30 @@ export function HeroCentered({ section, index }: SectionComponentProps) {
                     cta={primaryCta}
                     size="lg"
                     fallbackVariant="default"
+                    // This hero draws its own arrow badge, so an editor-set
+                    // icon would render a second arrow next to it.
+                    hideIcon
                     buttonClassName={cn(
                       fxButton({ tone: 'solid', scale: 'lg' }),
-                      'h-16 rounded-fx-pill ps-9 pe-20 text-fx-body'
+                      'h-16 rounded-fx-pill ps-9 pe-20 text-fx-body',
+                      /*
+                       * The padding is restated under `has-[>svg]:` as well as
+                       * plainly, and it has to be.
+                       *
+                       * `fxButton` sets `has-[>svg]:px-*` to stop the admin
+                       * cva halving a button's padding whenever it holds an
+                       * icon. That rule compiles to `:has(> svg)`, which is a
+                       * two-compound selector and therefore beats the plain
+                       * `pe-20` above on specificity — so the moment an editor
+                       * gives this CTA an icon, the trailing padding collapses
+                       * from 5rem to 2rem and the label runs underneath the
+                       * badge sitting at `end-2`.
+                       *
+                       * Restating both sides at the same modifier is what
+                       * makes the override win. Any other caller overriding
+                       * `fxButton`'s padding owes the same pair.
+                       */
+                      'has-[>svg]:ps-9 has-[>svg]:pe-20'
                     )}
                   />
                   <span

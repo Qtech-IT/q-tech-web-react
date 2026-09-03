@@ -2,8 +2,10 @@
 
 use App\Data\Cms\SectionTypes\AboutStoryType;
 use App\Data\Cms\SectionTypes\AiInnovationType;
+use App\Data\Cms\SectionTypes\ArticleHeaderType;
 use App\Data\Cms\SectionTypes\AwardWallType;
 use App\Data\Cms\SectionTypes\CollectionIndexType;
+use App\Data\Cms\SectionTypes\ContentHtmlType;
 use App\Data\Cms\SectionTypes\ContentProseType;
 use App\Data\Cms\SectionTypes\ContentSplitType;
 use App\Data\Cms\SectionTypes\CtaBandType;
@@ -13,6 +15,7 @@ use App\Data\Cms\SectionTypes\HeroCenteredType;
 use App\Data\Cms\SectionTypes\HeroFlowType;
 use App\Data\Cms\SectionTypes\HeroSplitType;
 use App\Data\Cms\SectionTypes\IndustryServeType;
+use App\Data\Cms\SectionTypes\MediaGalleryType;
 use App\Data\Cms\SectionTypes\NewsletterSignupType;
 use App\Data\Cms\SectionTypes\PortfolioGridType;
 use App\Data\Cms\SectionTypes\ProcessTimelineType;
@@ -75,9 +78,12 @@ return [
         TeamGridType::class,
         AwardWallType::class,
         AboutStoryType::class,
+        ArticleHeaderType::class,
+        ContentHtmlType::class,
         ContentProseType::class,
         ContentSplitType::class,
         CollectionIndexType::class,
+        MediaGalleryType::class,
         NewsletterSignupType::class,
         CtaFinalType::class,
     ],

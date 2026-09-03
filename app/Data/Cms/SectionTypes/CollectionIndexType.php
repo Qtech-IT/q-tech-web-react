@@ -212,6 +212,46 @@ class CollectionIndexType implements ResolvesCollection, SectionTypeContract
             ),
 
             SectionField::make(
+                name: 'searchable',
+                label: translate('Show A Search Box'),
+                type: InputEnum::SWITCH->value,
+                store: FieldStore::SETTINGS,
+                default: false,
+                group: 'Source',
+                help: translate('Searches the title and summary of the listed pages. Worth switching on once a listing is long enough that scanning it stops working — roughly a dozen items.'),
+            ),
+
+            SectionField::make(
+                name: 'paginate',
+                label: translate('Paginate'),
+                type: InputEnum::SWITCH->value,
+                store: FieldStore::SETTINGS,
+                default: false,
+                group: 'Source',
+                help: translate('Splits the listing into pages instead of rendering everything at once. Off, the Maximum Cards value is the whole list.'),
+            ),
+
+            SectionField::make(
+                name: 'per_page',
+                label: translate('Cards Per Page'),
+                type: InputEnum::NUMBER->value,
+                store: FieldStore::SETTINGS,
+                default: 9,
+                group: 'Source',
+                help: translate('Used only when Paginate is on.'),
+            ),
+
+            SectionField::make(
+                name: 'show_date',
+                label: translate('Show Publish Date'),
+                type: InputEnum::SWITCH->value,
+                store: FieldStore::SETTINGS,
+                default: false,
+                group: 'Layout',
+                help: translate('For blog posts and case studies, where recency is part of what a reader is judging. Off for services and policies, where a date only makes the page look stale.'),
+            ),
+
+            SectionField::make(
                 name: 'columns',
                 label: translate('Columns'),
                 type: InputEnum::SELECT->value,
@@ -336,10 +376,79 @@ class CollectionIndexType implements ResolvesCollection, SectionTypeContract
             default => $query->orderBy('sort_order')->orderBy('id'),
         };
 
-        $limit = (int) ($settings['limit'] ?? 0);
-        $query->limit($limit > 0 ? min($limit, self::MAX_ITEMS) : self::MAX_ITEMS);
+        /*
+         * Search, when the editor has switched it on.
+         *
+         * Title and excerpt only. Section bodies are not searched: they live in
+         * `page_sections` across several columns and two JSON bags, so matching
+         * them means either a join per column or a full-text index this schema
+         * does not have — and a listing that matches on text the card does not
+         * show returns results a reader cannot explain.
+         *
+         * `LIKE` with an escaped term rather than a raw one: `%` and `_` are
+         * wildcards, so an unescaped search for "100%" silently matches
+         * everything.
+         */
+        $searchable = (bool) ($settings['searchable'] ?? false);
+        $term = $searchable ? trim((string) request()->query('q', '')) : '';
 
-        return PageCardResource::collection($query->get())->resolve();
+        if ($term !== '') {
+            $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $term);
+
+            $query->where(function ($builder) use ($escaped): void {
+                $builder
+                    ->where('title', 'like', '%'.$escaped.'%')
+                    ->orWhere('excerpt', 'like', '%'.$escaped.'%');
+            });
+        }
+
+        $limit = (int) ($settings['limit'] ?? 0);
+        $ceiling = $limit > 0 ? min($limit, self::MAX_ITEMS) : self::MAX_ITEMS;
+
+        if (! ($settings['paginate'] ?? false)) {
+            $items = PageCardResource::collection($query->limit($ceiling)->get())->resolve();
+
+            return [
+                'items' => $items,
+                'meta' => [
+                    'total' => count($items),
+                    'per_page' => count($items),
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'paginated' => false,
+                    'searchable' => $searchable,
+                    'term' => $term,
+                ],
+            ];
+        }
+
+        /*
+         * Paginated. Counted BEFORE the page slice so "showing 10 of 47" is
+         * the real total rather than the size of the current page, and clamped
+         * so a hand-typed `?page=999` lands on the last real page instead of
+         * an empty grid that looks like the listing broke.
+         */
+        $perPage = max(1, min((int) ($settings['per_page'] ?? 9), self::MAX_ITEMS));
+        $total = (clone $query)->toBase()->getCountForPagination();
+        $lastPage = max(1, (int) ceil($total / $perPage));
+        $current = max(1, min((int) request()->query('page', 1), $lastPage));
+
+        $rows = $query
+            ->forPage($current, $perPage)
+            ->get();
+
+        return [
+            'items' => PageCardResource::collection($rows)->resolve(),
+            'meta' => [
+                'total' => $total,
+                'per_page' => $perPage,
+                'current_page' => $current,
+                'last_page' => $lastPage,
+                'paginated' => true,
+                'searchable' => $searchable,
+                'term' => $term,
+            ],
+        ];
     }
 
     /**
@@ -406,6 +515,10 @@ class CollectionIndexType implements ResolvesCollection, SectionTypeContract
                 'order' => 'manual',
                 'limit' => 12,
                 'layout' => 'card',
+                'searchable' => false,
+                'paginate' => false,
+                'per_page' => 9,
+                'show_date' => false,
                 'columns' => 3,
                 'align' => 'center',
                 'theme' => 'default',

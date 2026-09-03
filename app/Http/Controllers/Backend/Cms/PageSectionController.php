@@ -73,6 +73,36 @@ class PageSectionController extends Controller
     }
 
     /**
+     * The standalone editor for one section.
+     *
+     * Content editing is a SCREEN, not a drawer. A section carries repeaters,
+     * media pickers and a rich text editor, all of which need room and all of
+     * which push a panel into its own scroll context — and a drawer has no URL,
+     * so an editor cannot link to what they are working on, reload after a
+     * mistake, or open two sections in two tabs.
+     *
+     * The page is loaded alongside it for the header and breadcrumb; a section
+     * that is a shared block body has no page, which is why it is nullable.
+     */
+    public function edit(PageSection $pageSection): Response
+    {
+        $section = $this->service->getOne($pageSection);
+        $type = $this->registry->get($section->section_type);
+
+        return AppResponse::asSuccess()
+            ->withComponent($this->modelProperty['pagePrefix'].'Edit', [
+                'title' => translate('Edit Section'),
+                'data' => formatResourceResponse($section, PageSectionResource::class),
+                'page' => $section->page
+                    ? formatResourceResponse($section->page, PageResource::class)
+                    : null,
+                'sectionType' => $type ? new SectionTypeResource($type) : null,
+                'statuses' => Status::options(),
+                'modelProperty' => $this->modelProperty,
+            ])->build();
+    }
+
+    /**
      * Summary of store
      */
     public function store(SectionSaveRequest $request): RedirectResponse

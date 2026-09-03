@@ -7,9 +7,9 @@
 namespace Database\Seeders;
 
 use App\Data\Seeder\Permissions;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Artisan;
+use Spatie\Permission\Models\Permission;
 
 abstract class BasePermissionSeeder extends Seeder
 {
@@ -26,7 +26,7 @@ abstract class BasePermissionSeeder extends Seeder
         $allModules = Permissions::getAll();
         $moduleName = $this->getModuleName();
 
-        if (!isset($allModules[$moduleName])) {
+        if (! isset($allModules[$moduleName])) {
             throw new \Exception("Module '{$moduleName}' not found in config/permissions.php");
         }
 
@@ -50,7 +50,7 @@ abstract class BasePermissionSeeder extends Seeder
 
     /**
      * Create permissions for the module using firstOrCreate
-     * 
+     *
      * Safe approach:
      * - If permission exists: preserved as-is
      * - If permission new: created
@@ -127,13 +127,13 @@ abstract class BasePermissionSeeder extends Seeder
             ['name' => $name],
             [
                 'display_name' => $displayName,
-                'description'  => $description,
-                'module'       => $module,
-                'action'       => $action,
-                'parent_id'    => $parentId,
-                'is_group'     => $isGroup,
-                'order_index'  => $order,
-                'guard_name'   => 'web',
+                'description' => $description,
+                'module' => $module,
+                'action' => $action,
+                'parent_id' => $parentId,
+                'is_group' => $isGroup,
+                'order_index' => $order,
+                'guard_name' => 'web',
             ]
         );
     }

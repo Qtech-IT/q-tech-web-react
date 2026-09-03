@@ -794,3 +794,66 @@
 [data-site='public'] .fx-numerals {
   font-variant-numeric: tabular-nums lining-nums !important;
 }
+
+/*
+ * An article header and the band under it are ONE unit, so they get one gap
+ * between them, not two.
+ *
+ * Every section pads itself symmetrically, which is right for two unrelated
+ * bands and wrong here: the header's bottom padding and the body's top padding
+ * stack into ~190px of blank page between an article's lead image and its first
+ * paragraph, which reads as a missing section rather than as breathing room.
+ *
+ * Scoped to `article.header` deliberately, rather than collapsing every pair of
+ * same-background neighbours. That broader rule would be defensible typography
+ * but it would also re-space the home page, whose rhythm is signed off — and
+ * `article.header` never appears there.
+ */
+[data-site='public'] [data-section-type='article.header'] + [data-slot='section'] {
+  padding-top: 0;
+}
+
+/*
+ * Columns inside editor-authored rich text.
+ *
+ * The editor stores a row as `<div data-cols="N">` holding `<div data-col>`
+ * cells — structure only, no classes and no inline styles, because the render
+ * sanitiser strips both. The grid is this site's, not the one the content was
+ * copied from, which is the point: a passage pasted from anywhere lands in the
+ * same rhythm as one typed here.
+ *
+ * Single column below `sm`. Two panels side by side inside a 704px prose
+ * measure are ~330px each on a phone, which is a column of broken words.
+ */
+[data-site='public'] .fx-richtext [data-cols] {
+  display: grid;
+  gap: var(--fx-stack-md);
+  margin-top: var(--fx-stack-sm);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+[data-site='public'] .fx-richtext [data-col] > :first-child {
+  margin-top: 0;
+}
+
+@media (width >= 40rem) {
+  [data-site='public'] .fx-richtext [data-cols='2'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  [data-site='public'] .fx-richtext [data-cols='3'] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* Four tracks only from the wider breakpoint — at 640px they are narrower
+     than the two-column case is on a phone. */
+  [data-site='public'] .fx-richtext [data-cols='4'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (width >= 64rem) {
+  [data-site='public'] .fx-richtext [data-cols='4'] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

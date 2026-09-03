@@ -24,7 +24,6 @@ import { useCallback, useMemo, useState } from 'react';
 import SeoPanel from '../Seo/SeoPanel';
 import { CmsEmpty } from '../Shared/CmsStateBlock';
 import PublishDialog from './PublishDialog';
-import SectionEditorSheet from './SectionEditorSheet';
 import SectionList from './SectionList';
 import SectionTypePickerDialog from './SectionTypePickerDialog';
 
@@ -67,21 +66,9 @@ export function PageBuilderWrapper(props: PageBuilderProps) {
 
   const sections = optimistic ?? serverSections;
 
-  /**
-   * The editor tracks a uuid, not a section object. A repeater write inside
-   * the sheet triggers a partial reload, and a captured object would keep
-   * rendering the pre-reload item list — the new row would save, then vanish
-   * from the panel until the sheet was reopened.
-   */
-  const [editingUuid, setEditingUuid] = useState<string | null>(null);
   const [publishing, setPublishing] = useState<CmsPageSection | 'page' | null>(null);
   const [deleting, setDeleting] = useState<CmsPageSection | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
-
-  const editing = useMemo(
-    () => sections.find((section) => section.uuid === editingUuid) ?? null,
-    [sections, editingUuid]
-  );
 
   const { submit, loading, errors } = useInertiaForm();
 
@@ -398,7 +385,15 @@ export function PageBuilderWrapper(props: PageBuilderProps) {
               canReorder={can('section.reorder')}
               busy={loading}
               onReorder={handleReorder}
-              onEdit={(section) => setEditingUuid(section.uuid)}
+              /* Editing is a screen of its own — see
+                 PageSectionController::edit(). A drawer had no URL, so a
+                 reload lost the editor's place and nothing could be linked
+                 to. */
+              onEdit={(section) =>
+                router.visit(
+                  route('backend.page-sections.edit', { page_section: section.uuid })
+                )
+              }
               onDuplicate={duplicateSection}
               onDelete={setDeleting}
               onToggleStatus={toggleStatus}
@@ -432,15 +427,6 @@ export function PageBuilderWrapper(props: PageBuilderProps) {
         groups={sectionTypeGroups ?? {}}
         onSelect={addSection}
         busy={loading}
-      />
-
-      <SectionEditorSheet
-        open={editing !== null}
-        onOpenChange={(open) => setEditingUuid(open ? editingUuid : null)}
-        section={editing}
-        sectionType={editing ? (sectionTypes[editing.section_type] ?? null) : null}
-        onSaved={refresh}
-        readOnly={!can('section.edit')}
       />
 
       <PublishDialog

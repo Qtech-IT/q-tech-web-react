@@ -102,7 +102,9 @@ export type CmsFieldType =
   | 'relation'
   | 'icon'
   | 'color'
-  | 'repeater';
+  | 'repeater'
+  /** Raw monospace textarea. Never the rich text editor — see `FieldType::CODE`. */
+  | 'code';
 
 /** One entry from `SectionField::make()`. */
 export interface CmsSectionField {
@@ -293,7 +295,21 @@ export interface CmsPageCard {
   /** An `--fx-mark-*` hue, or null to colour it by position. */
   accent: string | null;
   page_type: string | null;
+  /** ISO 8601. Formatted on the client so one value serves card and `<time>`. */
+  published_at: string | null;
   media?: CmsMedia | null;
+}
+
+/** `ResolvesCollection::resolveCollection()`'s `meta` half. */
+export interface CmsCollectionMeta {
+  total: number;
+  per_page: number;
+  current_page: number;
+  last_page: number;
+  paginated: boolean;
+  searchable: boolean;
+  /** The active search term, or an empty string. */
+  term: string;
 }
 
 export interface CmsPageSection extends CmsBaseAttributes {
@@ -327,6 +343,8 @@ export interface CmsPageSection extends CmsBaseAttributes {
    * that separation matters.
    */
   collection?: CmsPageCard[];
+  /** Totals, current page and the active search term for a listed section. */
+  collection_meta?: CmsCollectionMeta;
   /** Editorial state. Distinct from `status`, which is the kill switch. */
   publish_status: string;
   published_at: string | null;
@@ -489,6 +507,18 @@ export interface PageBuilderProps extends CmsPageBaseProps {
   sectionTypes: CmsSectionTypesProp;
   sectionTypeGroups: CmsSectionTypeGroups;
   publishStatuses: CmsOption[];
+}
+
+/**
+ * `backend.page-sections.edit` — the standalone section editor.
+ *
+ * `page` is nullable because a section that is a shared block's body belongs to
+ * no page; the screen falls back to the page list for its back link.
+ */
+export interface SectionEditorProps extends CmsPageBaseProps {
+  data: { data: CmsPageSection } | CmsPageSection;
+  page: { data: CmsPage } | CmsPage | null;
+  sectionType: { data: CmsSectionType } | CmsSectionType | null;
 }
 
 /**

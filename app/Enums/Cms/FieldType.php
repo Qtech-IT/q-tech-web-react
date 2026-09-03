@@ -25,6 +25,17 @@ enum FieldType: string
     case REPEATER = 'repeater';
 
     /**
+     * A raw code editor — a monospace textarea, and deliberately nothing more.
+     *
+     * Distinct from `InputEnum::HTML_TEXT`, which renders the Lexical editor.
+     * A rich text editor cannot hold markup it has no node for, so pasting a
+     * design into one and reading it back gives the editor's interpretation of
+     * that design rather than the design. This type is what an editor uses
+     * when the answer has to be the bytes they typed.
+     */
+    case CODE = 'code';
+
+    /**
      * Types that reference a media row and therefore may never be stored
      * inside JSON (invariant I2 — media needs an FK and a reverse index).
      */

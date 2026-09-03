@@ -237,7 +237,10 @@ export function AboutStory({ section, index }: SectionComponentProps) {
             >
               <div
                 className={cn(
-                  'overflow-hidden rounded-fx-xl border border-fx-line',
+                  // Owns the positioning context for the `fill` media inside
+                  // it, rather than relying on the `Reveal` above being
+                  // `relative`.
+                  'relative overflow-hidden rounded-fx-xl border border-fx-line',
                   'bg-fx-surface-2 shadow-fx-2',
                   SHAPE_CLASSES[shape]
                 )}

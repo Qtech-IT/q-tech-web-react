@@ -234,8 +234,24 @@ if (!function_exists('translate')) {
 
 		try {
 			$lang_array = include base_path('resources/lang/' . $local . '/messages.php');
-			$value      = remove_special_characters($value);
-			$key        = value_to_key($value);
+
+			/*
+			 * The KEY is normalised; the VALUE is not.
+			 *
+			 * `remove_special_characters()` replaces apostrophes, quotes,
+			 * commas, semicolons, angle brackets and question marks with
+			 * spaces. Running it over `$value` before storing meant the
+			 * MANGLED string was written into messages.php as the English
+			 * text and returned to the caller — so "Leave at zero for no
+			 * limit. Capped at 48, whatever is entered" shipped with its
+			 * comma replaced by a second space, and every apostrophe in the
+			 * admin ("editor's note") lost the same way.
+			 *
+			 * The key still goes through it, so lookups stay stable and every
+			 * key already in the file keeps resolving. Only what is stored and
+			 * returned changes: the string exactly as the developer wrote it.
+			 */
+			$key = value_to_key(remove_special_characters($value));
 
 			if (!array_key_exists($key, $lang_array)) {
 				$lang_array[$key] = $value;

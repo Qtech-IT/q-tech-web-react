@@ -73,10 +73,25 @@ function recordValues<T>(raw: object): T[] {
   return allObjects ? (values as T[]) : [];
 }
 
-/** Unwrap a single-resource prop, which Inertia wraps as `{ data: {...} }`. */
+/**
+ * Unwrap a single-resource prop, which Inertia wraps as `{ data: {...} }`.
+ *
+ * The identity guard is load-bearing. `PageSectionResource` emits a `data`
+ * key of its own — the translatable JSON bag every section carries — and
+ * `AppResponse` hands that resource through UNWRAPPED, so a naive "does it
+ * have a `data` key" test hands back the bag instead of the section: the
+ * editor screen would open with every field blank and no error anywhere.
+ *
+ * An object carrying its own `id` or `uuid` IS the resource. Nothing that is
+ * genuinely an envelope has either.
+ */
 export function unwrapItem<T>(raw: unknown): T | null {
   if (!raw || typeof raw !== 'object') {
     return null;
+  }
+
+  if ('uuid' in raw || 'id' in raw) {
+    return raw as T;
   }
 
   const inner = (raw as { data?: unknown }).data;

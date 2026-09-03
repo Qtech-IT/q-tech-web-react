@@ -6,6 +6,7 @@ import { ContentPage } from '@/Components/Frontend/Pages/ContentPage'
 import { Container } from '@/Components/Public/Container'
 import { Section } from '@/Components/Public/Section'
 import { fxButton } from '@/Components/Public/fxButton'
+import { Button } from '@/Components/UI/Button'
 import { useTranslations } from '@/Hooks/useTranslations'
 import PublicLayout from '@/Layouts/Public/PublicLayout'
 
@@ -41,9 +42,22 @@ function NotFoundBody() {
         </p>
 
         <div className="mt-fx-stack-md flex justify-center">
-          <Link href="/" className={fxButton({ tone: 'solid', scale: 'lg' })}>
-            {t('Back to home')}
-          </Link>
+          {/*
+            * Routed through `Button asChild`, not a bare `<Link>` wearing
+            * `fxButton()`.
+            *
+            * `fxButton` is only the SKIN — colour, radius, focus ring. The
+            * layout half of a button (`inline-flex`, `items-center`,
+            * `justify-center`, icon sizing) lives in the admin cva inside
+            * `Button`. Applied to a plain anchor the skin's `h-14` does
+            * nothing, because an inline box has no height, and the label sits
+            * on the baseline instead of centred — which is exactly the
+            * misalignment this page had. Every other CTA on the site already
+            * goes through `Button`; this was the one that did not.
+            */}
+          <Button asChild size="lg" className={fxButton({ tone: 'solid', scale: 'lg' })}>
+            <Link href="/">{t('Back to home')}</Link>
+          </Button>
         </div>
       </Container>
     </Section>

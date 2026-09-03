@@ -25,7 +25,46 @@ class PageSectionService
     public function __construct(
         protected SectionTypeRegistry $registry,
         protected MediaService $media,
+        protected RichTextService $richText,
     ) {}
+
+    /**
+     * One section, loaded exactly as `getForPage()` loads each of many.
+     *
+     * The editor screen needs the same relation set whether it was reached
+     * through the page builder or addressed directly, so the list lives in one
+     * place — a divergence here shows up as a repeater item whose image is
+     * silently absent on the standalone screen and present on the sheet.
+     */
+    public function getOne(PageSection $section): PageSection
+    {
+        return $section->load($this->editorRelations());
+    }
+
+    /**
+     * Relations the section editor form reads.
+     *
+     * @return array<int, string>
+     */
+    protected function editorRelations(): array
+    {
+        return [
+            'primaryMedia',
+            'cta',
+            'secondaryCta',
+            'block:id,uuid,key,name',
+            'blocks.primaryMedia',
+            'blocks.cta',
+            'blocks.children',
+
+            // Without these two, a nested child's media and CTA are simply
+            // absent from SectionBlockResource (whenLoaded omits rather
+            // than lazy-loads) — the editor would open a tab item and find
+            // its image silently missing.
+            'blocks.children.primaryMedia',
+            'blocks.children.cta',
+        ];
+    }
 
     /**
      * Every section on a page, with the relations the editor needs.
@@ -39,22 +78,7 @@ class PageSectionService
     public function getForPage(Page $page): Collection
     {
         return $page->sections()
-            ->with([
-                'primaryMedia',
-                'cta',
-                'secondaryCta',
-                'block:id,uuid,key,name',
-                'blocks.primaryMedia',
-                'blocks.cta',
-                'blocks.children',
-
-                // Without these two, a nested child's media and CTA are simply
-                // absent from SectionBlockResource (whenLoaded omits rather
-                // than lazy-loads) — the editor would open a tab item and find
-                // its image silently missing.
-                'blocks.children.primaryMedia',
-                'blocks.children.cta',
-            ])
+            ->with($this->editorRelations())
             ->get();
     }
 
@@ -66,7 +90,7 @@ class PageSectionService
      */
     public function getPublished(Page $page): Collection
     {
-        return $page->visibleSections()
+        $sections = $page->visibleSections()
             ->with([
                 'primaryMedia',
                 'cta',
@@ -86,8 +110,105 @@ class PageSectionService
                     'children.primaryMedia',
                     'children.cta',
                 ]),
+
+                /*
+                 * A referenced global block's CONTENT, eager-loaded with the
+                 * same shape as a local section.
+                 *
+                 * Without this the reference would be resolved one query at a
+                 * time inside the map below — an N+1 that only appears on
+                 * pages actually using a shared block, which is exactly the
+                 * kind that survives review.
+                 */
+                'block.body' => fn ($query) => $query->with([
+                    'primaryMedia',
+                    'cta',
+                    'secondaryCta',
+                    'media',
+                    'blocks' => fn ($blocks) => $blocks->active()->with([
+                        'primaryMedia',
+                        'cta',
+                        'children' => fn ($child) => $child->active(),
+                        'children.primaryMedia',
+                        'children.cta',
+                    ]),
+                ]),
             ])
             ->get();
+
+        return $sections
+            ->map(fn (PageSection $section): ?PageSection => $this->resolveShared($section))
+            ->filter()
+            ->values();
+    }
+
+    /**
+     * Swap a reference to a global block for that block's content.
+     *
+     * WHAT A REFERENCE IS
+     * -------------------
+     * `page_sections.block_id` means two different things depending on
+     * `page_id` — the column's own docblock spells this out. With `page_id`
+     * NULL the row IS a block's body; with `page_id` set the row REFERENCES a
+     * block and carries no content of its own. This method is the half of that
+     * contract the public renderer was missing: without it a reference row
+     * renders as an empty section, because there is nothing in it.
+     *
+     * WHAT SURVIVES FROM THE REFERENCE
+     * --------------------------------
+     * Position and identity, and nothing else. `sort_order` belongs to the
+     * page — the same block sits third on one page and first on another — and
+     * `uuid` stays the reference's so React keys remain unique when one page
+     * embeds the same block twice. Everything a visitor sees comes from the
+     * block, which is the entire point: edit it once, every page follows.
+     *
+     * An `anchor` set on the reference wins over the block's, because a jump
+     * link is a property of the page it lives on.
+     *
+     * WHEN IT RENDERS NOTHING
+     * -----------------------
+     * A block that has been unpublished, or whose body row was deleted, drops
+     * the section instead of rendering a hole. That is the same rule the rest
+     * of this service follows: a page missing content is a normal editorial
+     * state, not an error.
+     */
+    protected function resolveShared(PageSection $section): ?PageSection
+    {
+        // Not a reference — a local section, or a block body being rendered
+        // through some other path.
+        if ($section->block_id === null || $section->page_id === null) {
+            return $section;
+        }
+
+        $block = $section->block;
+
+        if ($block === null || ! $block->isPubliclyVisible()) {
+            return null;
+        }
+
+        $body = $block->body;
+
+        if ($body === null || ! $body->isPubliclyVisible()) {
+            return null;
+        }
+
+        // A copy, never the loaded model: two pages referencing one block share
+        // the same `body` instance within a request, and writing the page's
+        // sort_order onto it would reorder the other page too.
+        $resolved = $body->replicate();
+
+        $resolved->id = $body->id;
+        $resolved->exists = true;
+        $resolved->uuid = $section->uuid;
+        $resolved->page_id = $section->page_id;
+        $resolved->sort_order = $section->sort_order;
+        $resolved->anchor = $section->anchor ?: $body->anchor;
+
+        // `replicate()` does not carry relations, and the payload is built
+        // entirely from them.
+        $resolved->setRelations($body->getRelations());
+
+        return $resolved;
     }
 
     /**
@@ -113,7 +234,18 @@ class PageSectionService
             $section->eyebrow = $request->input('eyebrow');
             $section->heading = $request->input('heading');
             $section->subheading = $request->input('subheading');
-            $section->body = $request->input('body');
+
+            /*
+             * `body` is the rich-text column on every type that has one, so it
+             * is where a pasted screenshot lands as a `data:` URI.
+             *
+             * Absorbed here rather than in the editor because pasting formatted
+             * HTML out of Word or Google Docs brings base64 images in as
+             * MARKUP — no file event fires, so nothing client-side is asked to
+             * upload anything. This is the one place every writer passes
+             * through. See `RichTextService`.
+             */
+            $section->body = $this->richText->absorbInlineImages($request->input('body'));
             $section->media_id = $request->input('media_id');
             $section->cta_id = $request->input('cta_id');
             $section->secondary_cta_id = $request->input('secondary_cta_id');

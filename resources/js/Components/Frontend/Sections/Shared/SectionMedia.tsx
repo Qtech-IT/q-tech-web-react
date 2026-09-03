@@ -24,7 +24,17 @@ export interface SectionMediaProps {
    * priority — a lazily loaded hero image is a guaranteed LCP regression.
    */
   priority?: boolean | undefined
-  /** Absolutely fill the nearest positioned ancestor, for full-bleed layouts. */
+  /**
+   * Absolutely fill the nearest positioned ancestor, for full-bleed layouts.
+   *
+   * THE CALLER OWES A POSITIONING CONTEXT. This renders `absolute inset-0`, so
+   * the element it fills is whichever ancestor is `relative`/`absolute` — and
+   * if the frame that sets the aspect ratio is not one of them, the image
+   * silently escapes it and stretches to the nearest one that is, usually the
+   * whole `<Section>`. Put `relative` on the frame itself rather than trusting
+   * a wrapper further up: three sections had this bug, and two of them only
+   * looked correct because an unrelated `Reveal` happened to be positioned.
+   */
   fill?: boolean | undefined
   /** CSS `aspect-ratio` used only when the asset carries no dimensions. */
   fallbackRatio?: string | undefined

@@ -20,9 +20,7 @@ export interface RichTextProps {
  * with a `<style>` block and forty `<span class="c17">`s.
  *
  * Deliberately absent: `<h1>` (the page owns exactly one, and it is the
- * section's), `<img>` (a picture belongs in a media field with an alt text, a
- * reserved box and a CDN URL — not pasted as a hotlink), `<iframe>`, `<script>`
- * and every form element.
+ * section's), `<iframe>`, `<script>`, `<style>` and every form element.
  */
 const ALLOWED_TAGS = [
   'p', 'br', 'hr',
@@ -35,18 +33,61 @@ const ALLOWED_TAGS = [
   'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption',
   'figure', 'figcaption',
   'span', 'div',
+  /*
+   * `img` is permitted now that the editor can hold one.
+   *
+   * It was excluded on the grounds that a picture belongs in a media field
+   * rather than pasted as a hotlink — which was right while the rich-text
+   * field was a raw textarea, and became wrong the moment the editor could
+   * accept a pasted image. Stripping it here would have let an editor insert a
+   * picture, save it successfully, and never see it on the page.
+   *
+   * Two things make it safe. `RichTextService` absorbs `data:` images into the
+   * media library on save, so what reaches here is a real URL; and the URI
+   * allowlist below rejects `data:` and `javascript:` in any attribute, so even
+   * an unabsorbed one is dropped rather than rendered.
+   */
+  'img',
 ]
 
 /**
  * Attributes an editor may set.
  *
- * No `style`, no `class`, no `id`, and no `on*` — the styling below owns
- * appearance, and an editor-supplied `id` can collide with a heading anchor the
- * page generates. `target` is permitted because a link out to a partner site
+ * No `class`, no `id`, and no `on*`. A class is deliberate: markup copied from
+ * another site carries THAT site's class names, and its stylesheet is not
+ * loaded here — so the classes would style nothing while colliding with ours.
+ * An editor-supplied `id` can collide with a heading anchor the page generates. `target` is permitted because a link out to a partner site
  * legitimately wants it; the `rel` that must accompany it is forced below
  * rather than trusted to the editor.
  */
-const ALLOWED_ATTR = ['href', 'title', 'target', 'rel', 'colspan', 'rowspan', 'scope', 'lang', 'dir']
+const ALLOWED_ATTR = [
+  'href', 'title', 'target', 'rel',
+  /*
+   * `style` is permitted, and then filtered PROPERTY BY PROPERTY by the hook
+   * below.
+   *
+   * It was excluded because arbitrary inline styling fights the design system,
+   * which is still true of type scales and colours an editor did not choose.
+   * But excluding it outright meant a passage pasted with its layout inline —
+   * the common case for anything exported from a design tool, a document or an
+   * email — arrived stripped to a stack of paragraphs, which is the "it does
+   * not look like what I copied" complaint. The allowlist below keeps layout
+   * and lets nothing through that can move content out of the flow.
+   */
+  'style',
+  'colspan', 'rowspan', 'scope',
+  'lang', 'dir',
+  /*
+   * The editor's column construct. DOMPurify permits `data-*` by default, so
+   * these are listed for the reader rather than for the sanitiser — and so
+   * that turning `ALLOW_DATA_ATTR` off later does not silently flatten every
+   * two-column passage on the site back into a stack.
+   */
+  'data-cols', 'data-col',
+  // Dimensions travel with the tag so the browser reserves the box before the
+  // file arrives — the same reason `CmsMedia` carries width and height.
+  'src', 'alt', 'width', 'height', 'loading',
+]
 
 /**
  * Force `rel="noopener noreferrer"` onto any link opening in a new tab.
@@ -62,14 +103,101 @@ const ALLOWED_ATTR = ['href', 'title', 'target', 'rel', 'colspan', 'rowspan', 's
  */
 let hookRegistered = false
 
+/**
+ * CSS properties an editor's markup may keep.
+ *
+ * Layout, spacing, colour and type — the things that make a pasted block look
+ * like what was copied. Everything absent is absent on purpose:
+ *
+ *   position, z-index, top/left/…  — can lift content out of the flow and
+ *                                    cover the page, including the nav
+ *   transform, filter, clip-path   — same, by another route
+ *   content, cursor, pointer-events — can fake UI the visitor then trusts
+ *   font-family                    — the one property that most reliably makes
+ *                                    a passage look foreign to the site
+ *
+ * The check is exact-match, not prefix-match: `border` and `border-radius` are
+ * both listed rather than matching `border*`, because a prefix rule quietly
+ * admits whatever the CSS working group adds next.
+ */
+const ALLOWED_CSS = new Set([
+  // Box.
+  'display', 'gap', 'row-gap', 'column-gap',
+  'grid-template-columns', 'grid-template-rows', 'grid-column', 'grid-row',
+  'flex', 'flex-direction', 'flex-wrap', 'flex-basis', 'flex-grow', 'flex-shrink',
+  'align-items', 'align-self', 'justify-content', 'justify-items', 'justify-self',
+  'width', 'max-width', 'min-width', 'height', 'max-height', 'min-height',
+  'aspect-ratio', 'object-fit', 'object-position', 'overflow', 'overflow-x', 'overflow-y',
+  'margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
+  'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+  'float', 'clear',
+  // Paint.
+  'color', 'background', 'background-color', 'background-image',
+  'background-size', 'background-position', 'background-repeat',
+  'border', 'border-top', 'border-right', 'border-bottom', 'border-left',
+  'border-color', 'border-style', 'border-width', 'border-radius',
+  'box-shadow', 'opacity',
+  // Type.
+  'font-size', 'font-weight', 'font-style', 'font-variant',
+  'line-height', 'letter-spacing', 'word-spacing', 'white-space',
+  'text-align', 'text-decoration', 'text-transform', 'text-indent',
+  'vertical-align', 'list-style', 'list-style-type', 'list-style-position',
+])
+
+/**
+ * Strip everything not on `ALLOWED_CSS` from an element's inline style.
+ *
+ * Reading `node.style` rather than parsing the attribute string is what makes
+ * this safe with no CSS parser of our own: the browser has already parsed the
+ * declaration, discarded anything malformed, and normalised the rest, so what
+ * is enumerated here is exactly what would have applied. A property removed
+ * from the declaration cannot come back.
+ *
+ * Setting the attribute back from `cssText` — rather than leaving the live
+ * declaration alone — matters because DOMPurify serialises the node afterwards
+ * and reads the attribute, not the object.
+ */
+function filterInlineStyle(node: Element): void {
+  const style = (node as HTMLElement).style
+
+  if (!style || style.length === 0) {
+    return
+  }
+
+  // Snapshotted: removing a property mutates the live list being iterated.
+  const properties = Array.from(style)
+
+  for (const property of properties) {
+    if (!ALLOWED_CSS.has(property)) {
+      style.removeProperty(property)
+    }
+  }
+
+  if (style.length === 0) {
+    node.removeAttribute('style')
+
+    return
+  }
+
+  node.setAttribute('style', style.cssText)
+}
+
 function registerTargetHook(): void {
   if (hookRegistered || !DOMPurify.isSupported) {
     return
   }
 
   DOMPurify.addHook('afterSanitizeAttributes', (node) => {
-    if (node instanceof Element && node.tagName === 'A' && node.hasAttribute('target')) {
+    if (!(node instanceof Element)) {
+      return
+    }
+
+    if (node.tagName === 'A' && node.hasAttribute('target')) {
       node.setAttribute('rel', 'noopener noreferrer')
+    }
+
+    if (node.hasAttribute('style')) {
+      filterInlineStyle(node)
     }
   })
 
@@ -103,6 +231,23 @@ export function RichText({ html, className }: RichTextProps) {
     }
 
     /*
+     * DEMOTE `h1` RATHER THAN STRIP IT.
+     *
+     * `h1` is not in the allowlist because the page owns exactly one and it is
+     * the section's. But DOMPurify strips a disallowed TAG and keeps its TEXT,
+     * so an editor who typed a headline in the rich text field got their
+     * headline rendered as a bare paragraph — same size, same colour as the
+     * body copy, the whole hierarchy of the passage silently flattened. That is
+     * how an authored article ends up looking unstyled.
+     *
+     * Rewriting the tag before sanitising keeps the outline (one visible
+     * heading, styled as one) without ever emitting a second `h1`. Done as a
+     * string pass rather than a DOM hook because this component also runs
+     * through `resources/js/ssr.tsx`, where there is no `DOMParser`.
+     */
+    const source = html.replace(/<(\/?)h1(\s|>)/gi, '<$1h2$2')
+
+    /*
      * FAIL CLOSED where there is no DOM.
      *
      * DOMPurify needs a `window` to parse into. Without one it sets
@@ -118,7 +263,7 @@ export function RichText({ html, className }: RichTextProps) {
 
     registerTargetHook()
 
-    return DOMPurify.sanitize(html, {
+    return DOMPurify.sanitize(source, {
       ALLOWED_TAGS,
       ALLOWED_ATTR,
       /*
@@ -149,6 +294,11 @@ export function RichText({ html, className }: RichTextProps) {
   return (
     <div
       className={cn(
+        // `fx-richtext` is the hook for the column rules in `frontend.css`.
+        // They live there rather than as arbitrary variants here because the
+        // selector has to match an attribute VALUE, which Tailwind's variant
+        // syntax expresses badly and Tailwind's scanner cannot see through.
+        'fx-richtext',
         'text-fx-body text-pretty text-fx-ink-soft',
 
         // Paragraphs and rules.
@@ -177,6 +327,10 @@ export function RichText({ html, className }: RichTextProps) {
         '[&_em]:italic [&_mark]:bg-fx-wash-accent [&_mark]:text-fx-ink [&_mark]:px-1 [&_mark]:rounded-fx-xs',
         '[&_a]:font-medium [&_a]:text-fx-accent-text [&_a]:underline [&_a]:decoration-fx-accent-line [&_a]:underline-offset-4 [&_a:hover]:decoration-current',
         '[&_a]:rounded-fx-xs [&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-offset-2 [&_a:focus-visible]:outline-fx-focus',
+        // Two links pasted back-to-back arrive with no whitespace between them
+        // and render as one run-on word ("Get a QuoteBook a Consultation").
+        // Editors write them as separate links; they must read as separate.
+        '[&_a+a]:ms-4',
 
         // Lists.
         '[&_ul]:mt-fx-stack-sm [&_ul]:list-disc [&_ul]:ps-5',
@@ -215,6 +369,10 @@ export function RichText({ html, className }: RichTextProps) {
         '[&_th]:border-b [&_th]:border-fx-line [&_th]:py-2 [&_th]:pe-4 [&_th]:text-start [&_th]:font-semibold [&_th]:text-fx-ink',
         '[&_td]:border-b [&_td]:border-fx-line [&_td]:py-2 [&_td]:pe-4 [&_td]:align-top',
         '[&_caption]:mb-2 [&_caption]:text-fx-meta [&_caption]:text-fx-ink-faint',
+
+        // Images. Constrained to the measure and never allowed to overflow it,
+        // whatever dimensions the source had.
+        '[&_img]:my-fx-stack-sm [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-fx-md',
 
         // Figures.
         '[&_figure]:mt-fx-stack-md',

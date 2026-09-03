@@ -12,60 +12,60 @@ use Illuminate\Database\Seeder;
 
 class PermissionSeeder extends Seeder
 {
-	/**
-	 * List of all module seeders
-	 * Add new module seeders here when creating new modules
-	 */
-	protected array $moduleSeders = [
-		AdminModulePermissionSeeder::class,
-		DashboardModuelPermissionSeeder::class,
-		SystemModulePermissionSeeder::class,
+    /**
+     * List of all module seeders
+     * Add new module seeders here when creating new modules
+     */
+    protected array $moduleSeders = [
+        AdminModulePermissionSeeder::class,
+        DashboardModuelPermissionSeeder::class,
+        SystemModulePermissionSeeder::class,
 
-		// CMS modules.
-		ContentModulePermissionSeeder::class,
-		MediaModulePermissionSeeder::class,
-		SeoModulePermissionSeeder::class,
-	];
+        // CMS modules.
+        ContentModulePermissionSeeder::class,
+        MediaModulePermissionSeeder::class,
+        SeoModulePermissionSeeder::class,
+    ];
 
-	/**
-	 * Run all permission seeders
-	 */
-	public function run(): void
-	{
-		$this->command->info('╔════════════════════════════════════════════════════════╗');
-		$this->command->info('║     PERMISSION & ROLE SEEDING                          ║');
-		$this->command->info('╚════════════════════════════════════════════════════════╝');
-		$this->command->newLine();
+    /**
+     * Run all permission seeders
+     */
+    public function run(): void
+    {
+        $this->command->info('╔════════════════════════════════════════════════════════╗');
+        $this->command->info('║     PERMISSION & ROLE SEEDING                          ║');
+        $this->command->info('╚════════════════════════════════════════════════════════╝');
+        $this->command->newLine();
 
-		try {
-			$this->seedModulePermissions();
+        try {
+            $this->seedModulePermissions();
 
-			$this->command->newLine();
+            $this->command->newLine();
 
-			$this->call(RoleSeeder::class);
+            $this->call(RoleSeeder::class);
 
-			$this->command->newLine();
-			$this->command->info('╔════════════════════════════════════════════════════════╗');
-			$this->command->info('║     ✅ SEEDING COMPLETED SUCCESSFULLY!                ║');
-			$this->command->info('╚════════════════════════════════════════════════════════╝');
-		} catch (\Exception $e) {
-			$this->command->error("❌ Error during seeding: {$e->getMessage()}");
-			throw $e;
-		}
-	}
+            $this->command->newLine();
+            $this->command->info('╔════════════════════════════════════════════════════════╗');
+            $this->command->info('║     ✅ SEEDING COMPLETED SUCCESSFULLY!                ║');
+            $this->command->info('╚════════════════════════════════════════════════════════╝');
+        } catch (\Exception $e) {
+            $this->command->error("❌ Error during seeding: {$e->getMessage()}");
+            throw $e;
+        }
+    }
 
-	/**
-	 * Seed all module permissions
-	 */
-	protected function seedModulePermissions(): void
-	{
-		$this->command->info('📦 SEEDING MODULE PERMISSIONS');
-		$this->command->line('─────────────────────────────────────────────────────');
-		$this->command->newLine();
+    /**
+     * Seed all module permissions
+     */
+    protected function seedModulePermissions(): void
+    {
+        $this->command->info('📦 SEEDING MODULE PERMISSIONS');
+        $this->command->line('─────────────────────────────────────────────────────');
+        $this->command->newLine();
 
-		foreach ($this->moduleSeders as $seeder) {
-			$this->call($seeder);
-			$this->command->newLine();
-		}
-	}
+        foreach ($this->moduleSeders as $seeder) {
+            $this->call($seeder);
+            $this->command->newLine();
+        }
+    }
 }

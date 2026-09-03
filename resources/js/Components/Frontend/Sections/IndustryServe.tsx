@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Building2 } from 'lucide-react'
+import { ArrowRight, Building2 } from 'lucide-react'
 
 import { NavIcon, isRegisteredNavIcon } from '@/Components/Public/NavIcon'
 import { Section } from '@/Components/Public/Section'
@@ -135,6 +135,8 @@ function IndustryCard({
   offset: boolean
   headingLevel: 'h2' | 'h3'
 }) {
+  const { t } = useTranslations()
+
   const label = trimmed(block.label)
   const description = trimmed(block.description)
   const accent = readOption(block.settings, 'accent', ACCENTS, cycledAccent(index))
@@ -214,10 +216,42 @@ function IndustryCard({
         ) : null}
 
         {cta ? (
-          /* The card IS the link, so the label is never painted — only the
-             accessible name survives, and the whole card is the hit area.
-             `sr-only` rather than `hidden`: a hidden element is removed from
-             the accessibility tree and the link would have no name at all. */
+          /*
+           * A VISIBLE affordance, not just a hit area.
+           *
+           * This was `sr-only`: the whole card was already a link and its
+           * accessible name was correct, but nothing was painted — so a
+           * sighted visitor had no way to know the card was clickable at all.
+           * A hover shadow is not an affordance; it is only discoverable by
+           * someone who already guessed.
+           *
+           * The label stays `sr-only` (it names the destination for a screen
+           * reader — "Explore Healthcare") while the arrow is drawn, so the
+           * accessible name is unchanged and the visual gains a cue. The card
+           * remains ONE link with one name rather than growing a second
+           * focusable target.
+           */
+          <span
+            aria-hidden="true"
+            className={cn(
+              'mt-auto inline-flex items-center gap-1.5 pt-2',
+              'text-fx-meta font-medium',
+              GLYPH_CLASSES[accent],
+              'transition-transform duration-300 ease-fx',
+              'group-hover:translate-x-0.5',
+              'motion-reduce:transition-none motion-reduce:group-hover:translate-x-0'
+            )}
+          >
+            {t('Explore')}
+            <ArrowRight className="size-3.5 rtl:rotate-180" />
+          </span>
+        ) : null}
+
+        {cta ? (
+          /* The hit area. `sr-only` on the button so only the accessible name
+             survives; the stretched pseudo-element makes the whole card the
+             target. Never `hidden` — that would remove it from the
+             accessibility tree and leave the link with no name at all. */
           <SectionCta
             cta={cta}
             fallbackVariant="link"

@@ -78,6 +78,16 @@ export interface SectionCtaProps {
    * through `cn()` and tailwind-merge drops the losing utility outright.
    */
   buttonClassName?: string | undefined
+  /**
+   * Suppress the CTA's own icon.
+   *
+   * For surfaces that draw their own trailing glyph — `hero.centered` insets a
+   * decorative arrow badge into its pill — where an editor-set icon would
+   * render a second arrow beside the first. The alternative is asking editors
+   * to remember not to set one, which they will not, and which would make the
+   * same CTA row render wrongly if it were reused on another section.
+   */
+  hideIcon?: boolean | undefined
   className?: string | undefined
 }
 
@@ -97,6 +107,7 @@ export function SectionCta({
   fallbackVariant = 'default',
   size,
   buttonClassName,
+  hideIcon = false,
   className,
 }: SectionCtaProps) {
   const label = cta?.label?.trim()
@@ -110,7 +121,7 @@ export function SectionCta({
   const resolvedSize = size ?? resolveSize(cta.size) ?? 'default'
 
   const icon =
-    cta.icon && isRegisteredNavIcon(cta.icon) ? (
+    !hideIcon && cta.icon && isRegisteredNavIcon(cta.icon) ? (
       <NavIcon name={cta.icon} />
     ) : null
   const iconOnRight = cta.icon_position !== 'left'

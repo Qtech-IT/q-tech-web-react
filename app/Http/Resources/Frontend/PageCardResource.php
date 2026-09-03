@@ -37,6 +37,21 @@ class PageCardResource extends JsonResource
             'page_type' => $this->page_type?->value,
 
             /*
+             * ISO 8601, formatted on the client.
+             *
+             * Not `get_date_time()`, which returns the site's display format as
+             * a finished string: a listing has to be able to render "14 Mar
+             * 2026" on a card and "14 March 2026" in a `<time datetime>`
+             * attribute from the same value, and a pre-formatted string can do
+             * neither. Sending the instant and letting `Intl` localise it also
+             * means a blog index in Arabic dates itself correctly for free.
+             *
+             * Null is normal — a page may be published with no timestamp only
+             * if it is a draft, and drafts never reach a public listing.
+             */
+            'published_at' => $this->published_at?->toIso8601String(),
+
+            /*
              * The card image, from the `card` media collection.
              *
              * `first()` on an ALREADY-LOADED relation, never a fresh query: the

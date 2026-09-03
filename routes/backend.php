@@ -240,6 +240,12 @@ Route::middleware(['sanitization', 'throttle:60,1'])->group(function (): void {
 				Route::post('reorder', 'reorder')->name('reorder');
 				Route::post('update-status', 'updateStatus')->name('update.status');
 
+				// Content editing is a screen of its own, not a drawer — see
+				// PageSectionController::edit(). Declared here rather than on
+				// the write-only resource below because that one deliberately
+				// exposes no index/create/show, and this is the one exception.
+				Route::get('{page_section}/edit', 'edit')->name('edit');
+
 				// Deep copy: the section, its whole repeater tree, and its
 				// media attachments. Lands as a draft immediately after the
 				// source.

@@ -285,9 +285,15 @@ class PageRenderService
              */
             $model = PageSection::where('uuid', $section['uuid'] ?? '')->first();
 
-            $section['collection'] = $model instanceof PageSection
+            $resolved = $model instanceof PageSection
                 ? $type->resolveCollection($model, $page)
-                : [];
+                : ['items' => [], 'meta' => []];
+
+            $section['collection'] = $resolved['items'];
+            // Kept as a sibling key rather than nested inside `collection`, so
+            // the rows stay a plain array the renderer can map over without
+            // reaching past a wrapper on every listing that has no pagination.
+            $section['collection_meta'] = $resolved['meta'];
 
             return $section;
         }, $sections);

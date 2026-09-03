@@ -13,6 +13,7 @@ use App\Models\Page;
 use App\Models\PageSection;
 use App\Models\SectionBlock;
 use App\Traits\Cms\CacheInvalidation;
+use Database\Seeders\Cms\CarriesSectionUuids;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -72,6 +73,7 @@ class HomePageSeeder extends Seeder
     // rather than through PageSectionService, so it has to do the same
     // invalidation that service does after every save().
     use CacheInvalidation;
+    use CarriesSectionUuids;
 
     public function run(): void
     {
@@ -105,6 +107,14 @@ class HomePageSeeder extends Seeder
                 'sort_order' => 0,
             ]
         );
+
+        /*
+         * Snapshot every section uuid on this page before the seeders below
+         * force-delete and rewrite them. `page_sections.uuid` is the admin's
+         * route key, so without this a re-seed silently invalidates any page
+         * builder already open on the homepage and its next save 404s.
+         */
+        $this->carrySectionUuids($page);
 
         $this->seedHeroCentered($page, $siteId);
         $this->seedServiceGrid($page, $siteId);
@@ -422,7 +432,7 @@ class HomePageSeeder extends Seeder
             [
                 'label' => 'All Case Studies',
                 'link_type' => CtaLinkType::URL->value,
-                'url' => '/work',
+                'url' => '/case-studies',
                 'variant' => 'link',
                 'size' => 'default',
                 'icon' => 'ArrowRight',
@@ -478,6 +488,7 @@ class HomePageSeeder extends Seeder
         $projects = [
             [
                 'label' => 'Real-Time Settlement Platform',
+                'case_study' => 'settlement-platform-rebuild',
                 'shot' => 'settlement-platform.svg',
                 'category' => 'Fintech · Platform rebuild',
                 'description' => 'A batch settlement engine replaced with an event-driven service that clears continuously, with a full audit trail and reconciliation built in from day one.',
@@ -489,6 +500,7 @@ class HomePageSeeder extends Seeder
             ],
             [
                 'label' => 'Logistics Control Tower',
+                'case_study' => 'logistics-control-tower',
                 'shot' => 'logistics-control-tower.svg',
                 'category' => 'Supply chain · Operations',
                 'description' => 'One live view across carriers, warehouses and exceptions, replacing a spreadsheet handover between three teams.',
@@ -500,6 +512,7 @@ class HomePageSeeder extends Seeder
             ],
             [
                 'label' => 'Patient Portal & Scheduling',
+                'case_study' => 'patient-portal-accessibility',
                 'shot' => 'patient-portal.svg',
                 'category' => 'Health · Product design & build',
                 'description' => 'Appointments, records and reminders in one accessible interface, designed to WCAG AA and shipped on iOS, Android and web.',
@@ -511,6 +524,7 @@ class HomePageSeeder extends Seeder
             ],
             [
                 'label' => 'Headless Retail Storefront',
+                'case_study' => 'retail-peak-readiness',
                 'shot' => 'retail-storefront.svg',
                 'category' => 'Commerce · Replatform',
                 'description' => 'A storefront rebuilt on a headless stack so merchandising ships without a release, with page weight cut hard on mobile.',
@@ -531,7 +545,18 @@ class HomePageSeeder extends Seeder
                 [
                     'label' => 'Read the case study',
                     'link_type' => CtaLinkType::URL->value,
-                    'url' => '/work',
+                    /*
+                     * The ACTUAL study, not `/work` — a path that has never
+                     * existed, so every one of these four links 404'd.
+                     *
+                     * This is the join the homepage was missing: the band
+                     * showed four projects using the same artwork as the four
+                     * case-study pages, with different titles and no link
+                     * between them, so the site told the same story twice and
+                     * connected it nowhere. `case_study` names the page each
+                     * card is a summary OF.
+                     */
+                    'url' => '/case-studies/'.$project['case_study'],
                     'variant' => 'link',
                     'size' => 'default',
                     'icon' => 'ArrowRight',
@@ -620,7 +645,7 @@ class HomePageSeeder extends Seeder
             [
                 'label' => 'See How We Work',
                 'link_type' => CtaLinkType::URL->value,
-                'url' => '/process',
+                'url' => '/services/custom-software-development#process',
                 'variant' => 'outline',
                 'size' => 'lg',
                 'icon' => 'ArrowRight',
@@ -705,7 +730,7 @@ class HomePageSeeder extends Seeder
                 [
                     'label' => 'View Project',
                     'link_type' => CtaLinkType::URL->value,
-                    'url' => '/work',
+                    'url' => '/case-studies',
                     'variant' => 'default',
                     'size' => 'default',
                     'icon' => 'ArrowUpRight',
@@ -965,43 +990,94 @@ class HomePageSeeder extends Seeder
         $industries = [
             [
                 'label' => 'Fintech & Payments',
+                'sector' => 'financial-services',
                 'description' => 'Ledgers, settlement and compliance-grade audit trails.',
                 'icon' => 'Briefcase',
                 'accent' => 'teal',
             ],
             [
                 'label' => 'Healthcare',
+                'sector' => 'healthcare',
                 'description' => 'Patient data handled to policy, accessible by design.',
                 'icon' => 'HeartPulse',
                 'accent' => 'rose',
             ],
             [
                 'label' => 'Logistics',
+                'sector' => 'logistics',
                 'description' => 'Live tracking and exception handling at fleet scale.',
                 'icon' => 'Truck',
                 'accent' => 'brand',
             ],
             [
                 'label' => 'Retail & eCommerce',
+                'sector' => 'retail-ecommerce',
                 'description' => 'Storefronts that hold up through a peak trading day.',
                 'icon' => 'ShoppingCart',
                 'accent' => 'amber',
             ],
             [
-                'label' => 'Real Estate',
-                'description' => 'Listings, portals and the back office behind them.',
-                'icon' => 'Building2',
+                /*
+                 * Manufacturing and Public Sector replace Real Estate and
+                 * Education here.
+                 *
+                 * The homepage band is a SUMMARY of `/industries`, so listing
+                 * two sectors with no page behind them while omitting two that
+                 * have one made the summary disagree with the thing it
+                 * summarises — and left two cards that could never be linked.
+                 */
+                'label' => 'Manufacturing',
+                'sector' => 'manufacturing',
+                'description' => 'Shop-floor systems built for gloves, noise and an unreliable network.',
+                'icon' => 'Factory',
                 'accent' => 'violet',
             ],
             [
-                'label' => 'Education',
-                'description' => 'Learning platforms built for cohorts, not just users.',
-                'icon' => 'GraduationCap',
+                'label' => 'Public Sector',
+                'sector' => 'public-sector',
+                'description' => 'Accessible, accountable services audited against WCAG AA.',
+                'icon' => 'Landmark',
                 'accent' => 'ink',
             ],
         ];
 
         foreach ($industries as $position => $industry) {
+            /*
+             * Each card links to its sector page, which makes the whole card
+             * clickable — `IndustryServe` stretches this link across the tile
+             * with a pseudo-element, so the accessible name stays the link's
+             * own text rather than swallowing the card's description.
+             *
+             * The CTA is only created when the page exists. A card that looks
+             * clickable and goes nowhere is worse than one that does not, and
+             * the component already renders correctly with no CTA — which is
+             * why this band shipped without them while `/industries` was
+             * unbuilt.
+             */
+            $sectorPage = Page::where('site_id', $siteId)
+                ->where('path', '/industries/'.$industry['sector'])
+                ->first();
+
+            $sectorCta = $sectorPage
+                ? Cta::updateOrCreate(
+                    [
+                        'site_id' => $siteId,
+                        'tracking_id' => 'home-industry-'.$industry['sector'],
+                    ],
+                    [
+                        'label' => 'Explore '.$industry['label'],
+                        'link_type' => CtaLinkType::PAGE->value,
+                        'page_id' => $sectorPage->id,
+                        'url' => null,
+                        'variant' => 'link',
+                        'size' => 'default',
+                        'icon' => 'ArrowRight',
+                        'icon_position' => IconPosition::RIGHT->value,
+                        'status' => Status::ACTIVE->value,
+                    ]
+                )
+                : null;
+
             SectionBlock::create([
                 'page_section_id' => $section->id,
                 'parent_id' => null,
@@ -1012,10 +1088,7 @@ class HomePageSeeder extends Seeder
                 'body' => null,
                 'icon' => $industry['icon'],
                 'media_id' => null,
-                // No per-card link: there are no sector pages yet, and a card
-                // that looks clickable and goes nowhere is worse than a card
-                // that does not. The field exists for when those pages do.
-                'cta_id' => null,
+                'cta_id' => $sectorCta?->id,
                 'data' => [],
                 'settings' => [
                     'accent' => $industry['accent'],
@@ -1639,7 +1712,7 @@ class HomePageSeeder extends Seeder
             [
                 'label' => 'See Our Case Studies',
                 'link_type' => CtaLinkType::URL->value,
-                'url' => '/work',
+                'url' => '/case-studies',
                 'variant' => 'outline',
                 'size' => 'lg',
                 'icon' => 'ArrowRight',
@@ -1786,7 +1859,7 @@ class HomePageSeeder extends Seeder
             [
                 'label' => 'Read All Reviews',
                 'link_type' => CtaLinkType::URL->value,
-                'url' => '/work',
+                'url' => '/case-studies',
                 'variant' => 'outline',
                 'size' => 'lg',
                 'icon' => 'ArrowRight',
@@ -1905,7 +1978,7 @@ class HomePageSeeder extends Seeder
                     // testimonial clickable in the first place.
                     'aria_label' => $testimonial['link'].' — '.$testimonial['label'],
                     'link_type' => CtaLinkType::URL->value,
-                    'url' => '/work',
+                    'url' => '/case-studies',
                     'variant' => 'link',
                     'size' => 'sm',
                     'icon' => 'ArrowUpRight',
@@ -1970,7 +2043,7 @@ class HomePageSeeder extends Seeder
             [
                 'label' => 'See Open Roles',
                 'link_type' => CtaLinkType::URL->value,
-                'url' => '/careers',
+                'url' => '/about/careers',
                 'variant' => 'outline',
                 'size' => 'lg',
                 'icon' => 'ArrowRight',
@@ -2537,7 +2610,7 @@ class HomePageSeeder extends Seeder
             [
                 'label' => 'How We Work',
                 'link_type' => CtaLinkType::URL->value,
-                'url' => '/process',
+                'url' => '/services/custom-software-development#process',
                 'variant' => 'outline',
                 'size' => 'lg',
                 'status' => Status::ACTIVE->value,
@@ -2753,7 +2826,7 @@ class HomePageSeeder extends Seeder
             [
                 'label' => 'See Our Work',
                 'link_type' => CtaLinkType::URL->value,
-                'url' => '/work',
+                'url' => '/case-studies',
                 'variant' => 'outline',
                 'size' => 'lg',
                 'status' => Status::ACTIVE->value,

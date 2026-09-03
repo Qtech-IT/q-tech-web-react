@@ -12,6 +12,7 @@ import {
 } from '@/Components/UI/Select';
 import { Switch } from '@/Components/UI/Switch';
 import { Textarea } from '@/Components/UI/Textarea';
+import { RichTextEditor } from '@/Components/UI/RichTextEditor';
 import { useTranslations } from '@/Hooks/useTranslations';
 import type { CmsCta, CmsMedia, CmsSectionField } from '@/Types/cms';
 import { fieldOptions } from '@/Utils/cms';
@@ -96,17 +97,45 @@ export function CmsDynamicField({
         );
 
       /**
-       * `html_text` is rich text. It renders as a plain textarea here on
-       * purpose: the project ships three rich-text editors and is standardising
-       * on Lexical, so wiring Quill in now would be work that gets deleted.
-       * The stored value is HTML either way.
+       * `html_text` is rich text, and now renders as one.
+       *
+       * It was a plain textarea showing raw HTML — which is why editors
+       * reported "the text editor is not showing" on blog content: the field
+       * was there, it just asked them to write markup by hand.
+       *
+       * Lexical, per CLAUDE.md's standardisation. The stored value is HTML
+       * either way, so existing content needs no migration and the render-time
+       * sanitiser in `RichText.tsx` is unchanged. Pasted images arrive as
+       * `data:` URIs and are absorbed into the media library server-side on
+       * save — see `RichTextService`.
        */
       case 'html_text':
+        return (
+          <RichTextEditor
+            {...aria}
+            value={asString}
+            onChange={(html) => onChange(html)}
+          />
+        );
+
+      /**
+       * `code` is a raw editor and nothing else — see `FieldType::CODE`.
+       *
+       * Deliberately NOT the Lexical editor. A rich text editor holds a node
+       * tree, so markup it has no node for is dropped on the way in and the
+       * editor's own serialisation comes back on the way out. For a field
+       * whose contract is "exactly what I typed", that is the bug.
+       *
+       * `spellCheck` off and `wrap` soft: red squiggles under every tag name
+       * make markup unreadable.
+       */
+      case 'code':
         return (
           <Textarea
             {...aria}
             value={asString}
-            rows={8}
+            rows={16}
+            spellCheck={false}
             className="font-mono text-xs"
             onChange={(event) => onChange(event.target.value)}
           />
