@@ -220,9 +220,10 @@ registerTargetHook()
  * `<img src=x onerror=...>` written with single quotes, `javascript:` URLs, or
  * SVG event handlers, and it must not be mistaken for this.
  *
- * Element styling is done with descendant selectors rather than a `prose`
- * class: `@tailwindcss/typography` is installed but is NOT registered in
- * `app.css`, so a `prose` class here would silently do nothing.
+ * Element styling is the `.fx-prose` stylesheet in `frontend.css` — a
+ * hand-written, token-driven rule per tag, NOT `@tailwindcss/typography`
+ * (installed but never registered in `app.css`, so a bare `prose` class would
+ * do nothing).
  */
 export function RichText({ html, className }: RichTextProps) {
   const clean = useMemo(() => {
@@ -299,85 +300,18 @@ export function RichText({ html, className }: RichTextProps) {
         // selector has to match an attribute VALUE, which Tailwind's variant
         // syntax expresses badly and Tailwind's scanner cannot see through.
         'fx-richtext',
-        'text-fx-body text-pretty text-fx-ink-soft',
-
-        // Paragraphs and rules.
-        '[&_p]:mt-fx-stack-sm [&_p:first-child]:mt-0',
-        '[&_hr]:my-fx-stack-md [&_hr]:border-fx-line',
-
         /*
-         * Sub-headings.
+         * `fx-prose` is the element-level stylesheet in `frontend.css` — one
+         * rule per tag, driven by the same `--fx-*` tokens as the rest of the
+         * public surface. It replaced ~60 `[&_x]:` utilities that lived here:
+         * a real stylesheet covers every tag and every nesting the editor can
+         * produce, and the `content.html` band's "Site styling" mode reuses
+         * the exact same class, so a typed passage and a pasted one match.
          *
-         * The section already owns its own `h2` (or the page's `h1`), so the
-         * editor's structure starts at `h3` VISUALLY whatever tag they typed:
-         * `h2` and `h3` are painted the same size deliberately, so a passage
-         * whose author reached for the wrong one does not out-shout the band's
-         * real headline. The outline stays whatever they wrote; only the size
-         * is normalised.
+         * It is scoped to `[data-site='public'] .fx-prose <tag>` and touches
+         * nothing outside a container that wears the class.
          */
-        '[&_h2]:mt-fx-stack-lg [&_h2]:text-fx-subheading [&_h2]:font-semibold [&_h2]:text-fx-ink',
-        '[&_h3]:mt-fx-stack-lg [&_h3]:text-fx-subheading [&_h3]:font-semibold [&_h3]:text-fx-ink',
-        '[&_h4]:mt-fx-stack-md [&_h4]:text-fx-body [&_h4]:font-semibold [&_h4]:text-fx-ink',
-        '[&_h5]:mt-fx-stack-md [&_h5]:text-fx-body [&_h5]:font-semibold [&_h5]:text-fx-ink',
-        '[&_h6]:mt-fx-stack-md [&_h6]:text-fx-body [&_h6]:font-semibold [&_h6]:text-fx-ink',
-        '[&_h2:first-child]:mt-0 [&_h3:first-child]:mt-0 [&_h4:first-child]:mt-0',
-
-        // Inline.
-        '[&_strong]:font-semibold [&_strong]:text-fx-ink [&_b]:font-semibold [&_b]:text-fx-ink',
-        '[&_em]:italic [&_mark]:bg-fx-wash-accent [&_mark]:text-fx-ink [&_mark]:px-1 [&_mark]:rounded-fx-xs',
-        '[&_a]:font-medium [&_a]:text-fx-accent-text [&_a]:underline [&_a]:decoration-fx-accent-line [&_a]:underline-offset-4 [&_a:hover]:decoration-current',
-        '[&_a]:rounded-fx-xs [&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-offset-2 [&_a:focus-visible]:outline-fx-focus',
-        // Two links pasted back-to-back arrive with no whitespace between them
-        // and render as one run-on word ("Get a QuoteBook a Consultation").
-        // Editors write them as separate links; they must read as separate.
-        '[&_a+a]:ms-4',
-
-        // Lists.
-        '[&_ul]:mt-fx-stack-sm [&_ul]:list-disc [&_ul]:ps-5',
-        '[&_ol]:mt-fx-stack-sm [&_ol]:list-decimal [&_ol]:ps-5',
-        '[&_li]:mt-1 [&_li]:marker:text-fx-ink-faint',
-        // A nested list already sits inside a spaced `li`; a second top margin
-        // on it opens a gap that reads as a missing item.
-        '[&_li_ul]:mt-1 [&_li_ol]:mt-1',
-
-        // Quotes.
-        '[&_blockquote]:mt-fx-stack-md [&_blockquote]:border-s-2 [&_blockquote]:border-fx-accent-line',
-        '[&_blockquote]:ps-4 [&_blockquote]:text-fx-lead [&_blockquote]:text-fx-ink',
-        '[&_cite]:text-fx-meta [&_cite]:not-italic [&_cite]:text-fx-ink-faint',
-
-        // Code.
-        '[&_code]:rounded-fx-xs [&_code]:bg-fx-surface-2 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-fx-meta',
-        '[&_pre]:mt-fx-stack-sm [&_pre]:overflow-x-auto [&_pre]:rounded-fx-md [&_pre]:border [&_pre]:border-fx-line',
-        '[&_pre]:bg-fx-surface-2 [&_pre]:p-4 [&_pre]:text-fx-meta',
-        '[&_pre_code]:bg-transparent [&_pre_code]:p-0',
-
-        /*
-         * Tables.
-         *
-         * `display: block` + `overflow-x: auto` makes the table its OWN scroll
-         * container, which is what stops a wide one pushing the entire page
-         * into a horizontal scroll on a phone.
-         *
-         * The obvious alternative — wrapping each `<table>` in a scrolling div
-         * — needs a DOM pass over the sanitised string, and this component also
-         * runs through `resources/js/ssr.tsx`, where there is no `DOMParser`.
-         * A CSS-only answer works identically in both environments, which a
-         * `typeof window` branch would not.
-         */
-        '[&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto',
-        '[&_table]:mt-fx-stack-sm [&_table]:border-collapse [&_table]:text-fx-body-sm',
-        '[&_th]:border-b [&_th]:border-fx-line [&_th]:py-2 [&_th]:pe-4 [&_th]:text-start [&_th]:font-semibold [&_th]:text-fx-ink',
-        '[&_td]:border-b [&_td]:border-fx-line [&_td]:py-2 [&_td]:pe-4 [&_td]:align-top',
-        '[&_caption]:mb-2 [&_caption]:text-fx-meta [&_caption]:text-fx-ink-faint',
-
-        // Images. Constrained to the measure and never allowed to overflow it,
-        // whatever dimensions the source had.
-        '[&_img]:my-fx-stack-sm [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-fx-md',
-
-        // Figures.
-        '[&_figure]:mt-fx-stack-md',
-        '[&_figcaption]:mt-2 [&_figcaption]:text-fx-meta [&_figcaption]:text-fx-ink-faint',
-
+        'fx-prose',
         className
       )}
       dangerouslySetInnerHTML={{ __html: clean }}

@@ -183,6 +183,17 @@ export function useMediaFolderConfig(props: CrudPageProps): CrudConfig {
           ),
         },
         {
+          key: 'children_count',
+          label: t('Sub-folders'),
+          sortable: false,
+          priority: 3,
+          render: (row: CmsMediaFolder) => (
+            <span className="text-sm tabular-nums text-muted-foreground">
+              {row.children_count ?? 0}
+            </span>
+          ),
+        },
+        {
           key: 'created_at',
           label: t('Created'),
           sortable: false,
@@ -213,7 +224,7 @@ export function useMediaFolderConfig(props: CrudPageProps): CrudConfig {
       description: t('Are you sure you want to delete this folder?'),
       itemName: { label: t('Name'), key: 'name', render: (name: string) => name },
       itemType: 'Folder',
-      warningMessage: t('Assets inside are not deleted — they return to the library root.'),
+      warningMessage: t('Assets inside are not deleted — they return to the library root. Delete sub-folders first.'),
       showWarningAlert: true,
       showItemDetails: true,
       itemDisplayFields: [

@@ -26,6 +26,7 @@ class MediaFolderService
         return MediaFolder::search(['name', 'slug'])
             ->recycle()
             ->where('site_id', config('cms.site_id'))
+            ->withCount(['media', 'children'])
             ->orderBy('path')
             ->orderBy('sort_order')
             ->get();
@@ -73,19 +74,28 @@ class MediaFolderService
     }
 
     /**
-     * Delete a folder. RESTRICT on the FK already blocks a folder with
-     * children; this surfaces the same rule for media with a message an editor
-     * can act on rather than a driver exception.
+     * Delete a folder.
+     *
+     * Assets are never deleted with the folder — the confirm dialog promises
+     * they "return to the library root", so this reparents them to NULL rather
+     * than blocking. Only sub-folders block: `media_folders_parent_id_foreign`
+     * is RESTRICT, and there is no single sensible place to move a subtree, so
+     * an editor is asked to clear those first with a message they can act on
+     * rather than a driver exception.
      */
     public function destroy(MediaFolder $folder): bool
     {
-        if ($folder->media()->exists() || $folder->children()->exists()) {
-            throw ValidationException::withMessages([
-                'id' => translate('Move or delete the contents of this folder first.'),
-            ]);
-        }
+        return DB::transaction(function () use ($folder): bool {
+            if ($folder->children()->exists()) {
+                throw ValidationException::withMessages([
+                    'id' => translate('Delete or move the sub-folders inside this folder first.'),
+                ]);
+            }
 
-        return (bool) $folder->delete();
+            $folder->media()->update(['folder_id' => null]);
+
+            return (bool) $folder->delete();
+        });
     }
 
     /**

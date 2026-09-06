@@ -172,16 +172,11 @@ class BlogPagesSeeder extends CmsContentSeeder
             $this->block($header, 'tag', $i, ['label' => $tag]);
         }
 
-        $this->section($page, 'content.prose', 1, [
-            'name' => $post['title'].' Body',
-            'body' => $post['body_html'],
-            'settings' => [
-                'measure' => 'prose',
-                'align' => 'start',
-                'theme' => 'default',
-                'spacing' => 'default',
-                'animation' => 'fade',
-            ],
+        $this->articleBody($page, 1, $post['body_html'], [
+            'measure' => 'prose',
+            'theme' => 'default',
+            'spacing' => 'default',
+            'animation' => 'fade',
         ]);
 
         $this->closingBand($page, 2, [

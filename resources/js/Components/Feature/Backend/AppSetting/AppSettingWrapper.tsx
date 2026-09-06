@@ -1,12 +1,10 @@
 
 import { AppearanceForm } from '@/Components/Forms/Backend/Settings/AppearanceForm';
-import { CurrencySettingsForm } from '@/Components/Forms/Backend/Settings/CurrencySettingsForm';
 import { GeneralSettingsForm } from '@/Components/Forms/Backend/Settings/GeneralSettingsForm';
 import { LogoForm } from '@/Components/Forms/Backend/Settings/LogoForm';
 import { SecuritySettingsForm } from '@/Components/Forms/Backend/Settings/SecuritySettingsForm';
 import { StorageSettingsForm } from '@/Components/Forms/Backend/Settings/StorageSettingsForm';
 import { SystemPreferencesForm } from '@/Components/Forms/Backend/Settings/SystemPreferencesForm';
-import { SupportSettingsForm } from '@/Components/Forms/SupportSettingsFormTest';
 import { Separator } from '@/Components/UI/Separator';
 import { useTranslations } from '@/Hooks/useTranslations';
 import { MainLayout } from '@/Layouts/User/MainLayout';
@@ -29,11 +27,11 @@ export function AppSettingWrapper() {
             component: GeneralSettingsForm,
         },
 
-        SupportSettingsForm: {
-            title: t("Support Settings"),
-            description: t("Configure support options, FAQs, and contact information."),
-            component: SupportSettingsForm,
-        },
+        // SupportSettingsForm: {
+        //     title: t("Support Settings"),
+        //     description: t("Configure support options, FAQs, and contact information."),
+        //     component: SupportSettingsForm,
+        // },
 
 
 
@@ -68,11 +66,11 @@ export function AppSettingWrapper() {
         },
 
 
-        CurrencySettingsForm: {
-            title: t("Currency Settings"),
-            description: t("Configure default currency, exchange rates, and manage multi-currency options for your system."),
-            component: CurrencySettingsForm,
-        },
+        // CurrencySettingsForm: {
+        //     title: t("Currency Settings"),
+        //     description: t("Configure default currency, exchange rates, and manage multi-currency options for your system."),
+        //     component: CurrencySettingsForm,
+        // },
 
     }
 

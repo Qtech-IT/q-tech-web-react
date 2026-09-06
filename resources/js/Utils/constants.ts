@@ -1,6 +1,5 @@
 import {
   Cpu,
-  CurrencyIcon,
   HardDrive,
   Image,
   Lock,
@@ -64,12 +63,12 @@ export const settingsNavItems: SettingsNavItem[] = [
   { title: "General", exact: true, href: route("backend.settings.index"), icon: Settings, group: "general" },
 
   { title: "Appearance", exact: true, href: route('backend.settings.appearance'), icon: Palette, group: "general" },
-  {
-    title: 'Support Settings', exact: true, href: route('backend.settings.support'), icon: UserCog, group: "general"
-  },
+  // {
+  //   title: 'Support Settings', exact: true, href: route('backend.settings.support'), icon: UserCog, group: "general"
+  // },
   { title: "Logo", exact: true, href: route('backend.settings.logo'), icon: Image, group: "general" },
   { title: "Storage", exact: true, href: route('backend.settings.storage'), icon: HardDrive, group: "general" },
-  { title: "Currency", exact: true, href: route('backend.settings.currency'), icon: CurrencyIcon, group: "general" },
+  // { title: "Currency", exact: true, href: route('backend.settings.currency'), icon: CurrencyIcon, group: "general" },
   { title: "Security Center", exact: true, href: route('backend.settings.security'), icon: Shield, group: "security" },
   { title: "System Config", exact: true, href: route('backend.settings.system'), icon: Cpu, group: "advanced" },
 

@@ -36,6 +36,7 @@ class CompanyPagesSeeder extends CmsContentSeeder
         $faq = $this->buildFaq();
         $testimonials = $this->buildTestimonials();
         $credentials = $this->buildCredentials();
+        $contact = $this->buildContact();
 
         /*
          * The nav's labels, which are not the page titles — an editor named
@@ -58,6 +59,10 @@ class CompanyPagesSeeder extends CmsContentSeeder
             'Awards' => $credentials,
             'Certifications' => $credentials,
             'Recognitions' => $credentials,
+            'Contact' => $contact,
+            'Contact Us' => $contact,
+            'Get In Touch' => $contact,
+            'Talk To Us' => $contact,
         ]);
 
         $this->flushPageCache();
@@ -587,6 +592,83 @@ class CompanyPagesSeeder extends CmsContentSeeder
             'secondary_label' => 'About QTECH',
             'secondary_url' => '/about',
         ]);
+
+        return $page;
+    }
+
+    /**
+     * `/contact` — the page every "Work With Us" button on the site points at.
+     *
+     * One `contact.hub` section carries the whole thing: the enquiry form, the
+     * ways to reach the company, a keyless OpenStreetMap embed and a scheduler
+     * iframe. Every address, link and coordinate is a field on the section, so
+     * an editor moves the pin or swaps the booking link with no deploy.
+     */
+    protected function buildContact(): Page
+    {
+        $page = $this->page('/contact', [
+            'title' => 'Contact QTECH',
+            'slug' => 'contact',
+            'excerpt' => 'Tell us what you are building and who you have spoken to so far. We reply within one working day.',
+            'icon' => 'Mail',
+            'accent' => 'brand',
+            'sort_order' => 10,
+        ]);
+
+        $this->clearSections($page);
+
+        $this->section($page, 'hero.centered', 0, [
+            'name' => 'Contact Hero',
+            'eyebrow' => 'Contact',
+            'heading' => 'Start With A Conversation, Not A Brief',
+            'subheading' => 'The first call is with the engineer who would lead the work — not a salesperson — and it is an honest read on whether we are the right people for it.',
+            'data' => ['heading_highlight' => 'A Conversation'],
+            'settings' => ['theme' => 'default', 'spacing' => 'lg', 'animation' => 'rise'],
+        ]);
+
+        $hub = $this->section($page, 'contact.hub', 1, [
+            'name' => 'Contact Hub',
+            'anchor' => 'enquiry',
+            'eyebrow' => 'Send An Enquiry',
+            'heading' => 'Tell Us What You Are Building',
+            'subheading' => 'A sentence or two of context is enough to route your enquiry to the right engineer. We reply within one working day.',
+            'data' => [
+                'heading_highlight' => 'What You Are Building',
+                'success_message' => 'Thanks — your message is with us. The engineer best placed to answer will reply within one working day.',
+                'consent_label' => 'I’m happy for QTECH to use these details to reply to my enquiry.',
+                'meeting_heading' => 'Rather Book A Time?',
+                'meeting_text' => 'Pick a slot that suits you and you will get a calendar invite with a video link.',
+                'map_address' => "QTECH — Borderless Studio\n1 Finsbury Avenue\nLondon EC2M 2PF\nUnited Kingdom",
+            ],
+            'settings' => [
+                // Empty → enquiries go to the site contact address in Settings.
+                'notify_email' => null,
+                'form_source' => 'contact-page',
+                'button_label' => 'Send Enquiry',
+                'show_company' => true,
+                'show_phone' => true,
+                'meeting_url' => 'https://meet.brevo.com/qtech-it/borderless',
+                'show_map' => true,
+                'map_lat' => '51.5203',
+                'map_lng' => '-0.0869',
+                'map_zoom' => 15,
+                'form_side' => 'start',
+                'theme' => 'default',
+                'spacing' => 'lg',
+                'animation' => 'fade',
+            ],
+        ]);
+
+        $details = [
+            ['label' => 'Email', 'value' => 'hello@qtech.com', 'body' => 'mailto:hello@qtech.com', 'icon' => 'Mail'],
+            ['label' => 'New business', 'value' => 'newbiz@qtech.com', 'body' => 'mailto:newbiz@qtech.com', 'icon' => 'Briefcase'],
+            ['label' => 'Studio', 'value' => '1 Finsbury Avenue, London EC2M 2PF', 'body' => null, 'icon' => 'MapPin'],
+            ['label' => 'Hours', 'value' => 'Mon–Fri, 9:00–18:00 GMT', 'body' => null, 'icon' => 'Clock'],
+        ];
+
+        foreach ($details as $i => $detail) {
+            $this->block($hub, 'detail', $i, $detail);
+        }
 
         return $page;
     }

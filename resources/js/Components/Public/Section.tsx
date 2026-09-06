@@ -134,6 +134,11 @@ export function Section({
   return (
     <Comp
       data-slot="section"
+      /* The band this section paints, for sibling rules in `frontend.css` that
+         need to know whether two neighbours share a background — e.g. the
+         `article.header` padding collapse, which must NOT fire into a
+         contrasting band. */
+      data-section-bg={background ?? 'default'}
       className={cn(sectionVariants({ spacing, background, clip }), className)}
       {...props}
     >

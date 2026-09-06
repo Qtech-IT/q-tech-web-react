@@ -143,38 +143,33 @@ class TechnologyPagesSeeder extends CmsContentSeeder
             ],
         ]);
 
-        $this->section($page, 'content.prose', 1, [
+        $this->overviewSection($page, 1, [
             'name' => $tech['title'].' Argument',
+            'eyebrow' => $tech['title'],
             'heading' => $tech['argument_heading'],
-            'body' => $tech['argument_html'],
-            'settings' => [
-                'measure' => 'prose',
-                'align' => 'start',
-                'theme' => 'default',
-                'spacing' => 'default',
-                'animation' => 'fade',
-            ],
+            'html' => $tech['argument_html'],
+            'settings' => ['spacing' => 'default'],
         ]);
 
-        $uses = $this->section($page, 'content.split', 2, [
+        $uses = $this->section($page, 'case.narrative', 2, [
             'name' => $tech['title'].' Uses',
             'anchor' => 'what-we-use-it-for',
             'eyebrow' => 'What We Use It For',
             'heading' => $tech['uses_heading'],
-            'body' => $tech['uses_html'] ?? null,
+            'body' => $this->htmlToNarrative($tech['uses_html'] ?? ''),
+            'data' => ['list_heading' => 'Where it fits'],
             'settings' => [
-                'media_side' => 'start',
-                'media_shape' => 'landscape',
-                'list_columns' => 2,
+                'media_side' => 'end',
+                'list_columns' => '2',
                 'accent' => $tech['accent'],
-                'theme' => 'default',
+                'theme' => 'subtle',
                 'spacing' => 'lg',
                 'animation' => 'stagger',
             ],
         ]);
 
         foreach ($tech['uses'] as $i => $use) {
-            $this->block($uses, 'item', $i, ['label' => $use]);
+            $this->block($uses, 'point', $i, ['label' => $use]);
         }
 
         $faq = $this->section($page, 'faq.accordion', 3, [

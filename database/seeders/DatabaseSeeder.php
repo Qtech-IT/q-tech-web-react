@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
             // LanguageSeeder::class,
             // PermissionSeeder::class,
             // AdminSeeder::class,
-            // NotificationTemplateSeeder::class,
+            NotificationTemplateSeeder::class,
 
             // // CMS. Ordered after PermissionSeeder so the CMS roles it creates
             // // have permissions to sync, and after LanguageSeeder because

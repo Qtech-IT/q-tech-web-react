@@ -6,15 +6,18 @@ use App\Models\User;
 
 class OtpPolicy
 {
+    public function viewAll(User $user): bool
+    {
+        return $user->hasPermissionTo('otp.view');
+    }
+
     public function view(User $user): bool
     {
         return $user->hasPermissionTo('otp.view');
     }
 
-
     public function delete(User $user): bool
     {
         return $user->hasPermissionTo('otp.delete');
     }
-
 }

@@ -23,6 +23,7 @@ class MediaFolderResource extends BaseResource
             'depth' => $this->depth,
             'sort_order' => $this->sort_order,
             'media_count' => $this->whenCounted('media'),
+            'children_count' => $this->whenCounted('children'),
             'children' => MediaFolderResource::collection($this->whenLoaded('children')),
         ];
     }

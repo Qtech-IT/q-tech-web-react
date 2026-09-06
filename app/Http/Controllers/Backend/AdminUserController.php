@@ -9,7 +9,6 @@ use App\Http\Requests\Backend\AdminUser\SaveUserRequest;
 use App\Http\Requests\Backend\AdminUser\UpdateUser2FARequest;
 use App\Http\Requests\Backend\AdminUser\UpdateUserStatusRequest;
 use App\Http\Resources\Backend\Role\RoleResource;
-use App\Http\Resources\Backend\User\UserResource;
 use App\Http\Resources\Backend\UserResource as BackendUserResource;
 use App\Http\Services\Backend\AdminUser\AdminUserService;
 use App\Http\Services\Backend\RoleService;
@@ -22,238 +21,239 @@ use Inertia\Response;
 
 class AdminUserController extends Controller
 {
-	use ModelAction, ModelProperty;
+    use ModelAction, ModelProperty;
 
-	protected array $modelProperty ;
+    protected array $modelProperty;
 
-	/**
-	 * Constructor to inject services and apply middleware
-	 */
-	public function __construct(
-	    protected AdminUserService $service,
-	    protected RoleService $roleService
-	) {
-		$this->modelProperty = $this->getCommonProperty(
-		    resourcePagePrefix :'AdminUsers',
-		    routePrefix: 'backend.admin-users'
-		);
+    /**
+     * Constructor to inject services and apply middleware
+     */
+    public function __construct(
+        protected AdminUserService $service,
+        protected RoleService $roleService
+    ) {
+        $this->modelProperty = $this->getCommonProperty(
+            resourcePagePrefix : 'AdminUsers',
+            routePrefix: 'backend.admin-users'
+        );
 
-		$this->authorizeResource(User::class);
-	}
+        $this->authorizeResource(User::class, 'admin_user');
+    }
 
-	/**
-	 * Display a listing of users
-	 */
-	public function index(): Response
-	{
-		$users = formatResourceResponse(
-		    $this->service->getAllUsers(),
-		    BackendUserResource::class
-		);
-		return AppResponse::asSuccess()
-					->withComponent($this->modelProperty['pagePrefix'] . 'Index', [
-						'title'                => translate('Admin Users'),
-						'data'                 => $users,
-						'stats'                => $this->service->getUserStats(),
-						'modelProperty'        => $this->modelProperty,
-						'advanceFilterOptions' => $this->service->getAdvanceFilterOptions()
-					])->build();
-	}
+    /**
+     * Display a listing of users
+     */
+    public function index(): Response
+    {
+        $users = formatResourceResponse(
+            $this->service->getAllUsers(),
+            BackendUserResource::class
+        );
 
-	/**
-	 * Show form for creating a new user
-	 */
-	public function create(): Response
-	{
-		return AppResponse::asSuccess()
-					->withComponent($this->modelProperty['pagePrefix'] . 'Save', [
-						'modelProperty' => $this->modelProperty,
-						'title'         => translate('Create Admin User'),
-						'roles'         => formatResourceResponse(
-						    $this->roleService->getActiveRoles(),
-						    RoleResource::class
-						),
-					])->build();
-	}
+        return AppResponse::asSuccess()
+            ->withComponent($this->modelProperty['pagePrefix'].'Index', [
+                'title' => translate('Admin Users'),
+                'data' => $users,
+                'stats' => $this->service->getUserStats(),
+                'modelProperty' => $this->modelProperty,
+                'advanceFilterOptions' => $this->service->getAdvanceFilterOptions(),
+            ])->build();
+    }
 
-	/**
-	 * Store a newly created user
-	 */
-	public function store(SaveUserRequest $request): RedirectResponse
-	{
-		$this->service->saveUser($request);
-		return AppResponse::asSuccess()
-									->withMessage('User created successfully.')
-									->build();
-	}
+    /**
+     * Show form for creating a new user
+     */
+    public function create(): Response
+    {
+        return AppResponse::asSuccess()
+            ->withComponent($this->modelProperty['pagePrefix'].'Save', [
+                'modelProperty' => $this->modelProperty,
+                'title' => translate('Create Admin User'),
+                'roles' => formatResourceResponse(
+                    $this->roleService->getActiveRoles(),
+                    RoleResource::class
+                ),
+            ])->build();
+    }
 
-	/**
-	 * Show form for editing a user
-	 */
-	public function edit(User $adminUser): Response
-	{
-		$user = User::with([
-					'file',
-					'roles',
-				])
-				->withNonSuperAdminRoles()
-				->admin()
-				->findOrFail($adminUser->id);
+    /**
+     * Store a newly created user
+     */
+    public function store(SaveUserRequest $request): RedirectResponse
+    {
+        $this->service->saveUser($request);
 
-		return AppResponse::asSuccess()
-					->withComponent($this->modelProperty['pagePrefix'] . 'Save', [
-						'title'         => translate('Update User'),
-						'modelProperty' => $this->modelProperty,
-						'item'          => formatResourceResponse($user, UserResource::class),
-					])->build();
-	}
+        return AppResponse::asSuccess()
+            ->withMessage('User created successfully.')
+            ->build();
+    }
 
-	/**
-	 * Update a user's information
-	 */
-	public function update(SaveUserRequest $request, User $adminUser): RedirectResponse
-	{
-		$this->service->saveUser($request, $adminUser->id);
+    /**
+     * Show form for editing a user
+     */
+    public function edit(User $adminUser): Response
+    {
+        $user = User::with([
+            'file',
+            'roles',
+        ])
+            ->withNonSuperAdminRoles()
+            ->findOrFail($adminUser->id);
 
-		return AppResponse::asSuccess()
-									->withMessage('User updated successfully.')
-									->build();
-	}
+        return AppResponse::asSuccess()
+            ->withComponent($this->modelProperty['pagePrefix'].'Save', [
+                'title' => translate('Update User'),
+                'modelProperty' => $this->modelProperty,
+                'item' => formatResourceResponse($user, BackendUserResource::class),
+                'roles' => formatResourceResponse(
+                    $this->roleService->getActiveRoles(),
+                    RoleResource::class
+                ),
+            ])->build();
+    }
 
-	/**
-	 * Delete a user
-	 */
-	public function destroy(User $adminUser): RedirectResponse
-	{
-		try {
-			$this->service->deleteUser($adminUser->uuid);
+    /**
+     * Update a user's information
+     */
+    public function update(SaveUserRequest $request, User $adminUser): RedirectResponse
+    {
+        $this->service->saveUser($request, $adminUser->id);
 
-			return AppResponse::asSuccess()
-								->withMessage('User deleted successfully.')
-								->build();
-		} catch (\Exception $e) {
-			return AppResponse::asError()
-								->withMessage($e->getMessage())
-								->build();
-		}
-	}
+        return AppResponse::asSuccess()
+            ->withMessage('User updated successfully.')
+            ->build();
+    }
 
-	/**
-	 * Summary of forceDestroy
-	 * @param string $uuid
-	 * @return RedirectResponse
-	 */
-	public function forceDestroy(string $uuid): RedirectResponse
-	{
-		$this->authorize('forceDelete', User::class);
+    /**
+     * Delete a user
+     */
+    public function destroy(User $adminUser): RedirectResponse
+    {
+        try {
+            $this->service->deleteUser($adminUser->uuid);
 
-		try {
-			$this->service->deleteUser($uuid);
+            return AppResponse::asSuccess()
+                ->withMessage('User deleted successfully.')
+                ->build();
+        } catch (\Exception $e) {
+            return AppResponse::asError()
+                ->withMessage($e->getMessage())
+                ->build();
+        }
+    }
 
-			return AppResponse::asSuccess()
-									->withMessage('User parmanently deleted.')
-									->build();
-		} catch (\Exception $e) {
-			return AppResponse::asError()
-									->withMessage($e->getMessage())
-									->build();
-		}
-	}
+    /**
+     * Summary of forceDestroy
+     */
+    public function forceDestroy(string $uuid): RedirectResponse
+    {
+        $this->authorize('forceDelete', User::class);
 
-	/**
-	 * Update user status
-	 */
-	public function updateStatus(UpdateUserStatusRequest $request): RedirectResponse
-	{
-		$this->authorize('update', User::class);
+        try {
+            $this->service->deleteUser($uuid);
 
-		try {
-			//SUPERADMIN CHECK
-			$user = User::withNonSuperAdminRoles()
-						->admin()
-						->where('id', $request->input('id'))
-						->first();
+            return AppResponse::asSuccess()
+                ->withMessage('User parmanently deleted.')
+                ->build();
+        } catch (\Exception $e) {
+            return AppResponse::asError()
+                ->withMessage($e->getMessage())
+                ->build();
+        }
+    }
 
-			if (!$user) {
-				throw new Exception('Invalid request');
-			}
+    /**
+     * Update user status
+     */
+    public function updateStatus(UpdateUserStatusRequest $request): RedirectResponse
+    {
+        $this->authorize('update', User::class);
 
-			abortIfAuthUser($user);
+        try {
+            // SUPERADMIN CHECK
+            $user = User::withNonSuperAdminRoles()
+                ->where('id', $request->input('id'))
+                ->first();
 
-			$this->changeStatus(
-			    request    : $request->except('_token'),
-			    actionData : [
-					'model'                 => new User(),
-					'filterable_attributes' => ['id' => $request->input('id')],
-				]
-			);
+            if (! $user) {
+                throw new Exception('Invalid request');
+            }
 
-			return AppResponse::asSuccess()
-									->withMessage('User status updated successfully.')
-									->build();
-		} catch (\Exception $ex) {
-			return AppResponse::asError()
-									->withMessage($ex->getMessage())
-									->build();
-		}
-	}
+            abortIfAuthUser($user);
 
-	/**
-	 * Perform bulk actions on users
-	 */
-	public function bulkAction(BulkUserRequest $request): RedirectResponse
-	{
-		$action = $request->input('action');
-		$ids    = $request->input('ids');
+            $this->changeStatus(
+                request    : $request->except('_token'),
+                actionData : [
+                    'model' => new User,
+                    'filterable_attributes' => ['id' => $request->input('id')],
+                ]
+            );
 
-		$this->authorizeBulkAction($action, User::class);
+            return AppResponse::asSuccess()
+                ->withMessage('User status updated successfully.')
+                ->build();
+        } catch (\Exception $ex) {
+            return AppResponse::asError()
+                ->withMessage($ex->getMessage())
+                ->build();
+        }
+    }
 
-		try {
-			$this->service->handleBulkAction($ids, $action);
+    /**
+     * Perform bulk actions on users
+     */
+    public function bulkAction(BulkUserRequest $request): RedirectResponse
+    {
+        $action = $request->input('action');
+        $ids = $request->input('ids');
 
-			return AppResponse::asSuccess()
-									->withMessage('Bulk action performed successfully.')
-									->build();
-		} catch (\Exception $e) {
-			return AppResponse::asError()
-									->withMessage($e->getMessage())
-									->build();
-		}
-	}
+        $this->authorizeBulkAction($action, User::class);
 
-	/**
-	 * Update 2FA status for a user
-	 */
-	public function update2FA(UpdateUser2FARequest $request): RedirectResponse
-	{
-		$this->authorize('update', User::class);
+        try {
+            $this->service->handleBulkAction($ids, $action);
 
-		try {
-			$user = User::withNonSuperAdminRoles()
-							->admin()
-							->findOrFail($request->input('user_id'));
+            return AppResponse::asSuccess()
+                ->withMessage('Bulk action performed successfully.')
+                ->build();
+        } catch (\Exception $e) {
+            return AppResponse::asError()
+                ->withMessage($e->getMessage())
+                ->build();
+        }
+    }
 
-			abortIfAuthUser($user);
+    /**
+     * Update 2FA status for a user
+     */
+    public function update2FA(UpdateUser2FARequest $request): RedirectResponse
+    {
+        $this->authorize('update', User::class);
 
-			$enabled = (bool) $request->input('two_factor_enabled');
+        try {
+            $user = User::withNonSuperAdminRoles()
+                ->findOrFail($request->input('user_id'));
 
-			$user->two_factor_enabled = $enabled;
+            abortIfAuthUser($user);
 
-			if (!$enabled) {
-				$user->google2fa_secret        = null;
-				$user->recovery_codes          = null;
-				$user->two_factor_confirmed_at = null;
-			}
+            $enabled = (bool) $request->input('two_factor_enabled');
 
-			$user->save();
+            $user->two_factor_enabled = $enabled;
 
-			return AppResponse::asSuccess()
-										->withMessage('2FA status updated successfully.')
-										->build();
-		} catch (\Exception $e) {
-			return AppResponse::asError()
-					   ->withMessage($e->getMessage())
-					   ->build();
-		}
-	}
+            if (! $enabled) {
+                $user->google2fa_secret = null;
+                $user->recovery_codes = null;
+                $user->two_factor_confirmed_at = null;
+            }
+
+            $user->save();
+
+            return AppResponse::asSuccess()
+                ->withMessage('2FA status updated successfully.')
+                ->build();
+        } catch (\Exception $e) {
+            return AppResponse::asError()
+                ->withMessage($e->getMessage())
+                ->build();
+        }
+    }
 }

@@ -24,7 +24,12 @@ class SubscriptionController extends Controller
      */
     public function store(SubscribeRequest $request): RedirectResponse
     {
-        $this->subscriptions->subscribe($request->validated(), $request);
+        // Honeypot: a filled hidden field means a bot. Reply exactly as we
+        // would to a real signup but record nothing, so the trap is
+        // indistinguishable from success.
+        if (blank($request->input('hp_channel'))) {
+            $this->subscriptions->subscribe($request->validated(), $request);
+        }
 
         return AppResponse::asSuccess()
             ->withMessage(translate('You are on the list. Check your inbox to confirm.'))

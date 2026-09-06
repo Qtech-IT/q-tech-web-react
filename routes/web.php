@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Frontend\ContactController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\LocaleController;
 use App\Http\Controllers\Frontend\PageController;
@@ -29,6 +30,18 @@ Route::middleware(['sanitization'])->group(function (): void {
     Route::post('subscribe', [SubscriptionController::class, 'store'])
         ->middleware('throttle:6,1')
         ->name('subscribe');
+
+    /*
+     * Contact form. Like `subscribe` it is an unauthenticated write, so it is
+     * throttled. The limit counts failed attempts too (validation errors, a
+     * mistyped captcha-style honeypot), so it has to leave room for a person
+     * who fixes a field and resubmits a few times — 15/min per IP does that
+     * while still being far below what a script wants. The destination inbox is
+     * resolved server-side from the section, never from the request body.
+     */
+    Route::post('contact', [ContactController::class, 'store'])
+        ->middleware('throttle:15,1')
+        ->name('contact.store');
 
     /*
      * Public language switch. POST — see `LocaleController::update()`; a GET

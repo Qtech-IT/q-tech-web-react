@@ -43,6 +43,7 @@ class PageService
     {
         return Page::query()
             ->with(['parent:id,title,path', 'createdBy', 'updatedBy'])
+            ->withCount('sections')
             ->where('site_id', config('cms.site_id'))
             ->search(['title', 'slug', 'path'])
             ->filter(['locale', 'page_type', 'publish_status', 'status', 'template'])

@@ -10,11 +10,12 @@ use Illuminate\Foundation\Http\FormRequest;
  * PUBLIC AND UNAUTHENTICATED, which is what every rule here is defending
  * against. Rate limiting lives on the route; this is the content guard.
  *
- * `website` is a HONEYPOT, not a field a human ever sees — it is rendered
- * off-screen and left empty by a person, filled in by most naive bots.
- * Rejecting a filled honeypot here (rather than in the service) keeps the bot
- * out of the service entirely, and `prohibited` produces the same 422 shape as
- * any other validation failure so a scraper learns nothing from the response.
+ * `hp_channel` is a HONEYPOT, not a field a human ever sees — it is rendered
+ * off-screen and left empty by a person, filled in by naive bots. It is NOT
+ * validated here: a hard `prohibited` failure also caught real people whose
+ * browser autofilled the hidden field. The controller checks it and silently
+ * drops a filled one, so a scraper learns nothing and a mis-autofilled human
+ * is not blocked.
  */
 class SubscribeRequest extends FormRequest
 {
@@ -41,9 +42,6 @@ class SubscribeRequest extends FormRequest
             // short and alpha-dash so it cannot become a free-text sink.
             'source' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z0-9._-]+$/'],
 
-            // Honeypot. A human never sees this input.
-            'website' => ['prohibited'],
-
             // Explicit opt-in. Required to be TRUE, not merely present — an
             // unchecked consent box is a refusal, and accepting it would make
             // every row in the table indefensible.
@@ -60,9 +58,6 @@ class SubscribeRequest extends FormRequest
             'email.required' => translate('Enter your email address.'),
             'email.email' => translate('That does not look like a working email address.'),
             'consent.accepted' => translate('Please confirm you would like to receive our emails.'),
-            // Deliberately vague: telling a bot it tripped a honeypot tells it
-            // how to pass next time.
-            'website.prohibited' => translate('We could not process that. Please try again.'),
         ];
     }
 

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Database\Seeders\Permissions\AdminModulePermissionSeeder;
 use Database\Seeders\Permissions\ContentModulePermissionSeeder;
 use Database\Seeders\Permissions\DashboardModuelPermissionSeeder;
+use Database\Seeders\Permissions\MarketingModulePermissionSeeder;
 use Database\Seeders\Permissions\MediaModulePermissionSeeder;
 use Database\Seeders\Permissions\SeoModulePermissionSeeder;
 use Database\Seeders\Permissions\SystemModulePermissionSeeder;
@@ -25,6 +26,7 @@ class PermissionSeeder extends Seeder
         ContentModulePermissionSeeder::class,
         MediaModulePermissionSeeder::class,
         SeoModulePermissionSeeder::class,
+        MarketingModulePermissionSeeder::class,
     ];
 
     /**

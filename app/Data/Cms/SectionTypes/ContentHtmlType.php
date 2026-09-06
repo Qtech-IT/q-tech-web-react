@@ -20,8 +20,15 @@ use App\Enums\Settings\InputEnum;
  * the rich editor, such a design comes back as the editor's interpretation of
  * it — the structure survives, the appearance does not.
  *
- * This band applies NOTHING. No typography, no measure, no link colours, no
- * heading demotion. What an editor pastes is what a visitor sees.
+ * By default this band applies NOTHING. No typography, no measure, no link
+ * colours, no heading demotion. What an editor pastes is what a visitor sees.
+ *
+ * The `styling` setting opts INTO the site's look: `site` adds the `.fx-prose`
+ * stylesheet — one token-driven rule per tag, shared with `content.prose` — so
+ * markup pasted without any CSS of its own picks up the site's type scale,
+ * spacing and colours. A pasted `<style>` block, scoped to this section, still
+ * wins wherever it sets a property. This is for the common case: an editor
+ * drops in bare HTML and expects it to look designed, not unstyled.
  *
  * WHAT IS STILL ENFORCED, AND WHY IT CANNOT BE OPTIONAL
  * ----------------------------------------------------
@@ -86,6 +93,20 @@ class ContentHtmlType implements SectionTypeContract
                 required: true,
                 rules: ['max:120000'],
                 help: translate('Paste your markup. Include a <style> block if the design needs one — its rules are rewritten to apply only inside this section. Scripts and event handlers are removed.'),
+            ),
+
+            SectionField::make(
+                name: 'styling',
+                label: translate('Styling'),
+                type: InputEnum::SELECT->value,
+                store: FieldStore::SETTINGS,
+                options: [
+                    ['value' => 'raw', 'label' => translate('None (raw markup)')],
+                    ['value' => 'site', 'label' => translate('Site styling')],
+                ],
+                default: 'raw',
+                group: 'Layout',
+                help: translate('Site styling paints every tag your markup uses — headings, text, lists, tables, quotes, code — in the site\'s type scale, spacing and colours, while any <style> block you paste still wins where it applies. Use None to reproduce a design exactly as built.'),
             ),
 
             SectionField::make(
@@ -175,6 +196,7 @@ class ContentHtmlType implements SectionTypeContract
                 'version' => 1,
             ],
             'settings' => [
+                'styling' => 'raw',
                 'width' => 'page',
                 'theme' => 'default',
                 'spacing' => 'default',

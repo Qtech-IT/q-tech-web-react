@@ -22,7 +22,7 @@ const generalSettingsSchema = z.object({
   site_settings: z.object({
     company_name: z.string().min(1, "Site name is required").max(100, "Site name must be less than 100 characters"),
     company_phone: z.string().min(1, "Phone is required").regex(/^[\+]?[0-9\s\-\(\)]+$/, "Enter a valid phone number"),
-    kyc_verification: z.string().min(1, "KYC verification is required"),
+    // kyc_verification: z.string().min(1, "KYC verification is required"),
     email_verification: z.string().min(1, "Email verification is required"),
     company_email: z.string().min(1, "Email is required").email('Enter valid email'),
     address: z.object({
@@ -82,7 +82,7 @@ export function GeneralSettingsForm({ props }: { props: any }) {
         company_name: getSettings(settings, 'company_name') || '',
         company_phone: getSettings(settings, 'company_phone') || '',
         company_email: getSettings(settings, 'company_email') || '',
-        kyc_verification: getSettings(settings, 'kyc_verification') || 'inactive',
+        // kyc_verification: getSettings(settings, 'kyc_verification') || 'inactive',
         email_verification: getSettings(settings, 'email_verification') || 'inactive',
         address: {
           full_address: address?.full_address || '',

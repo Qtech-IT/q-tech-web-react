@@ -55,6 +55,9 @@ export const sectionRegistry: Record<string, SectionComponent> = {
   'service.featured': lazy(
     () => import('@/Components/Frontend/Sections/ServiceFeature')
   ),
+  'content.overview': lazy(
+    () => import('@/Components/Frontend/Sections/ContentOverview')
+  ),
   'portfolio.grid': lazy(
     () => import('@/Components/Frontend/Sections/PortfolioGrid')
   ),
@@ -81,6 +84,9 @@ export const sectionRegistry: Record<string, SectionComponent> = {
   'article.header': lazy(
     () => import('@/Components/Frontend/Sections/ArticleHeader')
   ),
+  'content.blocks': lazy(
+    () => import('@/Components/Frontend/Sections/ContentBlocks')
+  ),
   'content.html': lazy(
     () => import('@/Components/Frontend/Sections/ContentHtml')
   ),
@@ -89,6 +95,9 @@ export const sectionRegistry: Record<string, SectionComponent> = {
   ),
   'content.split': lazy(
     () => import('@/Components/Frontend/Sections/ContentSplit')
+  ),
+  'case.narrative': lazy(
+    () => import('@/Components/Frontend/Sections/CaseNarrative')
   ),
   'collection.index': lazy(
     () => import('@/Components/Frontend/Sections/CollectionIndex')
@@ -100,6 +109,9 @@ export const sectionRegistry: Record<string, SectionComponent> = {
     () => import('@/Components/Frontend/Sections/NewsletterSignup')
   ),
   'cta.final': lazy(() => import('@/Components/Frontend/Sections/CtaFinal')),
+  'contact.hub': lazy(
+    () => import('@/Components/Frontend/Sections/ContactHub')
+  ),
 }
 
 /**

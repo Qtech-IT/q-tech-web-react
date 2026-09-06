@@ -212,6 +212,7 @@ export interface CmsMediaFolder extends CmsBaseAttributes {
   depth: number;
   sort_order: number;
   media_count?: number;
+  children_count?: number;
   children?: CmsMediaFolder[];
 }
 

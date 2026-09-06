@@ -13,6 +13,9 @@ export const publicRoutes = {
   /** `POST` — newsletter signup. Throttled to 6/min per IP. */
   subscribe: '/subscribe',
 
+  /** `POST` — contact enquiry. Throttled to 5/min per IP. */
+  contact: '/contact',
+
   /** `POST` — switch the visitor's language. Throttled to 20/min per IP. */
   locale: (code: string) => `/locale/${encodeURIComponent(code)}`,
 } as const

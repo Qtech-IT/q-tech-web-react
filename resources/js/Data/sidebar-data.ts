@@ -14,9 +14,12 @@ import {
   LayoutDashboard,
   ListChecks,
   ListTree,
+  Inbox,
   MousePointerClick,
   Network,
+  Send,
   Signpost,
+  Users,
   LucideMailCheck,
   Settings,
   Shield,
@@ -169,6 +172,37 @@ export const sidebarData: SidebarData = {
           url: route('backend.notification-logs.index'),
           icon: Bell,
           permission: 'notification-log.view'
+        },
+      ],
+    },
+
+    // 6b. Marketing
+    {
+      title: 'Marketing',
+      permissionsAny: [
+        'contact-submission.view',
+        'subscriber.view',
+        'contact-submission.reply',
+        'subscriber.mail'
+      ],
+      items: [
+        {
+          title: 'Contact Enquiries',
+          url: route('backend.contact-submissions.index'),
+          icon: Inbox,
+          permission: 'contact-submission.view'
+        },
+        {
+          title: 'Newsletter Subscribers',
+          url: route('backend.subscribers.index'),
+          icon: Users,
+          permission: 'subscriber.view'
+        },
+        {
+          title: 'Send Campaign',
+          url: route('backend.marketing.bulk-mail.index'),
+          icon: Send,
+          permissionsAny: ['contact-submission.reply', 'subscriber.mail']
         },
       ],
     },

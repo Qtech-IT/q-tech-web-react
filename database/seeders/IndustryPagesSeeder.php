@@ -143,17 +143,12 @@ class IndustryPagesSeeder extends CmsContentSeeder
             ],
         ]);
 
-        $this->section($page, 'content.prose', 1, [
+        $this->overviewSection($page, 1, [
             'name' => $industry['title'].' Constraints',
+            'eyebrow' => $industry['title'],
             'heading' => 'What Shapes Delivery Here',
-            'body' => $industry['constraints_html'],
-            'settings' => [
-                'measure' => 'prose',
-                'align' => 'start',
-                'theme' => 'default',
-                'spacing' => 'default',
-                'animation' => 'fade',
-            ],
+            'html' => $industry['constraints_html'],
+            'settings' => ['spacing' => 'default'],
         ]);
 
         $builds = $this->section($page, 'service.grid', 2, [

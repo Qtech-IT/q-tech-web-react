@@ -113,6 +113,19 @@ function SortableRow({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  /*
+   * The View action is available when the screen has a `show` route (page
+   * mode) OR renders its detail in a modal from the row it already has — the
+   * latter needs no route. Without this second case, any modal-only detail
+   * screen (contact enquiries, subscribers) shows no View button at all.
+   */
+  const viewAction = config?.permissions?.actions?.view ?? '';
+  const canView =
+    !isTrashMode &&
+    (Boolean(config?.routes?.show) ||
+      (config?.viewDisplayMode === 'modal' && Boolean(config?.viewDialogConfig?.viewComponent))) &&
+    (!viewAction || can(viewAction));
+
   const Row: any = TableRow;
 
   return (
@@ -166,7 +179,7 @@ function SortableRow({
                   {t('Actions')}
                 </DropdownMenuLabel>
 
-                {config.routes.show && !isTrashMode && (
+                {canView && (
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem

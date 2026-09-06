@@ -4,8 +4,12 @@ use App\Data\Cms\SectionTypes\AboutStoryType;
 use App\Data\Cms\SectionTypes\AiInnovationType;
 use App\Data\Cms\SectionTypes\ArticleHeaderType;
 use App\Data\Cms\SectionTypes\AwardWallType;
+use App\Data\Cms\SectionTypes\CaseNarrativeType;
 use App\Data\Cms\SectionTypes\CollectionIndexType;
+use App\Data\Cms\SectionTypes\ContactHubType;
+use App\Data\Cms\SectionTypes\ContentBlocksType;
 use App\Data\Cms\SectionTypes\ContentHtmlType;
+use App\Data\Cms\SectionTypes\ContentOverviewType;
 use App\Data\Cms\SectionTypes\ContentProseType;
 use App\Data\Cms\SectionTypes\ContentSplitType;
 use App\Data\Cms\SectionTypes\CtaBandType;
@@ -63,6 +67,7 @@ return [
         StatsCounterType::class,
         CtaBandType::class,
         ServiceGridType::class,
+        ContentOverviewType::class,
         ServiceFeatureType::class,
         IndustryServeType::class,
         SolutionGridType::class,
@@ -79,13 +84,16 @@ return [
         AwardWallType::class,
         AboutStoryType::class,
         ArticleHeaderType::class,
+        ContentBlocksType::class,
         ContentHtmlType::class,
         ContentProseType::class,
         ContentSplitType::class,
+        CaseNarrativeType::class,
         CollectionIndexType::class,
         MediaGalleryType::class,
         NewsletterSignupType::class,
         CtaFinalType::class,
+        ContactHubType::class,
     ],
 
     /*

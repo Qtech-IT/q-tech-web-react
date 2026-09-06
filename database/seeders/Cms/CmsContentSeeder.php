@@ -206,6 +206,292 @@ abstract class CmsContentSeeder extends Seeder
     }
 
     /**
+     * Flatten a passage of seeded HTML into the plain-text shape the structured
+     * narrative bands expect: paragraphs separated by a blank line, and a
+     * heading rendered as a `## ` line.
+     *
+     * Seed copy was authored as small HTML fragments (`<p>`, the occasional
+     * `<h3>`). The structured sections that replaced the rich-text bands take a
+     * plain textarea, so this converts once at seed time — walking the fragment
+     * in document order so a mid-passage sub-heading keeps its place.
+     */
+    protected function htmlToNarrative(string $html): string
+    {
+        $doc = new \DOMDocument;
+        libxml_use_internal_errors(true);
+        $doc->loadHTML(
+            '<?xml encoding="UTF-8"><div>'.$html.'</div>',
+            LIBXML_NOERROR | LIBXML_NOWARNING
+        );
+        libxml_clear_errors();
+
+        $blocks = [];
+
+        foreach ($doc->getElementsByTagName('div')->item(0)?->childNodes ?? [] as $node) {
+            if (! $node instanceof \DOMElement) {
+                continue;
+            }
+
+            $text = trim((string) preg_replace('/\s+/', ' ', $node->textContent));
+
+            if ($text === '') {
+                continue;
+            }
+
+            $blocks[] = in_array(strtolower($node->tagName), ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'], true)
+                ? '## '.$text
+                : $text;
+        }
+
+        return implode("\n\n", $blocks);
+    }
+
+    /**
+     * A `content.overview` section — the argument for a service, industry or
+     * technology, beside a grid of capability cards.
+     *
+     * `spec` keys: `name`, `eyebrow`, `heading`, `lead`, `highlight`, `html`
+     * (the source argument fragment), `media_id`, `fallback_pillars` (used when
+     * the HTML carries no `<li>` list), `pillar_icons` (cycled onto the cards),
+     * `settings` (merged over the defaults).
+     *
+     * @param  array<string, mixed>  $spec
+     */
+    protected function overviewSection(Page $page, int $sort, array $spec): PageSection
+    {
+        [$paragraphs, $pillars] = $this->splitArgument($spec['html'] ?? '');
+
+        if ($pillars === [] && ! empty($spec['fallback_pillars'])) {
+            $pillars = $spec['fallback_pillars'];
+        }
+
+        $section = $this->section($page, 'content.overview', $sort, [
+            'name' => $spec['name'] ?? ($page->title.' Overview'),
+            'eyebrow' => $spec['eyebrow'] ?? null,
+            'heading' => $spec['heading'] ?? null,
+            'subheading' => $spec['lead'] ?? null,
+            'body' => implode("\n\n", $paragraphs),
+            'media_id' => $spec['media_id'] ?? null,
+            'data' => [
+                'heading_highlight' => $spec['highlight'] ?? null,
+                'media_caption' => null,
+            ],
+            'settings' => array_merge([
+                'layout' => $pillars === [] ? 'stacked' : 'split',
+                'pillar_columns' => '2',
+                'theme' => 'default',
+                'spacing' => 'lg',
+                'animation' => 'stagger',
+            ], $spec['settings'] ?? []),
+        ]);
+
+        $icons = array_values($spec['pillar_icons'] ?? []);
+        $accents = ['brand', 'teal', 'violet', 'amber', 'rose', 'ink'];
+
+        foreach ($pillars as $position => $pillar) {
+            $this->block($section, 'pillar', $position, [
+                'label' => $pillar['label'],
+                'description' => $pillar['description'] ?? null,
+                'icon' => $icons[$position] ?? null,
+                'settings' => ['accent' => $accents[$position % count($accents)]],
+            ]);
+        }
+
+        return $section;
+    }
+
+    /**
+     * Split an argument's HTML into plain paragraphs and capability rows.
+     *
+     * `<p>` becomes a paragraph. A `<li>` opening with `<strong>` becomes a
+     * card — the bold run is the title, the rest the description. A `<li>` with
+     * no bold lead keeps its first few words as a title so nothing is lost.
+     *
+     * @return array{0: array<int, string>, 1: array<int, array{label: string, description: string}>}
+     */
+    protected function splitArgument(string $html): array
+    {
+        if (trim($html) === '') {
+            return [[], []];
+        }
+
+        $doc = new \DOMDocument;
+        libxml_use_internal_errors(true);
+        $doc->loadHTML('<?xml encoding="UTF-8"><div>'.$html.'</div>', LIBXML_NOERROR | LIBXML_NOWARNING);
+        libxml_clear_errors();
+
+        $paragraphs = [];
+
+        foreach ($doc->getElementsByTagName('p') as $node) {
+            $text = trim((string) preg_replace('/\s+/', ' ', $node->textContent));
+
+            if ($text !== '') {
+                $paragraphs[] = $text;
+            }
+        }
+
+        $pillars = [];
+
+        foreach ($doc->getElementsByTagName('li') as $node) {
+            $full = trim((string) preg_replace('/\s+/', ' ', $node->textContent));
+
+            if ($full === '') {
+                continue;
+            }
+
+            $strong = $node->getElementsByTagName('strong')->item(0);
+            $lead = $strong ? trim((string) preg_replace('/\s+/', ' ', $strong->textContent)) : '';
+
+            if ($lead !== '' && str_starts_with($full, $lead)) {
+                $label = rtrim($lead, " .\u{00A0}");
+                $description = ltrim(mb_substr($full, mb_strlen($lead)), " .\u{00A0}");
+            } else {
+                $label = rtrim(Str::words($full, 3, ''), " .\u{00A0}");
+                $description = $full;
+            }
+
+            $pillars[] = [
+                'label' => $label,
+                'description' => $description !== '' ? $description : $label,
+            ];
+        }
+
+        return [$paragraphs, $pillars];
+    }
+
+    /**
+     * A `content.blocks` section whose blocks are converted, once, from a
+     * passage of seeded HTML.
+     *
+     * The old blog and policy bodies were authored as HTML fragments for a
+     * rich-text field. `content.blocks` is structured — one typed block per row
+     * — so this walks the fragment in document order and emits a `block` row
+     * per element: `<p>` → paragraph, `<h2..h4>` → heading, `<ul>/<ol>` → list,
+     * `<blockquote>` → quote, `<pre>` → code, `<table>` → table.
+     *
+     * @param  array<string, mixed>  $settings
+     */
+    protected function articleBody(Page $page, int $sort, string $html, array $settings = []): PageSection
+    {
+        $section = $this->section($page, 'content.blocks', $sort, [
+            'name' => ($page->title ?? 'Article').' Body',
+            'settings' => array_merge([
+                'measure' => 'prose',
+                'theme' => 'default',
+                'spacing' => 'default',
+                'animation' => 'none',
+            ], $settings),
+        ]);
+
+        foreach ($this->htmlToBlocks($html) as $i => $spec) {
+            $this->block($section, 'block', $i, [
+                'label' => $spec['label'] ?? null,
+                'body' => $spec['body'] ?? null,
+                'settings' => array_merge(['kind' => $spec['kind']], $spec['settings'] ?? []),
+            ]);
+        }
+
+        return $section;
+    }
+
+    /**
+     * Convert a passage of seeded HTML into ordered `content.blocks` specs.
+     *
+     * @return array<int, array{kind: string, label?: ?string, body?: ?string, settings?: array<string, mixed>}>
+     */
+    protected function htmlToBlocks(string $html): array
+    {
+        $doc = new \DOMDocument;
+        libxml_use_internal_errors(true);
+        $doc->loadHTML(
+            '<?xml encoding="UTF-8"><div>'.$html.'</div>',
+            LIBXML_NOERROR | LIBXML_NOWARNING
+        );
+        libxml_clear_errors();
+
+        $collapse = fn (string $text): string => trim((string) preg_replace('/[ \t]+/', ' ', $text));
+        $specs = [];
+
+        foreach ($doc->getElementsByTagName('div')->item(0)?->childNodes ?? [] as $node) {
+            if (! $node instanceof \DOMElement) {
+                continue;
+            }
+
+            $tag = strtolower($node->tagName);
+            $text = $collapse(preg_replace('/\s*\n\s*/', ' ', $node->textContent) ?? '');
+
+            if ($text === '' && $tag !== 'table') {
+                continue;
+            }
+
+            $specs[] = match (true) {
+                in_array($tag, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'], true) => [
+                    'kind' => 'heading',
+                    'label' => $text,
+                    'settings' => ['level' => $tag === 'h2' || $tag === 'h1' ? 'h2' : ($tag === 'h3' ? 'h3' : 'h4')],
+                ],
+                in_array($tag, ['ul', 'ol'], true) => [
+                    'kind' => 'list',
+                    'body' => $this->listItems($node, $collapse),
+                    'settings' => ['list_style' => $tag === 'ol' ? 'number' : 'bullet'],
+                ],
+                $tag === 'blockquote' => ['kind' => 'quote', 'body' => $text],
+                $tag === 'pre' => ['kind' => 'code', 'body' => trim($node->textContent)],
+                $tag === 'table' => [
+                    'kind' => 'table',
+                    'body' => $this->tableRows($node, $collapse),
+                    'settings' => ['table_header' => $node->getElementsByTagName('th')->length > 0],
+                ],
+                default => ['kind' => 'paragraph', 'body' => $text],
+            };
+        }
+
+        return $specs;
+    }
+
+    /**
+     * `<li>` text content, one per line.
+     */
+    private function listItems(\DOMElement $list, callable $collapse): string
+    {
+        $items = [];
+
+        foreach ($list->getElementsByTagName('li') as $li) {
+            $text = $collapse(preg_replace('/\s*\n\s*/', ' ', $li->textContent) ?? '');
+
+            if ($text !== '') {
+                $items[] = $text;
+            }
+        }
+
+        return implode("\n", $items);
+    }
+
+    /**
+     * `<tr>` rows as pipe-separated cells, one row per line.
+     */
+    private function tableRows(\DOMElement $table, callable $collapse): string
+    {
+        $rows = [];
+
+        foreach ($table->getElementsByTagName('tr') as $tr) {
+            $cells = [];
+
+            foreach ($tr->childNodes as $cell) {
+                if ($cell instanceof \DOMElement && in_array(strtolower($cell->tagName), ['th', 'td'], true)) {
+                    $cells[] = $collapse(preg_replace('/\s*\n\s*/', ' ', $cell->textContent) ?? '');
+                }
+            }
+
+            if ($cells !== []) {
+                $rows[] = implode(' | ', $cells);
+            }
+        }
+
+        return implode("\n", $rows);
+    }
+
+    /**
      * A button, keyed on its tracking id so a re-run updates rather than
      * duplicates.
      *

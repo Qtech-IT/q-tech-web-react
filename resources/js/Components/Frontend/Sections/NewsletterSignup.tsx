@@ -95,7 +95,7 @@ function SignupForm({
   const { loading, errors, submit, setErrors } = useForm()
 
   const [email, setEmail] = useState('')
-  const [website, setWebsite] = useState('')
+  const [hpChannel, setHpChannel] = useState('')
   const [consent, setConsent] = useState(!showConsent)
   const [done, setDone] = useState(false)
 
@@ -103,7 +103,7 @@ function SignupForm({
   const errorId = `${fieldId}-error`
   const consentId = `${fieldId}-consent`
 
-  const emailError = firstError(errors, 'email') ?? firstError(errors, 'website')
+  const emailError = firstError(errors, 'email')
   const consentError = firstError(errors, 'consent')
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -120,7 +120,7 @@ function SignupForm({
       method: 'POST',
       data: {
         email,
-        website,
+        hp_channel: hpChannel,
         // Always sent, whether or not the box is shown: the server requires
         // it, and a form that renders no checkbox has consent documented
         // elsewhere — see the `show_consent` field's help text.
@@ -209,17 +209,20 @@ function SignupForm({
 
         {/* Honeypot. Off-screen rather than `display: none` — some bots skip
             hidden inputs, and `sr-only` keeps it in the layout tree while
-            putting it outside the viewport. */}
+            putting it outside the viewport. The name is deliberately not
+            `website` / `url` / `email`: browsers autofill those into hidden
+            fields too and used to trip real people. A filled value is dropped
+            silently server-side. */}
         <div aria-hidden="true" className="sr-only">
-          <label htmlFor={`${fieldId}-website`}>{t('Leave this field empty')}</label>
+          <label htmlFor={`${fieldId}-hp`}>{t('Leave this field empty')}</label>
           <input
-            id={`${fieldId}-website`}
+            id={`${fieldId}-hp`}
             type="text"
-            name="website"
+            name="hp_channel"
             tabIndex={-1}
             autoComplete="off"
-            value={website}
-            onChange={(event) => setWebsite(event.target.value)}
+            value={hpChannel}
+            onChange={(event) => setHpChannel(event.target.value)}
           />
         </div>
 

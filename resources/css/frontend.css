@@ -808,8 +808,16 @@
  * same-background neighbours. That broader rule would be defensible typography
  * but it would also re-space the home page, whose rhythm is signed off — and
  * `article.header` never appears there.
+ *
+ * ONLY when the next band shares the header's background. A case study puts a
+ * contrasting band (`results.metrics`, inverted) directly under the header;
+ * collapsing its top padding there left the coloured band tight on top and
+ * heavy on the bottom — it reads as broken, not as one unit. A contrasting
+ * band is a new section and takes its own symmetric padding.
  */
-[data-site='public'] [data-section-type='article.header'] + [data-slot='section'] {
+[data-site='public']
+  [data-section-type='article.header'][data-section-bg='default']
+  + [data-slot='section'][data-section-bg='default'] {
   padding-top: 0;
 }
 
@@ -856,4 +864,249 @@
   [data-site='public'] .fx-richtext [data-cols='4'] {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
+}
+
+/* ==========================================================================
+   .fx-prose — site styling for editor-authored HTML
+   ==========================================================================
+
+   ONE element-level stylesheet for every tag an editor's markup can contain.
+   `RichText` wears this class instead of carrying ~60 `[&_x]:` utilities, and
+   the "Site styling" mode of the `content.html` band wears it too — so a
+   passage typed in the rich editor and a block pasted from elsewhere land in
+   the same rhythm, colour and type scale.
+
+   SCOPING. Every rule is `[data-site='public'] .fx-prose <tag>` — a descendant
+   selector rooted at the class. Nothing here is a bare element selector, so it
+   cannot reach a single node outside an `.fx-prose` container: the rest of the
+   site, the section chrome around the passage, and the admin are all untouched.
+
+   The values mirror the design tokens the rest of the public surface uses
+   (`--fx-*`, `--text-fx-*`, `--radius-fx-*`). Change a token, this follows. */
+
+[data-site='public'] .fx-prose {
+  color: var(--fx-ink-soft);
+  font-size: var(--text-fx-body);
+  line-height: var(--text-fx-body--line-height);
+  text-wrap: pretty;
+}
+
+/* Flow spacing. Element-specific rather than a `* + *` owl, so a pasted design
+   that nests its own wrappers keeps its internal spacing and only the
+   top-level reading flow is normalised. */
+[data-site='public'] .fx-prose :where(p, ul, ol, dl, pre, table, figure, blockquote, details) {
+  margin-top: var(--fx-stack-sm);
+}
+
+[data-site='public'] .fx-prose :where(h1, h2, h3) {
+  margin-top: var(--fx-stack-lg);
+}
+
+[data-site='public'] .fx-prose :where(h4, h5, h6, hr, img) {
+  margin-top: var(--fx-stack-md);
+}
+
+[data-site='public'] .fx-prose > :first-child,
+[data-site='public'] .fx-prose :where(h1, h2, h3, h4, h5, h6):first-child {
+  margin-top: 0;
+}
+
+/* Headings. h1/h2/h3 share a size deliberately — a section already owns its
+   own headline, so a passage whose author reached for the wrong level does not
+   out-shout it; only the outline the editor wrote is kept. */
+[data-site='public'] .fx-prose :where(h1, h2, h3) {
+  font-size: var(--text-fx-subheading);
+  letter-spacing: var(--text-fx-subheading--letter-spacing);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--fx-ink);
+}
+
+[data-site='public'] .fx-prose :where(h4, h5, h6) {
+  font-size: var(--text-fx-body);
+  font-weight: 600;
+  color: var(--fx-ink);
+}
+
+/* Inline. */
+[data-site='public'] .fx-prose :where(strong, b) {
+  font-weight: 600;
+  color: var(--fx-ink);
+}
+
+[data-site='public'] .fx-prose :where(em, i) {
+  font-style: italic;
+}
+
+[data-site='public'] .fx-prose mark {
+  background: var(--fx-wash-accent);
+  color: var(--fx-ink);
+  padding-inline: 0.25rem;
+  border-radius: var(--radius-fx-xs);
+}
+
+[data-site='public'] .fx-prose small {
+  font-size: var(--text-fx-body-sm);
+}
+
+[data-site='public'] .fx-prose a {
+  font-weight: 500;
+  color: var(--fx-accent-text);
+  text-decoration: underline;
+  text-decoration-color: var(--fx-accent-line);
+  text-underline-offset: 4px;
+  border-radius: var(--radius-fx-xs);
+}
+
+[data-site='public'] .fx-prose a:hover {
+  text-decoration-color: currentColor;
+}
+
+[data-site='public'] .fx-prose a:focus-visible {
+  outline: 2px solid var(--fx-focus);
+  outline-offset: 2px;
+}
+
+/* Two links pasted back-to-back arrive with no whitespace and read as one
+   run-on word; editors write them as separate links. */
+[data-site='public'] .fx-prose a + a {
+  margin-inline-start: 1rem;
+}
+
+/* Lists. */
+[data-site='public'] .fx-prose ul {
+  list-style: disc;
+  padding-inline-start: 1.25rem;
+}
+
+[data-site='public'] .fx-prose ol {
+  list-style: decimal;
+  padding-inline-start: 1.25rem;
+}
+
+[data-site='public'] .fx-prose li {
+  margin-top: 0.25rem;
+}
+
+[data-site='public'] .fx-prose li::marker {
+  color: var(--fx-ink-faint);
+}
+
+/* A nested list already sits inside a spaced `li`; a second top margin on it
+   opens a gap that reads as a missing item. */
+[data-site='public'] .fx-prose :where(li) :where(ul, ol) {
+  margin-top: 0.25rem;
+}
+
+[data-site='public'] .fx-prose :where(dt) {
+  font-weight: 600;
+  color: var(--fx-ink);
+  margin-top: var(--fx-stack-sm);
+}
+
+[data-site='public'] .fx-prose dd {
+  margin-inline-start: 1.25rem;
+}
+
+/* Quotes. */
+[data-site='public'] .fx-prose blockquote {
+  border-inline-start: 2px solid var(--fx-accent-line);
+  padding-inline-start: 1rem;
+  font-size: var(--text-fx-lead);
+  color: var(--fx-ink);
+}
+
+[data-site='public'] .fx-prose cite {
+  font-size: var(--text-fx-meta);
+  font-style: normal;
+  color: var(--fx-ink-faint);
+}
+
+/* Code. */
+[data-site='public'] .fx-prose :where(code, kbd, samp) {
+  border-radius: var(--radius-fx-xs);
+  background: var(--fx-surface-2);
+  padding: 0.125rem 0.375rem;
+  font-size: var(--text-fx-meta);
+}
+
+[data-site='public'] .fx-prose pre {
+  overflow-x: auto;
+  border: 1px solid var(--fx-line);
+  border-radius: var(--radius-fx-md);
+  background: var(--fx-surface-2);
+  padding: 1rem;
+  font-size: var(--text-fx-meta);
+}
+
+[data-site='public'] .fx-prose pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* Tables. `display: block` + `overflow-x: auto` makes a wide table its own
+   scroll container, so it cannot push the page into a horizontal scroll. */
+[data-site='public'] .fx-prose table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: var(--text-fx-body-sm);
+}
+
+[data-site='public'] .fx-prose th {
+  border-bottom: 1px solid var(--fx-line);
+  padding: 0.5rem 1rem 0.5rem 0;
+  text-align: start;
+  font-weight: 600;
+  color: var(--fx-ink);
+}
+
+[data-site='public'] .fx-prose td {
+  border-bottom: 1px solid var(--fx-line);
+  padding: 0.5rem 1rem 0.5rem 0;
+  vertical-align: top;
+}
+
+[data-site='public'] .fx-prose caption {
+  margin-bottom: 0.5rem;
+  font-size: var(--text-fx-meta);
+  color: var(--fx-ink-faint);
+  text-align: start;
+}
+
+/* Rules and media. */
+[data-site='public'] .fx-prose hr {
+  border: 0;
+  border-top: 1px solid var(--fx-line);
+}
+
+[data-site='public'] .fx-prose img {
+  height: auto;
+  max-width: 100%;
+  border-radius: var(--radius-fx-md);
+}
+
+[data-site='public'] .fx-prose figure {
+  margin-inline: 0;
+}
+
+[data-site='public'] .fx-prose figcaption {
+  margin-top: 0.5rem;
+  font-size: var(--text-fx-meta);
+  color: var(--fx-ink-faint);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-site='public'] .fx-prose :where(a, mark) {
+    transition: color 150ms var(--fx-ease), text-decoration-color 150ms var(--fx-ease);
+  }
+}
+
+/* Opt-out island. A `.not-prose` block inside `.fx-prose` — a callout, a
+   custom figure — owns its own spacing and colour; neutralise the flow margins
+   the rules above would otherwise stack onto its children. */
+[data-site='public'] .fx-prose .not-prose :where(p, ul, ol, dl, h1, h2, h3, h4, h5, h6, blockquote, table, pre, figure, hr, img, li) {
+  margin-top: 0;
 }

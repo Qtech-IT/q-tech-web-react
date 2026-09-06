@@ -50,6 +50,7 @@ class Subscriber extends Model
             'status' => Status::class,
             'consent_at' => 'datetime',
             'unsubscribed_at' => 'datetime',
+            'mailed_at' => 'datetime',
         ];
     }
 

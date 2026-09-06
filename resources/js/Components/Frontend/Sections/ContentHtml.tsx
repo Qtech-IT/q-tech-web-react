@@ -11,6 +11,7 @@ import { scopeCss } from '@/Utils/scopeCss'
 const WIDTHS = ['page', 'wide', 'prose', 'full'] as const
 const THEMES = ['default', 'subtle', 'inverted'] as const
 const SPACINGS = ['none', 'sm', 'default', 'lg'] as const
+const STYLINGS = ['raw', 'site'] as const
 
 /** `width` setting → `Container` size. `full` drops the container entirely. */
 const CONTAINER_SIZES: Record<string, ContainerProps['size']> = {
@@ -125,6 +126,7 @@ export function ContentHtml({ section }: SectionComponentProps) {
   const width = readOption(settings, 'width', WIDTHS, 'page')
   const theme = readOption(settings, 'theme', THEMES, 'default')
   const spacing = readOption(settings, 'spacing', SPACINGS, 'default')
+  const styling = readOption(settings, 'styling', STYLINGS, 'raw')
 
   /*
    * The scope selector, and the one thing on the wrapper.
@@ -212,11 +214,22 @@ export function ContentHtml({ section }: SectionComponentProps) {
       aria-label={t('Content')}
     >
       {/*
-        No className of any kind. Every utility here would be a style this band
-        promises not to apply — and an editor debugging why their padding looks
-        wrong should find nothing of ours between the section and their markup.
+        `raw` (the default) puts NO className here — every utility would be a
+        style this band promises not to apply, and an editor debugging their
+        padding should find nothing of ours between the section and their
+        markup.
+
+        `site` adds `fx-prose` and nothing else: one token-driven rule per tag
+        (`frontend.css`), scoped to `[data-site='public'] .fx-prose`, filling in
+        the site's look for tags the paste did not style itself. A pasted
+        `<style>` block — already scoped to `#${scopeId}` above — still wins
+        wherever it sets a property, because an id selector outranks a class.
       */}
-      <div id={scopeId} dangerouslySetInnerHTML={{ __html: clean }} />
+      <div
+        id={scopeId}
+        {...(styling === 'site' ? { className: 'fx-prose' } : {})}
+        dangerouslySetInnerHTML={{ __html: clean }}
+      />
     </Section>
   )
 }

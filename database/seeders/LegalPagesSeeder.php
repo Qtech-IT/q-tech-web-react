@@ -97,19 +97,14 @@ class LegalPagesSeeder extends CmsContentSeeder
             ],
         ]);
 
-        $this->section($page, 'content.prose', 1, [
-            'name' => $policy['title'].' Body',
-            'body' => self::EDITOR_NOTE.$policy['body_html'],
-            'settings' => [
-                'measure' => 'prose',
-                'align' => 'start',
-                'theme' => 'default',
-                'spacing' => 'default',
-                // No entrance animation on a reference document — somebody
-                // arriving here has come to read one clause, and content that
-                // fades in as they scroll is friction rather than polish.
-                'animation' => 'none',
-            ],
+        // No entrance animation on a reference document — somebody arriving
+        // here has come to read one clause, and content that fades in as they
+        // scroll is friction rather than polish.
+        $this->articleBody($page, 1, self::EDITOR_NOTE.$policy['body_html'], [
+            'measure' => 'prose',
+            'theme' => 'default',
+            'spacing' => 'default',
+            'animation' => 'none',
         ]);
 
         $this->closingBand($page, 2, [

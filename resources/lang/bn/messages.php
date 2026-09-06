@@ -2910,4 +2910,5 @@
   'this_section_cannot_hold_any_more_items_of_this_type.' => 'This section cannot hold any more items of this type.',
   'copy' => 'Copy',
   'that_content_type_cannot_own_media.' => 'That content type cannot own media.',
+  'page_tree' => 'Page Tree',
 );

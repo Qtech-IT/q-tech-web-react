@@ -1,26 +1,26 @@
-import { useMemo, useState } from 'react'
 import { Link, router } from '@inertiajs/react'
 import { ArrowRight, ChevronLeft, ChevronRight, ImageOff, Search, SearchX } from 'lucide-react'
+import { useMemo, useState } from 'react'
 
-import { NavIcon, isRegisteredNavIcon } from '@/Components/Public/NavIcon'
-import { Section } from '@/Components/Public/Section'
-import { fxButton } from '@/Components/Public/fxButton'
-import { SafeImage } from '@/Components/UI/SafeImage'
-import { useTranslations } from '@/Hooks/useTranslations'
-import { cn } from '@/Utils/helpers'
 import { highlightHeading } from '@/Components/Frontend/Sections/Shared/highlight'
 import { Reveal } from '@/Components/Frontend/Sections/Shared/Reveal'
 import { SectionCta } from '@/Components/Frontend/Sections/Shared/SectionCta'
-import { SectionHeader } from '@/Components/Frontend/Sections/Shared/SectionHeader'
 import type { HeadingLevel } from '@/Components/Frontend/Sections/Shared/SectionHeader'
+import { SectionHeader } from '@/Components/Frontend/Sections/Shared/SectionHeader'
 import {
   readBoolean,
   readOption,
   readString,
   trimmed,
 } from '@/Components/Frontend/Sections/Shared/values'
+import { fxButton } from '@/Components/Public/fxButton'
+import { NavIcon, isRegisteredNavIcon } from '@/Components/Public/NavIcon'
+import { Section } from '@/Components/Public/Section'
+import { SafeImage } from '@/Components/UI/SafeImage'
+import { useTranslations } from '@/Hooks/useTranslations'
 import type { CmsCollectionMeta, CmsPageCard } from '@/Types/cms'
 import type { SectionComponentProps } from '@/Types/sections'
+import { cn } from '@/Utils/helpers'
 
 const LAYOUTS = ['card', 'icon', 'list'] as const
 const COLUMNS = ['2', '3', '4'] as const

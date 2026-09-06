@@ -407,7 +407,7 @@ class ServicePagesSeeder extends Seeder
         $this->addHero($page, $siteId, $sort++, $service);
 
         if (isset($service['argument'])) {
-            $this->addProse($page, $siteId, $sort++, $service);
+            $this->addOverview($page, $siteId, $sort++, $service);
         }
 
         if (isset($service['offerings'])) {
@@ -521,19 +521,44 @@ class ServicePagesSeeder extends Seeder
         }
     }
 
-    /** The argument — why this discipline is worth paying for. */
-    protected function addProse(Page $page, int $siteId, int $sort, array $service): void
+    /**
+     * The service overview — the argument for the discipline beside a grid of
+     * capability cards.
+     *
+     * A structured `content.overview` band, NOT a `content.prose` rich-text
+     * blob. `overviewSection()` (shared) parses the argument HTML into plain
+     * paragraphs plus `<li><strong>` capability cards; the fallback here seeds
+     * those cards from the service's own offerings when the copy has no
+     * bulleted list of its own.
+     */
+    protected function addOverview(Page $page, int $siteId, int $sort, array $service): void
     {
-        PageSection::create([
+        [$paragraphs, $pillars] = $this->splitArgument($service['argument']['html']);
+
+        // When the argument carries no bulleted capabilities of its own, seed
+        // the cards from the service's first three offerings — already written
+        // as {label, description, icon} and exactly the "what this covers" the
+        // overview grid is for.
+        if ($pillars === [] && isset($service['offerings'])) {
+            $pillars = array_map(
+                fn (array $card): array => [
+                    'label' => $card['label'],
+                    'description' => $card['description'],
+                ],
+                array_slice($service['offerings'], 0, 3)
+            );
+        }
+
+        $section = PageSection::create([
             'site_id' => $siteId,
             'page_id' => $page->id,
-            'section_type' => 'content.prose',
-            'name' => $service['title'].' Argument',
+            'section_type' => 'content.overview',
+            'name' => $service['title'].' Overview',
             'anchor' => null,
-            'eyebrow' => null,
+            'eyebrow' => $service['title'],
             'heading' => $service['argument']['heading'],
             'subheading' => $service['argument']['lead'] ?? null,
-            'body' => $service['argument']['html'],
+            'body' => implode("\n\n", $paragraphs),
             'media_id' => null,
             'cta_id' => null,
             'secondary_cta_id' => null,
@@ -543,11 +568,11 @@ class ServicePagesSeeder extends Seeder
                 'media_caption' => null,
             ],
             'settings' => [
-                'measure' => 'prose',
-                'align' => 'start',
+                'layout' => $pillars === [] ? 'stacked' : 'split',
+                'pillar_columns' => '2',
                 'theme' => 'default',
-                'spacing' => 'default',
-                'animation' => 'fade',
+                'spacing' => 'lg',
+                'animation' => 'stagger',
             ],
             'status' => Status::ACTIVE->value,
             'publish_status' => ContentStatus::PUBLISHED->value,
@@ -555,6 +580,82 @@ class ServicePagesSeeder extends Seeder
             'expires_at' => null,
             'sort_order' => $sort,
         ]);
+
+        $icons = array_values(array_filter(array_column($service['offerings'] ?? [], 'icon')));
+        $accents = ['brand', 'teal', 'violet', 'amber', 'rose', 'ink'];
+
+        foreach ($pillars as $position => $pillar) {
+            SectionBlock::create([
+                'page_section_id' => $section->id,
+                'parent_id' => null,
+                'block_type' => 'pillar',
+                'label' => $pillar['label'],
+                'value' => null,
+                'description' => $pillar['description'],
+                'body' => null,
+                'icon' => $icons[$position] ?? null,
+                'media_id' => null,
+                'cta_id' => null,
+                'data' => [],
+                'settings' => ['accent' => $accents[$position % count($accents)]],
+                'status' => Status::ACTIVE->value,
+                'sort_order' => $position,
+            ]);
+        }
+    }
+
+    /**
+     * Split an argument's HTML into plain paragraphs and pillar rows.
+     *
+     * `<p>` becomes a paragraph. A `<li>` opening with `<strong>` becomes a
+     * pillar — the bold run is the title, the rest the description.
+     *
+     * @return array{0: array<int, string>, 1: array<int, array{label: string, description: string}>}
+     */
+    protected function splitArgument(string $html): array
+    {
+        $doc = new \DOMDocument;
+        libxml_use_internal_errors(true);
+        $doc->loadHTML('<?xml encoding="UTF-8"><div>'.$html.'</div>', LIBXML_NOERROR | LIBXML_NOWARNING);
+        libxml_clear_errors();
+
+        $paragraphs = [];
+
+        foreach ($doc->getElementsByTagName('p') as $node) {
+            $text = trim((string) preg_replace('/\s+/', ' ', $node->textContent));
+
+            if ($text !== '') {
+                $paragraphs[] = $text;
+            }
+        }
+
+        $pillars = [];
+
+        foreach ($doc->getElementsByTagName('li') as $node) {
+            $full = trim((string) preg_replace('/\s+/', ' ', $node->textContent));
+
+            if ($full === '') {
+                continue;
+            }
+
+            $strong = $node->getElementsByTagName('strong')->item(0);
+            $lead = $strong ? trim((string) preg_replace('/\s+/', ' ', $strong->textContent)) : '';
+
+            if ($lead !== '' && str_starts_with($full, $lead)) {
+                $label = rtrim($lead, " .\u{00A0}");
+                $description = ltrim(mb_substr($full, mb_strlen($lead)), " .\u{00A0}");
+            } else {
+                $label = rtrim(Str::words($full, 3, ''), " .\u{00A0}");
+                $description = $full;
+            }
+
+            $pillars[] = [
+                'label' => $label,
+                'description' => $description !== '' ? $description : $label,
+            ];
+        }
+
+        return [$paragraphs, $pillars];
     }
 
     /** What the service actually covers, as a card grid. */
@@ -613,30 +714,31 @@ class ServicePagesSeeder extends Seeder
     /** The deliverables checklist beside an image. */
     protected function addIncludes(Page $page, int $siteId, int $sort, array $service): void
     {
+        $intro = trim(html_entity_decode(strip_tags($service['includes_html'] ?? '')));
+
         $section = PageSection::create([
             'site_id' => $siteId,
             'page_id' => $page->id,
-            'section_type' => 'content.split',
+            'section_type' => 'case.narrative',
             'name' => $service['title'].' Inclusions',
             'anchor' => 'included',
             'eyebrow' => 'Every Engagement Includes',
             'heading' => $service['includes_heading'],
             'subheading' => null,
-            'body' => $service['includes_html'] ?? null,
+            'body' => $intro !== '' ? $intro : null,
             'media_id' => null,
             'cta_id' => null,
             'secondary_cta_id' => null,
             'data' => [
                 'version' => 1,
                 'heading_highlight' => null,
-                'footnote' => null,
+                'media_caption' => null,
+                'list_heading' => null,
             ],
             'settings' => [
-                'media_side' => 'start',
-                'media_shape' => 'landscape',
-                // Two columns: these lists run to ten short rows, and one
-                // column of them is a very tall band next to a fixed image.
-                'list_columns' => 2,
+                // Two columns: these lists run to ten short rows.
+                'media_side' => 'end',
+                'list_columns' => '2',
                 'accent' => $service['accent'],
                 'theme' => 'default',
                 'spacing' => 'lg',
@@ -653,7 +755,7 @@ class ServicePagesSeeder extends Seeder
             SectionBlock::create([
                 'page_section_id' => $section->id,
                 'parent_id' => null,
-                'block_type' => 'item',
+                'block_type' => 'point',
                 'label' => $item,
                 'value' => null,
                 'description' => null,

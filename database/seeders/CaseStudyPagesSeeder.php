@@ -184,30 +184,33 @@ class CaseStudyPagesSeeder extends CmsContentSeeder
             ]);
         }
 
-        $this->section($page, 'content.prose', 2, [
-            'name' => $study['title'].' Story',
-            'heading' => 'The Problem',
-            'body' => $study['problem_html'],
+        $this->section($page, 'case.narrative', 2, [
+            'name' => $study['title'].' Problem',
+            'anchor' => 'problem',
+            'eyebrow' => 'The Problem',
+            'heading' => 'Where They Started',
+            'body' => $this->htmlToNarrative($study['problem_html']),
             'settings' => [
-                'measure' => 'prose',
-                'align' => 'start',
+                'media_side' => 'end',
+                'list_columns' => '1',
+                'accent' => $study['accent'],
                 'theme' => 'default',
                 'spacing' => 'default',
                 'animation' => 'fade',
             ],
         ]);
 
-        $approach = $this->section($page, 'content.split', 3, [
+        $approach = $this->section($page, 'case.narrative', 3, [
             'name' => $study['title'].' Approach',
             'anchor' => 'approach',
             'eyebrow' => 'Approach',
             'heading' => 'What We Built',
-            'body' => $study['approach_html'],
+            'body' => $this->htmlToNarrative($study['approach_html']),
             'media_id' => $mediaId,
+            'data' => ['list_heading' => 'What we delivered'],
             'settings' => [
                 'media_side' => 'end',
-                'media_shape' => 'landscape',
-                'list_columns' => 1,
+                'list_columns' => '1',
                 'accent' => $study['accent'],
                 'theme' => 'subtle',
                 'spacing' => 'lg',
@@ -216,16 +219,19 @@ class CaseStudyPagesSeeder extends CmsContentSeeder
         ]);
 
         foreach ($study['delivered'] as $i => $item) {
-            $this->block($approach, 'item', $i, ['label' => $item]);
+            $this->block($approach, 'point', $i, ['label' => $item]);
         }
 
-        $this->section($page, 'content.prose', 4, [
+        $this->section($page, 'case.narrative', 4, [
             'name' => $study['title'].' Outcome',
+            'anchor' => 'outcome',
+            'eyebrow' => 'Outcome',
             'heading' => 'What Happened Next',
-            'body' => $study['outcome_html'],
+            'body' => $this->htmlToNarrative($study['outcome_html']),
             'settings' => [
-                'measure' => 'prose',
-                'align' => 'start',
+                'media_side' => 'end',
+                'list_columns' => '1',
+                'accent' => $study['accent'],
                 'theme' => 'default',
                 'spacing' => 'default',
                 'animation' => 'fade',
