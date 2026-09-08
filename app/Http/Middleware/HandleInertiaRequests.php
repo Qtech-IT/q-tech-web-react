@@ -7,6 +7,7 @@ use App\Constants\GlobalConfig;
 use App\Enums\Settings\SettingKey;
 use App\Http\Resources\Backend\LanguageResource;
 use App\Http\Resources\Backend\UserResource;
+use App\Http\Services\Frontend\NavigationService;
 use App\Traits\Common\Fileable;
 use App\Traits\Common\ModelAction;
 use Illuminate\Http\Request;
@@ -57,7 +58,95 @@ class HandleInertiaRequests extends Middleware
                 'current_language' => fn (): string => app()->getLocale(),
                 'translations' => fn (): mixed => getTranslationsFlat(),
             ],
+
+            /*
+             * Public navigation, in the shape `resources/js/Types/navigation.ts`
+             * declares. Shared rather than per-controller because the header and
+             * footer render on every public page, and a controller that forgot
+             * to pass it would silently fall back to placeholder links.
+             *
+             * Guarded to public routes: the admin has its own sidebar and must
+             * not pay for this. The service caches per location, so the cost on
+             * a public request is a cache read, not a query.
+             */
+            'navigation' => fn (): ?array => $request->is('backend*')
+                ? null
+                : app(NavigationService::class)->siteNavigation(),
+
+            /*
+             * Public brand tokens, applied as CSS custom properties on the
+             * marketing root so an admin can rebrand without a deploy.
+             *
+             * Public routes only — the admin palette is a separate design
+             * system and must not move when someone picks a hero accent.
+             */
+            /*
+             * Shared on EVERY route, admin included.
+             *
+             * This was public-only at first, on the reasoning that a hero
+             * accent is rarely the right colour for a dense data table. That
+             * reasoning still holds for the neutral greys the admin is built
+             * from — but it does not justify the brand being invisible in the
+             * product an operator spends all day in, which is what the client
+             * asked for. The admin therefore adopts the brand at its ACCENT
+             * points only (primary buttons, active states); its surfaces,
+             * borders and text keep the tuned neutral scale, so contrast in
+             * tables cannot be broken by a colour chosen for a landing page.
+             */
+            'brand' => fn (): array => $this->getBrandTokens(),
         ];
+    }
+
+    /**
+     * Brand tokens for the public design system.
+     *
+     * Values are admin-authored and land in a `style` attribute, so each is
+     * sanitised: anything carrying `;`, `{`, `}` or a `url(`/`expression(`
+     * payload is dropped in favour of the built-in default rather than being
+     * written into the document. React sets custom properties through
+     * `setProperty`, which already prevents breaking out of the declaration,
+     * but a setting is a stored value edited by humans and validating it here
+     * costs nothing.
+     *
+     * @return array<string, string>
+     */
+    private function getBrandTokens(): array
+    {
+        $defaults = [
+            'accent' => 'oklch(0.55 0.19 258)',
+            'accentInk' => 'oklch(0.99 0 0)',
+            'accentDark' => 'oklch(0.72 0.15 258)',
+            'accentInkDark' => 'oklch(0.16 0.03 258)',
+            'radius' => '0.5rem',
+            'buttonPrimary' => '#111827',
+            'buttonPrimaryInk' => '#ffffff',
+            'buttonSecondary' => 'transparent',
+            'buttonSecondaryInk' => '#111827',
+        ];
+
+        $keys = [
+            'accent' => SettingKey::BRAND_ACCENT,
+            'accentInk' => SettingKey::BRAND_ACCENT_INK,
+            'accentDark' => SettingKey::BRAND_ACCENT_DARK,
+            'accentInkDark' => SettingKey::BRAND_ACCENT_INK_DARK,
+            'radius' => SettingKey::BRAND_RADIUS,
+            'buttonPrimary' => SettingKey::BRAND_BUTTON_PRIMARY,
+            'buttonPrimaryInk' => SettingKey::BRAND_BUTTON_PRIMARY_INK,
+            'buttonSecondary' => SettingKey::BRAND_BUTTON_SECONDARY,
+            'buttonSecondaryInk' => SettingKey::BRAND_BUTTON_SECONDARY_INK,
+        ];
+
+        $tokens = [];
+
+        foreach ($keys as $name => $key) {
+            $value = trim((string) site_settings($key->value));
+
+            $tokens[$name] = ($value !== '' && ! preg_match('/[;{}]|url\s*\(|expression\s*\(/i', $value))
+                ? $value
+                : $defaults[$name];
+        }
+
+        return $tokens;
     }
 
     /**
@@ -177,9 +266,17 @@ class HandleInertiaRequests extends Middleware
             SettingKey::LAYOUT->value,
             SettingKey::SIDEBAR->value,
             SettingKey::DIRECTION->value,
-            SettingKey::DEFAULT_CURRENCY->value,
-            SettingKey::CURRENCY_SYMBOL->value,
-            SettingKey::MINIMUM_PASSWORD_LENGTH->value,
+
+            /*
+             * The public footer's contact block. These three were already
+             * editable in the admin and already stored — they were simply
+             * never shared, so the footer's address, phone and email regions
+             * could not render and the brand column was a tall empty box no
+             * matter what an editor filled in.
+             */
+            SettingKey::ADDRESS->value,
+            SettingKey::COMPANY_PHONE->value,
+            SettingKey::COMPANY_EMAIL->value,
         ];
 
         $settings = [];

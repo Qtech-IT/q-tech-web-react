@@ -132,45 +132,7 @@ export function useSettingsConfig(timeZones = [], dateFormats = [], timeFormats 
                     description: t('Primary contact phone number for customer support and inquiries')
                 },
 
-                {
-                    name: 'site_settings.kyc_verification',
-                    label: t('KYC Verification') + ' ' + '(Trade)',
-                    type: 'select',
-                    gridColumn: 'span 2',
-                    required: true,
-                    section: 'basic',
-                    options: [
-                        {
-                            label: t('Active'),
-                            value: 'active'
-                        },
-                        {
-                            label: t('Inactive'),
-                            value: 'inactive'
-                        }
-                    ],
-                    description: t('Enable or disable KYC verification for new users')
-                },
 
-                {
-                    name: 'site_settings.email_verification',
-                    label: t('Email Verification'),
-                    type: 'select',
-                    gridColumn: 'span 2',
-                    required: true,
-                    section: 'basic',
-                    options: [
-                        {
-                            label: t('Active'),
-                            value: 'active'
-                        },
-                        {
-                            label: t('Inactive'),
-                            value: 'inactive'
-                        }
-                    ],
-                    description: t('Enable or disable Email verification for new users')
-                },
 
                 {
                     name: 'site_settings.copy_right_text',

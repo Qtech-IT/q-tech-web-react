@@ -1,21 +1,21 @@
 <?php
 
 use App\Enums\Common\Status;
-use App\Enums\User\RoleType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        $teams           = config('permission.teams');
-        $tableNames      = config('permission.table_names');
-        $columnNames     = config('permission.column_names');
-        $pivotRole       = $columnNames['role_pivot_key']       ?? 'role_id';
+        $teams = config('permission.teams');
+        $tableNames = config('permission.table_names');
+        $columnNames = config('permission.column_names');
+        $pivotRole = $columnNames['role_pivot_key'] ?? 'role_id';
         $pivotPermission = $columnNames['permission_pivot_key'] ?? 'permission_id';
 
         throw_if(empty($tableNames), Exception::class, 'Error: config/permission.php not loaded. Run [php artisan config:clear] and try again.');
@@ -32,7 +32,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->string('guard_name', 25);
             $table->boolean('is_group')->default(false); // Is this a permission group?
-			$table->integer('order_index')->default(0);
+            $table->integer('order_index')->default(0);
             $table->timestamps();
 
             $table->unique(['name', 'guard_name']);
@@ -53,7 +53,7 @@ return new class extends Migration {
             $table->boolean('is_super_admin')->default(false); // For superadmin role
             $table->integer('order_index')->default(0);
             $table->enum('status', Status::getValues())
-                                ->default(Status::ACTIVE);
+                ->default(Status::ACTIVE);
 
             $table->text('description')->nullable();
             $table->timestamps();

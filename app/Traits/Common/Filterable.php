@@ -7,10 +7,10 @@ use App\Enums\Common\QueryFormat;
 use App\Enums\Common\Status;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use function PHPUnit\Framework\isNumeric;
 
 /**
  * Trait Filterable
@@ -31,6 +31,16 @@ trait Filterable
 	 */
 	public function scopeRecycle(Builder $q): Builder
 	{
+		// `onlyTrashed()` only exists on models using SoftDeletes. Without this
+		// guard the scope throws BadMethodCallException on every model that
+		// does not soft-delete — e.g. `GET /backend/languages?is_trash=1`,
+		// since Language uses this trait but not SoftDeletes. ModelAction's
+		// bulk-status branch also calls recycle() unconditionally, and only
+		// avoided the error because the scope no-ops without `is_trash`.
+		if (! in_array(SoftDeletes::class, class_uses_recursive($this), true)) {
+			return $q;
+		}
+
 		return $q->when(
 		    request()->has('is_trash'),
 		    fn (Builder $query): Builder => $query->onlyTrashed()
@@ -136,7 +146,13 @@ trait Filterable
 		foreach ($fields as $requestField => $column) {
 			$column ??= $requestField;
 
-			if (isNumeric($requestField)) {
+			// PHP's native is_numeric. This previously called
+			// PHPUnit\Framework\isNumeric(), which (a) is a require-dev
+			// package, so it is a fatal undefined-function error under
+			// `composer install --no-dev`, and (b) returns a constraint
+			// OBJECT rather than a bool, so this branch was taken for every
+			// field, numeric key or not.
+			if (is_numeric($requestField)) {
 				$requestField = $column;
 			}
 

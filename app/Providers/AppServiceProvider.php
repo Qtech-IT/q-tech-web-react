@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Enums\Settings\SettingKey;
+use App\Http\Services\Backend\Cms\SectionTypeRegistry;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -16,7 +18,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // You can bind additional services here if needed
+        // The section type registry is a singleton: discovery and the §4.2
+        // self-check must happen once per process, not once per resolve.
+        //
+        // The self-check is a DEVELOPMENT assertion. It runs everywhere except
+        // production, so an illegal field descriptor fails on the developer's
+        // first local request rather than silently shipping; in production the
+        // same check is a CI step (`php artisan cms:validate-registry`).
+        $this->app->singleton(SectionTypeRegistry::class, function ($app): SectionTypeRegistry {
+            return new SectionTypeRegistry(
+                typeClasses: (array) config('cms.section_types', []),
+                selfCheck: ! $app->environment('production'),
+            );
+        });
     }
 
     /**
@@ -24,7 +38,23 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Builder::macro('findOrFailByUuid', function (string $uuid){
+        /*
+         * Morph map — NON-ENFORCING, deliberately.
+         *
+         * Relation::enforceMorphMap() is global and all-or-nothing: once
+         * called, any morph write whose class is absent from the map throws.
+         * Turning it on in the same release as the files backfill would mean a
+         * rollback leaves enforcement active against un-backfilled data, so
+         * the flip is deferred to a following release and gated on
+         *   SELECT DISTINCT fileable_type FROM files WHERE fileable_type LIKE 'App\\%'
+         * returning zero rows.
+         *
+         * Until then, reads resolve both aliases and raw FQCNs, which is what
+         * lets the legacy `files` rows keep working during the transition.
+         */
+        Relation::morphMap((array) config('morph-map.aliases', []));
+
+        Builder::macro('findOrFailByUuid', function (string $uuid) {
             /** @var Builder $this */
             return $this->where('uuid', $uuid)->firstOrfail();
         });

@@ -5,6 +5,7 @@ import { cn } from '@/Utils/helpers'
 import { useDirection } from '@/Contexts/Backend/DirectionProvider'
 import { useLayout } from '@/Contexts/Backend/LayoutProvider'
 import { useTheme } from '@/Contexts/ThemeProvider'
+import type { Theme } from '@/Types/theme'
 import { Button } from '@/Components/UI/Button'
 import {
   Sheet,
@@ -37,14 +38,21 @@ export function ConfigDrawer({ themeConfig: themeSetting }: ConfigDrawerProps) {
   const { loading: isSubmitting, errors: serverErrors, submit } = useInertiaForm()
   const { loading: isReseting, submit: submitFn } = useInertiaForm()
   const { setOpen } = useSidebar()
+  const { resetTheme } = useTheme()
 
   const {t} = useTranslations();
 
+  /**
+   * Layout and direction are site configuration and stay on the server; the
+   * theme is this admin's own cookie, so it is reset locally and deliberately
+   * left out of the payload — resetting a personal preference must not rewrite
+   * the public site's default.
+   */
   const handleReset = async () => {
     setOpen(true)
+    resetTheme()
     const postData = {
       site_settings: {
-        theme_mode: 'system',
         direction: 'ltr',
         sidebar: 'inset',
       },
@@ -74,7 +82,7 @@ export function ConfigDrawer({ themeConfig: themeSetting }: ConfigDrawerProps) {
           </SheetDescription>
         </SheetHeader>
         <div className="px-4 space-y-6 overflow-y-auto">
-          <ThemeConfig themeSetting={themeSetting} submit={submit} />
+          <ThemeConfig submit={submit} />
           <SidebarConfig themeSetting={themeSetting} submit={submit} />
           <DirConfig themeSetting={themeSetting} submit={submit} />
         </div>
@@ -182,8 +190,15 @@ interface ConfigSectionProps {
   submit: (data: any) => void
 }
 
-function ThemeConfig({ themeSetting, submit }: ConfigSectionProps) {
-  const { defaultTheme, theme, setTheme } = useTheme()
+/**
+ * The theme picker is the one control in this drawer that is *personal*, not
+ * site configuration: it writes the `qtech_theme` cookie through `setTheme()`
+ * and never contacts the server. Pushing it to `site_settings.theme_mode` — as
+ * it used to — changed the public default for every visitor and, since nothing
+ * fed the response back into the provider, did not repaint the current session.
+ */
+function ThemeConfig({ }: ConfigSectionProps) {
+  const { defaultTheme, theme, setTheme, resetTheme } = useTheme()
 
   const {t} = useTranslations();
 
@@ -192,11 +207,11 @@ function ThemeConfig({ themeSetting, submit }: ConfigSectionProps) {
       <SectionTitle
         title="Theme"
         showReset={theme !== defaultTheme}
-        onReset={() => onSettingsChange('theme_mode', defaultTheme, submit as any)}
+        onReset={resetTheme}
       />
       <Radio
         value={theme}
-        onValueChange={(theme) => onSettingsChange('theme_mode', theme, submit as any)}
+        onValueChange={(next) => setTheme(next as Theme)}
         className="grid w-full max-w-md grid-cols-3 gap-4"
         aria-label="Select theme preference"
         aria-describedby="theme-description"

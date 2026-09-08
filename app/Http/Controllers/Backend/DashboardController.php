@@ -2,25 +2,30 @@
 
 namespace App\Http\Controllers\Backend;
 
-use App\Enums\Settings\SettingKey;
 use App\Http\Controllers\Controller;
-use App\Models\Crypto;
-use App\Models\Deposit;
-use App\Models\Trade;
-use App\Models\User;
-use App\Models\Withdraw;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use App\Http\Services\Backend\DashboardService;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class DashboardController extends Controller
 {
-     public function index()
+    /**
+     * Constructor to inject services.
+     */
+    public function __construct(
+        protected DashboardService $service
+    ) {}
+
+    /**
+     * The admin landing page: headline CMS metrics and a recent-activity list.
+     */
+    public function index(): Response
     {
         $this->authorize('view', 'dashboard');
 
         return Inertia::render('Backend/Dashboard/Index', [
-            'currency_symbol' => site_settings(SettingKey::CURRENCY_SYMBOL->value, '$'),
+            'stats' => $this->service->stats(),
+            'recentPages' => $this->service->recentPages(),
         ]);
     }
 }

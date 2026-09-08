@@ -14,6 +14,12 @@ interface SheetContentProps extends React.ComponentProps<typeof SheetPrimitive.C
   className?: string
   side?: 'left' | 'right' | 'top' | 'bottom'
   children: React.ReactNode
+  /**
+   * Suppress the built-in corner close button so the sheet can supply its own.
+   * The consumer is then responsible for rendering a `SheetClose` — Escape and
+   * outside-click still dismiss, but a pointer user needs a visible control.
+   */
+  hideClose?: boolean
 }
 interface SheetHeaderProps extends React.ComponentProps<'div'> {
   className?: string
@@ -57,7 +63,13 @@ function SheetOverlay({ className, ...props }: SheetOverlayProps) {
   )
 }
 
-function SheetContent({ className, children, side = 'right', ...props }: SheetContentProps) {
+function SheetContent({
+  className,
+  children,
+  side = 'right',
+  hideClose = false,
+  ...props
+}: SheetContentProps) {
   return (
     <SheetPortal>
       <SheetOverlay />
@@ -78,10 +90,12 @@ function SheetContent({ className, children, side = 'right', ...props }: SheetCo
         {...props}
       >
         {children}
-        <SheetPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute end-4 top-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
-          <XIcon className="size-4" />
-          <span className="sr-only">Close</span>
-        </SheetPrimitive.Close>
+        {hideClose ? null : (
+          <SheetPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute end-4 top-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
+            <XIcon className="size-4" />
+            <span className="sr-only">Close</span>
+          </SheetPrimitive.Close>
+        )}
       </SheetPrimitive.Content>
     </SheetPortal>
   )

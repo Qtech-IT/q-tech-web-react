@@ -1,4 +1,5 @@
 <?php
+
 namespace Database\Seeders\Permissions;
 
 use Database\Seeders\BasePermissionSeeder;

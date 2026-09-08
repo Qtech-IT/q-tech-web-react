@@ -7,24 +7,26 @@ import { cn } from '@/Utils/helpers'
 /**
  * Horizontal measure + gutters for every public surface.
  *
- * Widths and gutters come from the `--container-*` / `--gutter` tokens rather
- * than Tailwind's breakpoint scale, so changing the site's measure is a
- * one-token edit instead of a find-and-replace across every section.
+ * Widths and gutters come from the public design system's `--fx-measure-*` /
+ * `--fx-gutter` tokens (see `resources/css/frontend.css`), so changing the
+ * site's measure is a one-token edit instead of a find-and-replace across every
+ * section — and so the marketing measure can be wider and airier than the
+ * admin's without the two ever sharing a number.
  */
 const containerVariants = cva('mx-auto w-full', {
   variants: {
     size: {
-      /** 1280px — default reading/content width. */
-      default: 'max-w-(--container-max)',
+      /** 1320px — default reading/content width. */
+      default: 'max-w-fx-page',
       /** 1440px — feature rows that need more air. */
-      wide: 'max-w-(--container-wide)',
-      /** 768px — prose measure; keeps line length readable. */
-      narrow: 'max-w-(--container-narrow)',
+      wide: 'max-w-fx-wide',
+      /** 704px — prose measure; keeps line length near 72ch. */
+      narrow: 'max-w-fx-prose',
       /** No clamp; the child manages its own width. */
       full: 'max-w-none',
     },
     gutter: {
-      true: 'px-(--gutter)',
+      true: 'px-fx-gutter',
       false: '',
     },
   },

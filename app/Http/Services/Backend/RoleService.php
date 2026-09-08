@@ -4,7 +4,6 @@ namespace App\Http\Services\Backend;
 
 use App\Enums\Common\Status;
 use App\Enums\Settings\InputEnum;
-use App\Enums\User\RoleType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -21,26 +20,23 @@ class RoleService
     public function getAllRoles(): LengthAwarePaginator
     {
         $query = Role::where('is_super_admin', false)
-                 ->withCount(['permissions']);
+            ->withCount(['permissions']);
 
         $this->applyRoleFilters($query);
 
         return $query
-                    ->latest()
-                    ->paginate(paginateNumber())
-                    ->appends(request()->all());
+            ->latest()
+            ->paginate(paginateNumber())
+            ->appends(request()->all());
     }
 
     /**
      * Summary of applyRoleFilters
-     * @param Builder $query
-     * @return Builder
      */
     private function applyRoleFilters(Builder $query): Builder
     {
         $search = request()->input('search');
         $status = request()->input('status');
-        $type   = request()->input('type');
 
         return $query
             ->when($search, function (Builder $q) use ($search) {
@@ -49,18 +45,18 @@ class RoleService
                         ->orWhere('display_name', 'like', "%{$search}%");
                 });
             })
-            ->when($status, fn (Builder $q) => $q->where('status', $status))
-            ->when($type, fn (Builder $q) => $q->where('type', $type));
+            ->when($status, fn (Builder $q) => $q->where('status', $status));
     }
 
     /**
      * Summary of getActiveRoles
+     *
      * @return Collection<int, TModel>
      */
     public function getActiveRoles(): Collection
     {
         $query = Role::where('is_super_admin', false)
-                      ->where('status', Status::ACTIVE->value);
+            ->where('status', Status::ACTIVE->value);
 
         // $this->applyRoleFilters($query);
 
@@ -73,18 +69,17 @@ class RoleService
     public function createRoleWithPermissions(array $data): Role
     {
         $role = Role::create([
-                    'name'           => $data['name'],
-                    'display_name'   => $data['display_name'],
-                    'guard_name'     => 'web',
-                    'description'    => $data['description'] ?? null,
-                    'order_index'    => $data['order_index'] ?? 0,
-                    'is_super_admin' => false,
-                    'type'           => $data['type']   ?? RoleType::DEFAULT->value,
-                    'status'         => $data['status'] ?? Status::ACTIVE->value,
-                ]);
+            'name' => $data['name'],
+            'display_name' => $data['display_name'],
+            'guard_name' => 'web',
+            'description' => $data['description'] ?? null,
+            'order_index' => $data['order_index'] ?? 0,
+            'is_super_admin' => false,
+            'status' => $data['status'] ?? Status::ACTIVE->value,
+        ]);
 
         // Sync permissions if provided
-        if (!empty($data['permissions'])) {
+        if (! empty($data['permissions'])) {
             $role->syncPermissions($data['permissions']);
         }
 
@@ -93,16 +88,14 @@ class RoleService
 
     /**
      * Summary of cloneRoleWithPermissions
-     * @param Role $role
-     * @return void
      */
     public function cloneRoleWithPermissions(Role $role): void
     {
         $uniqueId = time();
 
         $clonedRole = $role->replicate()->fill([
-            'name'         => $role->name . '_clone_' . $uniqueId,
-            'display_name' => $role->display_name . ' (Clone)',
+            'name' => $role->name.'_clone_'.$uniqueId,
+            'display_name' => $role->display_name.' (Clone)',
         ]);
 
         $clonedRole->save();
@@ -117,12 +110,11 @@ class RoleService
     public function updateRoleWithPermissions(Role $role, array $data): Role
     {
         $role->update([
-            'name'         => $data['name']         ?? $role->name,
+            'name' => $data['name'] ?? $role->name,
             'display_name' => $data['display_name'] ?? $role->display_name,
-            'description'  => $data['description']  ?? $role->description,
-            'order_index'  => $data['order_index']  ?? $role->order_index,
-            'status'       => $data['status']       ?? $role->status,
-             'type'        => $data['type']         ?? $role->type,
+            'description' => $data['description'] ?? $role->description,
+            'order_index' => $data['order_index'] ?? $role->order_index,
+            'status' => $data['status'] ?? $role->status,
         ]);
 
         // Sync permissions if provided
@@ -142,26 +134,27 @@ class RoleService
             throw new \Exception(translate('Super admin role cannot be deleted.'));
         }
         $role->delete();
+
         return true;
     }
 
     /**
      * Summary of buildTree
-     * @param mixed $permissions
-     * @param mixed $parentId
-     * @return mixed
+     *
+     * @param  mixed  $permissions
+     * @param  mixed  $parentId
      */
     private function buildTree($permissions, $parentId = null): mixed
     {
-        return $permissions->where('parent_id', $parentId)->map(function($perm) use ($permissions): array
-        {
+        return $permissions->where('parent_id', $parentId)->map(function ($perm) use ($permissions): array {
             $children = $this->buildTree($permissions, $perm->id);
+
             return [
-                'id'           => $perm->id,
-                'name'         => $perm->name,
+                'id' => $perm->id,
+                'name' => $perm->name,
                 'display_name' => $perm->display_name,
-                'action'       => $perm->action,
-                'children'     => $children->toArray()
+                'action' => $perm->action,
+                'children' => $children->toArray(),
             ];
         });
     }
@@ -172,33 +165,32 @@ class RoleService
     public function getPermissionsGrouped(): array
     {
         $permissions = Permission::where('guard_name', 'web')
-                                ->orderBy('order_index')
-                                ->orderBy('module')
-                                ->get();
+            ->orderBy('order_index')
+            ->orderBy('module')
+            ->get();
 
         return $this->buildTree($permissions)->toArray();
     }
 
     /**
      * Summary of getNonGroupChildPermissions
-     * @return array
      */
     public function getNonGroupChildPermissions(): array
     {
         return Permission::where('is_group', false)
-                    ->whereNotNull('parent_id')
-                    ->orderBy('parent_id')
-                    ->orderBy('order_index')
-                    ->get()
-                    ->map(function (Permission $perm) {
-                        return [
-                            'id'           => $perm->id,
-                            'name'         => $perm->name,
-                            'display_name' => $perm->display_name,
-                        ];
-                    })
-                    ->values()
-                    ->toArray();
+            ->whereNotNull('parent_id')
+            ->orderBy('parent_id')
+            ->orderBy('order_index')
+            ->get()
+            ->map(function (Permission $perm) {
+                return [
+                    'id' => $perm->id,
+                    'name' => $perm->name,
+                    'display_name' => $perm->display_name,
+                ];
+            })
+            ->values()
+            ->toArray();
     }
 
     /**
@@ -207,9 +199,9 @@ class RoleService
     public function getAllPermissions(): Collection
     {
         return Permission::where('guard_name', 'web')
-                            ->orderBy('module')
-                            ->orderBy('order_index')
-                            ->get();
+            ->orderBy('module')
+            ->orderBy('order_index')
+            ->get();
     }
 
     /**
@@ -234,8 +226,8 @@ class RoleService
     public function getSuperAdminRoles()
     {
         return Role::where('is_super_admin', true)
-                            ->orderBy('created_at', 'desc')
-                            ->get();
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
     /**
@@ -252,8 +244,8 @@ class RoleService
     public function getRolesByStatus(string $status): Collection
     {
         return Role::where('status', $status)
-                                ->orderBy('created_at', 'desc')
-                                ->get();
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
     /**
@@ -262,8 +254,8 @@ class RoleService
     public function getRolesByGuard(string $guardName): Collection
     {
         return Role::where('guard_name', $guardName)
-                        ->orderBy('created_at', 'desc')
-                        ->get();
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
     /**
@@ -272,47 +264,39 @@ class RoleService
     public function getRoleStatistics(): array
     {
         return [
-                'total'  => $this->getTotalRoles(),
-                'active' => Role::where('is_super_admin', false)
-                                            ->where('status', Status::ACTIVE->value)
-                                            ->count(),
-                'inactive' => Role::where('is_super_admin', false)
-                                            ->where('status', Status::INACTIVE->value)
-                                            ->count(),
-                'assigned' => Role::where('is_super_admin', false)
-                                           ->whereIn('id', function ($query) {
-                                                $query->select('role_id')
-                                                    ->from('model_has_roles')
-                                                    ->distinct();
-                                            })->count()
-            ];
+            'total' => $this->getTotalRoles(),
+            'active' => Role::where('is_super_admin', false)
+                ->where('status', Status::ACTIVE->value)
+                ->count(),
+            'inactive' => Role::where('is_super_admin', false)
+                ->where('status', Status::INACTIVE->value)
+                ->count(),
+            'assigned' => Role::where('is_super_admin', false)
+                ->whereIn('id', function ($query) {
+                    $query->select('role_id')
+                        ->from('model_has_roles')
+                        ->distinct();
+                })->count(),
+        ];
     }
 
     /**
      * Summary of getAdvanceFilter
+     *
      * @return array[]
      */
     public function getAdvanceFilterOptions(): array
     {
         return [
-             [
-                'key'     => 'type',
-                'label'   => translate('Role Type'),
-                'type'    => InputEnum::SELECT->value,
-                'options' => [
-                                ['value' => '',         'label' => translate('All Types')],
-                                ...RoleType::options(),
-                            ],
-                        ],
             [
-                'key'     => 'status',
-                'label'   => translate('Status'),
-                'type'    => InputEnum::SELECT->value,
+                'key' => 'status',
+                'label' => translate('Status'),
+                'type' => InputEnum::SELECT->value,
                 'options' => [
-                                ['value' => '',         'label' => translate('All Status')],
-                                ...Status::options(),
-                            ],
-            ]
+                    ['value' => '',         'label' => translate('All Status')],
+                    ...Status::options(),
+                ],
+            ],
         ];
     }
 }

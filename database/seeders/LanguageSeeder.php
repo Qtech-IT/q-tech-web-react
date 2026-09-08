@@ -14,22 +14,20 @@ class LanguageSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-
-    
     public function run(): void
     {
-        
-        $langService = new LanguageService();
+
+        $langService = new LanguageService;
 
         foreach (Languages::ALL as $lang) {
 
-            $code = $lang['code'] ;
+            $code = $lang['code'];
 
             Language::updateOrCreate(
                 ['code' => $code],
                 [
-                    'name'       => $lang['name'],
-                    'direction'  => $lang['direction'],
+                    'name' => $lang['name'],
+                    'direction' => $lang['direction'],
                     'is_default' => false,
                 ]
             );

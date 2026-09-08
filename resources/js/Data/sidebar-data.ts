@@ -1,23 +1,30 @@
 import type { SidebarGroup } from '@/Types/User';
 import {
   Bell,
+  Blocks,
   Clock,
   Cog,
-  Coins,
   DatabaseBackup,
+  Files,
+  FolderTree,
   HardDrive,
+  Images,
   Info,
   Languages,
   LayoutDashboard,
   ListChecks,
+  ListTree,
+  Inbox,
+  MousePointerClick,
+  Network,
+  Send,
+  Signpost,
+  Users,
   LucideMailCheck,
-  LucideTrendingUpDown,
   Settings,
   Shield,
   User,
   UserCog,
-  Users,
-  Wallet,
   Zap
 } from 'lucide-react';
 import { route } from 'ziggy-js';
@@ -71,6 +78,78 @@ export const sidebarData: SidebarData = {
     },
 
 
+    // 4. Content
+    {
+      title: 'Content',
+      permissionsAny: [
+        'page.view',
+        'block.view',
+        'cta.view',
+        'menu.view',
+        'media.view',
+        'folder.view',
+        'redirect.view',
+      ],
+      items: [
+        {
+          title: 'Pages',
+          url: route('backend.pages.index'),
+          icon: Files,
+          permission: 'page.view',
+        },
+        {
+          /* The same rows as Pages, nested by parent — the only screen that
+             shows a page's place in the hierarchy and can reparent it. */
+          title: 'Page Tree',
+          url: route('backend.pages.tree'),
+          icon: Network,
+          permission: 'page.view',
+        },
+        {
+          title: 'Global Blocks',
+          url: route('backend.blocks.index'),
+          icon: Blocks,
+          permission: 'block.view',
+        },
+        {
+          title: 'Call To Actions',
+          url: route('backend.ctas.index'),
+          icon: MousePointerClick,
+          permission: 'cta.view',
+        },
+        {
+          title: 'Menus',
+          url: route('backend.menus.index'),
+          icon: ListTree,
+          permission: 'menu.view',
+        },
+        {
+          title: 'Media',
+          icon: Images,
+          items: [
+            {
+              title: 'Media Library',
+              url: route('backend.media.index'),
+              icon: Images,
+              permission: 'media.view',
+            },
+            {
+              title: 'Folders',
+              url: route('backend.media-folders.index'),
+              icon: FolderTree,
+              permission: 'folder.view',
+            },
+          ],
+        },
+        {
+          title: 'Redirects',
+          url: route('backend.redirects.index'),
+          icon: Signpost,
+          permission: 'redirect.view',
+        },
+      ],
+    },
+
     // 6. Notifications
     {
       title: 'Notifications',
@@ -93,6 +172,37 @@ export const sidebarData: SidebarData = {
           url: route('backend.notification-logs.index'),
           icon: Bell,
           permission: 'notification-log.view'
+        },
+      ],
+    },
+
+    // 6b. Marketing
+    {
+      title: 'Marketing',
+      permissionsAny: [
+        'contact-submission.view',
+        'subscriber.view',
+        'contact-submission.reply',
+        'subscriber.mail'
+      ],
+      items: [
+        {
+          title: 'Contact Enquiries',
+          url: route('backend.contact-submissions.index'),
+          icon: Inbox,
+          permission: 'contact-submission.view'
+        },
+        {
+          title: 'Newsletter Subscribers',
+          url: route('backend.subscribers.index'),
+          icon: Users,
+          permission: 'subscriber.view'
+        },
+        {
+          title: 'Send Campaign',
+          url: route('backend.marketing.bulk-mail.index'),
+          icon: Send,
+          permissionsAny: ['contact-submission.reply', 'subscriber.mail']
         },
       ],
     },

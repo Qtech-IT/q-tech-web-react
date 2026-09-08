@@ -68,7 +68,6 @@ export function useRoleConfig(props: CrudPageProps): CrudConfig {
         .default(''),
 
       status: z.string().min(1, 'Status is required'),
-      type: z.string().min(1, 'Type is required'),
 
       order_index: z.any().optional()
 
@@ -125,16 +124,6 @@ export function useRoleConfig(props: CrudPageProps): CrudConfig {
           section: 'grid',
         },
 
-
-        {
-          name: 'type',
-          label: 'Type',
-          type: 'select',
-          description: t('Role type'),
-          required: true,
-          options: roleTypes,
-          section: 'grid',
-        },
 
 
         {
@@ -344,8 +333,8 @@ export function useRoleConfig(props: CrudPageProps): CrudConfig {
             'span',
             {
               className: `inline-flex items-center px-2 py-1 rounded-full text-xs font-medium capitalize ${status === 'active'
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                  : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                 }`
             },
             status

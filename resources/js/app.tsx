@@ -152,5 +152,33 @@ createInertiaApp({
     },
 });
 
-// Listen for page changes to update meta tags
-router.on('navigate', (event: any) => { });
+/*
+ * Report a page view to Google Analytics on every Inertia navigation.
+ *
+ * The gtag / GTM library itself is loaded once from the Blade shell
+ * (`resources/views/partials/analytics.blade.php`) so it survives client-side
+ * visits; only the per-visit `page_view` has to be fired by hand, because
+ * Inertia never triggers a real browser navigation for gtag to observe.
+ * A no-op when analytics is not configured.
+ */
+router.on('navigate', () => {
+    const w = window as unknown as {
+        gtag?: (...args: unknown[]) => void
+        dataLayer?: unknown[]
+    }
+
+    if (typeof w.gtag === 'function') {
+        w.gtag('event', 'page_view', {
+            page_location: window.location.href,
+            page_path: window.location.pathname + window.location.search,
+            page_title: document.title,
+        })
+    } else if (Array.isArray(w.dataLayer)) {
+        // Tag Manager: let the container decide what to do with the event.
+        w.dataLayer.push({
+            event: 'spa_page_view',
+            page_location: window.location.href,
+            page_path: window.location.pathname + window.location.search,
+        })
+    }
+});

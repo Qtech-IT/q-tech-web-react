@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\System\CacheKey;
+use App\Jobs\Cms\PublishScheduledContentJob;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Cache;
@@ -42,3 +43,15 @@ Schedule::call(function () {
 
 Schedule::command('horizon:snapshot:custom')
 	->everyFiveMinutes();
+
+/*
+ * The CMS janitor. Not on the critical path: the ->published() scope already
+ * admits a scheduled row the moment its published_at passes, so content goes
+ * live whether or not this ever runs. This keeps publish_status honest for
+ * admin filters and the sitemap, and fires the cache invalidation a pure
+ * query-time check cannot.
+ */
+Schedule::job(new PublishScheduledContentJob())
+	->everyFiveMinutes()
+	->withoutOverlapping()
+	->onFailure(fn () => Log::error('CMS scheduled-content janitor failed'));

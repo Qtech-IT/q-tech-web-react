@@ -1,3 +1,4 @@
+import type { BrandTokens } from "../brand";
 import type { Admin, User } from "../User";
 import type { InertiaPage } from "./page";
 import type { PageProps } from "@inertiajs/core"; 
@@ -18,6 +19,13 @@ export interface SharedProps  extends PageProps{
   };
   theme: string;
   site_theme_settings: Record<string, any>;
+  /**
+   * Admin-authored brand. Sent on EVERY route, including `/backend` — the
+   * admin adopts it at its accent points only (see `BaseLayout`). Optional
+   * because a shared prop must survive the server sending less than it
+   * promises.
+   */
+  brand?: BrandTokens | null;
   logos: Record<string, string>;
   pending_report_counter: {
     pending_contacts: number | string;

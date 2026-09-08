@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { toast as reactHotToast } from "react-hot-toast";
-import { twMerge } from "tailwind-merge";
+import { extendTailwindMerge } from "tailwind-merge";
 
 /**
  * Get asset URL
@@ -11,6 +11,77 @@ export const getAssetUrl = (path: string): string => `/${path}`;
  * Get uploaded image URL
  */
 export const getUploadUrl = (path: string): string => `/images/uploads/${path}`;
+
+/**
+ * The project's fluid type scale, declared in `resources/css/theme.css`.
+ *
+ * tailwind-merge only knows Tailwind's stock font sizes, so it classifies
+ * `text-display` / `text-h2` / `text-overline` as TEXT COLOUR utilities. That
+ * put them in the same conflict group as `text-muted-foreground`, and
+ * `cn('text-overline text-muted-foreground')` silently dropped the size —
+ * which is invisible in review and only shows up as ragged typography on the
+ * page. Registering them as font sizes is what makes the tokens usable
+ * alongside a colour class.
+ */
+const TYPE_SCALE = [
+  "display",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "body-lg",
+  "body",
+  "body-sm",
+  "caption",
+  "overline",
+  // Public-site scale, declared in `resources/css/frontend.css`. Same reason:
+  // without these, `cn('text-fx-display text-fx-ink')` would drop the size.
+  "fx-display",
+  "fx-title",
+  "fx-heading",
+  "fx-subheading",
+  "fx-stat",
+  "fx-lead",
+  "fx-body",
+  "fx-body-sm",
+  "fx-meta",
+  "fx-label",
+  "fx-eyebrow",
+] as const;
+
+/**
+ * The public site's radius scale, declared in `resources/css/frontend.css`.
+ *
+ * Registered for exactly the reason the type scale above is, and it is not
+ * cosmetic: `Components/UI/Button` carries the admin's `rounded-md` in its
+ * base class string, so a public caller writing
+ * `cn(fxButton(...), 'rounded-fx-pill')` produced BOTH classes — tailwind-merge
+ * had no idea they were the same property — and `rounded-md` is emitted after
+ * `rounded-fx-pill` in the stylesheet, so the admin radius silently won every
+ * time. Every "pill" button on the public site was rendering as a 6px
+ * rectangle. Naming the scale here is what makes the override actually
+ * override.
+ */
+const RADIUS_SCALE = [
+  "fx-xs",
+  "fx-sm",
+  "fx-md",
+  "fx-lg",
+  "fx-xl",
+  "fx-2xl",
+  "fx-pill",
+] as const;
+
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      "font-size": [{ text: [...TYPE_SCALE] }],
+      rounded: [{ rounded: [...RADIUS_SCALE] }],
+    },
+  },
+});
 
 /**
  * Merge class names
@@ -404,6 +475,25 @@ export function getGridColSpan(gridColumn: string | undefined): string {
 
 
 
+
+/**
+ * Sentinel for a Radix `SelectItem` that means "no value".
+ *
+ * Radix throws `A <Select.Item /> must have a value prop that is not an empty
+ * string`, because it reserves `''` for clearing the trigger. Option lists —
+ * both the CRUD configs and every server-built `advanceFilterOptions` /
+ * "All statuses" list — legitimately contain an empty-valued entry, so it is
+ * rendered under this sentinel and mapped back to `null` before submit.
+ */
+export const EMPTY_SELECT_VALUE = '__none__';
+
+/** Whether an option or form value represents "nothing selected". */
+export const isEmptySelectValue = (value: unknown): boolean =>
+  value === '' ||
+  value === null ||
+  value === undefined ||
+  value === 'null' ||
+  value === EMPTY_SELECT_VALUE;
 
 /**
  * Check if user has permission for a single item

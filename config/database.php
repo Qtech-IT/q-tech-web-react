@@ -55,9 +55,14 @@ return [
                         'prefix_indexes' => true,
                         'strict'         => true,
                         'engine'         => null,
-                       'options'         => extension_loaded('pdo_mysql') ? array_filter([
-                            (class_exists(\Pdo\Mysql::class) ? \Pdo\Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
-                        ]) : [],
+                        // PDO::MYSQL_ATTR_SSL_CA is deprecated as of PHP 8.5 in
+                        // favour of Pdo\Mysql::ATTR_SSL_CA; naming it at all emits
+                        // a deprecation notice. The option is contributed only when
+                        // a CA path is actually configured, so neither the branch
+                        // nor the constant is touched on a plain connection.
+                       'options'         => extension_loaded('pdo_mysql') && env('MYSQL_ATTR_SSL_CA')
+                            ? [\Pdo\Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA')]
+                            : [],
         ],
 
         'mariadb' => [
@@ -75,9 +80,12 @@ return [
             'prefix_indexes' => true,
             'strict'         => true,
             'engine'         => null,
-           'options'         => extension_loaded('pdo_mysql') ? array_filter([
-                (class_exists(\Pdo\Mysql::class) ? \Pdo\Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
+            // Same as the mysql connection above: Pdo\Mysql::ATTR_SSL_CA replaces
+            // the PHP 8.5-deprecated PDO::MYSQL_ATTR_SSL_CA, referenced only when
+            // a CA path is configured.
+           'options'         => extension_loaded('pdo_mysql') && env('MYSQL_ATTR_SSL_CA')
+                ? [\Pdo\Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA')]
+                : [],
         ],
 
         'pgsql' => [

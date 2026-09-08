@@ -1,5 +1,5 @@
 import { Loader } from 'lucide-react'
-import { cn } from '@/Utils/helpers'
+import { cn, isEmptySelectValue } from '@/Utils/helpers'
 import { FormControl } from '@/Components/UI/Form'
 import {
   Select,
@@ -54,7 +54,10 @@ export function SelectDropdown({
             </div>
           </SelectItem>
         ) : (
-          items?.map(({ label, value }) => (
+          /* Radix rejects `value=""`, so a caller's placeholder-style option
+             is dropped here — `SelectValue`'s placeholder already covers it. */
+          items?.filter(({ value }) => !isEmptySelectValue(value))
+            .map(({ label, value }) => (
             <SelectItem key={value} value={value}>
               {label}
             </SelectItem>

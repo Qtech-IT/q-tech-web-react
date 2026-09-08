@@ -32,6 +32,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // first paint, so it must stay readable (unencrypted, not httpOnly).
         $middleware->encryptCookies(except: [
             GlobalConfig::THEME_COOKIE_NAME,
+            // The resolved public locale. Non-sensitive, and read as plain
+            // text by LanguageMiddleware and by an edge/CDN rule that may want
+            // to vary its cache on it.
+            'locale',
         ]);
 
         $middleware->web(append: [

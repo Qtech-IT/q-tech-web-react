@@ -18,13 +18,25 @@ interface ValidationErrors {
     [key: string]: string | string[];
 }
 
+/**
+ * A stable id derived from the message text.
+ *
+ * react-hot-toast treats a repeated `id` as an UPDATE rather than a new toast.
+ * Flash-driven toasts need that: a successful action redirects with a flash
+ * message, and any partial reload that follows (the CMS builder reloads after
+ * every mutation) re-delivers the same `flash` prop, so the effect fires again
+ * and the user sees the same message stacked twice. Keying by content collapses
+ * those into one.
+ */
+const idFor = (kind: string, message: string): string => `${kind}:${message}`;
+
 export const showToast = {
     success: (message: string): string => {
-        return reactHotToast.success(message);
+        return reactHotToast.success(message, { id: idFor('success', message) });
     },
 
     error: (message: string): string => {
-        return reactHotToast.error(message);
+        return reactHotToast.error(message, { id: idFor('error', message) });
     },
 
     loading: (message: string): string => {
