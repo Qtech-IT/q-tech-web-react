@@ -8,6 +8,7 @@ use App\Enums\Settings\SettingKey;
 use App\Http\Resources\Backend\LanguageResource;
 use App\Http\Resources\Backend\UserResource;
 use App\Http\Services\Frontend\NavigationService;
+use App\Http\Services\Frontend\PublicTranslationService;
 use App\Traits\Common\Fileable;
 use App\Traits\Common\ModelAction;
 use Illuminate\Http\Request;
@@ -56,7 +57,25 @@ class HandleInertiaRequests extends Middleware
             'language_settings' => [
                 'available_languages' => formatResourceResponse(site_languages(), LanguageResource::class),
                 'current_language' => fn (): string => app()->getLocale(),
-                'translations' => fn (): mixed => getTranslationsFlat(),
+
+                /*
+                 * Scoped to the area being rendered.
+                 *
+                 * The full dictionary is 3,590 keys / ~270 KB of JSON, and
+                 * Inertia re-sends shared props on EVERY client-side visit — so
+                 * an anonymous visitor was downloading the entire admin
+                 * dictionary again on every navigation. The public bundle calls
+                 * ~300 of those keys; filtering to them takes this prop to
+                 * ~13 KB and is the single largest win available on the public
+                 * site.
+                 *
+                 * The admin still gets everything: it is behind auth, used by a
+                 * handful of operators, and its screens genuinely span the whole
+                 * dictionary.
+                 */
+                'translations' => fn (): mixed => $request->is('backend', 'backend/*')
+                    ? getTranslationsFlat()
+                    : app(PublicTranslationService::class)->forLocale(app()->getLocale()),
             ],
 
             /*
