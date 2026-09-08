@@ -31,7 +31,13 @@ class SubscriptionService
      *
      * @param  array{email: string, source?: string|null}  $data
      */
-    public function subscribe(array $data, Request $request): Subscriber
+    /**
+     * `$isSpam` (honeypot tripped) still records the signup, but as an inactive
+     * row and with no `subscribed` state, so a real person whose browser
+     * autofilled the hidden field is recoverable from the admin instead of
+     * silently lost.
+     */
+    public function subscribe(array $data, Request $request, bool $isSpam = false): Subscriber
     {
         $subscriber = Subscriber::withTrashed()->firstOrNew([
             'site_id' => (int) config('cms.site_id'),
@@ -54,9 +60,22 @@ class SubscriptionService
         ]);
 
         // Not fillable: consent is set here or nowhere. See the model.
-        $subscriber->subscription_status = SubscriberStatus::SUBSCRIBED;
+        $subscriber->subscription_status = $isSpam
+            ? SubscriberStatus::PENDING
+            : SubscriberStatus::SUBSCRIBED;
+
+        if ($isSpam) {
+            $subscriber->status = \App\Enums\Common\Status::INACTIVE;
+        }
 
         $subscriber->save();
+
+        if ($isSpam) {
+            \Illuminate\Support\Facades\Log::info('Newsletter signup flagged as spam by honeypot', [
+                'subscriber' => $subscriber->uuid,
+                'ip' => $request->ip(),
+            ]);
+        }
 
         return $subscriber;
     }

@@ -4,7 +4,7 @@
 @endphp
 
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"@if ($themePreference === \App\Enums\Common\Theme::DARK->value) class="dark"@endif @unless ($isSystemTheme) style="color-scheme: {{ $themePreference }}"@endunless>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ locale_direction() }}"@if ($themePreference === \App\Enums\Common\Theme::DARK->value) class="dark"@endif @unless ($isSystemTheme) style="color-scheme: {{ $themePreference }}"@endunless>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,6 +18,11 @@
            {{ site_settings('site_name') }}
         </title>
 
+        {{-- Analytics / ads on public pages only; the admin panel never loads them. --}}
+        @unless (request()->is('backend', 'backend/*'))
+            @include('partials.analytics')
+        @endunless
+
         @routes
         @viteReactRefresh
 
@@ -29,6 +34,14 @@
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
+        @unless (request()->is('backend', 'backend/*'))
+            @php($gtmId = site_analytics()['gtm'])
+            @if ($gtmId)
+                <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ $gtmId }}"
+                        height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            @endif
+        @endunless
+
         @inertia
     </body>
 </html>

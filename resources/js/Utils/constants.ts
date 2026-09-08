@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   Cpu,
   HardDrive,
   Image,
@@ -67,6 +68,7 @@ export const settingsNavItems: SettingsNavItem[] = [
   //   title: 'Support Settings', exact: true, href: route('backend.settings.support'), icon: UserCog, group: "general"
   // },
   { title: "Logo", exact: true, href: route('backend.settings.logo'), icon: Image, group: "general" },
+  { title: "SEO & Analytics", exact: true, href: route('backend.settings.seo'), icon: BarChart3, group: "general" },
   { title: "Storage", exact: true, href: route('backend.settings.storage'), icon: HardDrive, group: "general" },
   // { title: "Currency", exact: true, href: route('backend.settings.currency'), icon: CurrencyIcon, group: "general" },
   { title: "Security Center", exact: true, href: route('backend.settings.security'), icon: Shield, group: "security" },

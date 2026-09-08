@@ -131,6 +131,18 @@ function ContactForm({
   const set = (key: keyof typeof values) => (event: { target: { value: string } }) =>
     setValues((current) => ({ ...current, [key]: event.target.value }))
 
+  /*
+   * Any server error that is not tied to a field this form renders — a rate
+   * limit notice, a rejected `section`/`source`, an unexpected 4xx delivered
+   * as an error bag. Without surfacing it, the response lands nowhere and the
+   * form just sits there as if the click did nothing.
+   */
+  const RENDERED_FIELDS = ['name', 'email', 'company', 'phone', 'message', 'consent']
+  const generalErrorKey = Object.keys(errors).find((key) => !RENDERED_FIELDS.includes(key))
+  const generalError = generalErrorKey
+    ? firstError(errors, generalErrorKey) ?? t('Something went wrong. Please try again.')
+    : undefined
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
@@ -264,6 +276,12 @@ function ContactForm({
           type="text"
           tabIndex={-1}
           autoComplete="off"
+          // The big password managers each honour their own opt-out attribute;
+          // without these a manager fills the hidden field for a real person
+          // and the server files their enquiry as spam.
+          data-lpignore="true"
+          data-1p-ignore=""
+          data-form-type="other"
           value={values.hp_channel}
           onChange={set('hp_channel')}
         />
@@ -287,6 +305,15 @@ function ContactForm({
       {firstError(errors, 'consent') ? (
         <p role="alert" className="text-fx-body-sm text-fx-danger-text">
           {firstError(errors, 'consent')}
+        </p>
+      ) : null}
+
+      {generalError ? (
+        <p
+          role="alert"
+          className="rounded-fx-xs border border-fx-danger-line bg-fx-surface px-4 py-3 text-fx-body-sm text-fx-danger-text"
+        >
+          {generalError}
         </p>
       ) : null}
 

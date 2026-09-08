@@ -103,6 +103,137 @@ if (! function_exists('get_system_locale')) {
 }
 
 /**
+ * The site's default (fallback) locale.
+ *
+ * Every piece of content falls back to this locale when a translation is
+ * missing: routable pages resolve their default-locale sibling, non-routable
+ * content reads its base columns instead of the `content_translations` overlay.
+ *
+ * Sourced from the same AppSetting the admin "make default" action writes
+ * (`SYSYEM_LANGUAGE_CODE`), so it is already inside the `default_settings`
+ * cache and needs no key of its own.
+ */
+if (! function_exists('default_locale')) {
+    function default_locale(): string
+    {
+        $code = site_settings(SettingKey::SYSYEM_LANGUAGE_CODE->value);
+
+        return filled($code) ? (string) $code : 'en';
+    }
+}
+
+/**
+ * True when the given locale (or the active one) is the site default, i.e. the
+ * locale whose text lives on the owner rows rather than in the overlay.
+ */
+if (! function_exists('is_default_locale')) {
+    function is_default_locale(?string $locale = null): bool
+    {
+        return ($locale ?? App::getLocale()) === default_locale();
+    }
+}
+
+/**
+ * Codes of every ACTIVE site language. Reads the same cached set the footer
+ * switcher and the CMS locale validators use.
+ *
+ * @return array<int, string>
+ */
+if (! function_exists('active_locale_codes')) {
+    function active_locale_codes(): array
+    {
+        return site_languages()->pluck('code')->all();
+    }
+}
+
+/**
+ * Active language codes other than the default — the set that gets a URL prefix.
+ *
+ * @return array<int, string>
+ */
+if (! function_exists('prefixed_locale_codes')) {
+    function prefixed_locale_codes(): array
+    {
+        $default = default_locale();
+
+        return array_values(array_filter(
+            active_locale_codes(),
+            fn (string $code): bool => $code !== $default,
+        ));
+    }
+}
+
+/**
+ * Split a leading locale segment off a path.
+ *
+ * `/nl/services` -> ['nl', '/services']; `/services` -> [null, '/services'];
+ * `/nl` -> ['nl', '/']. Only ACTIVE non-default codes count as a prefix.
+ *
+ * @return array{0: string|null, 1: string}
+ */
+if (! function_exists('split_locale_prefix')) {
+    function split_locale_prefix(string $path): array
+    {
+        $segments = array_values(array_filter(explode('/', trim($path, '/')), fn ($s): bool => $s !== ''));
+        $first = $segments[0] ?? null;
+
+        if ($first !== null && in_array($first, prefixed_locale_codes(), true)) {
+            $rest = '/'.implode('/', array_slice($segments, 1));
+
+            return [$first, $rest === '/' ? '/' : rtrim($rest, '/')];
+        }
+
+        return [null, '/'.implode('/', $segments)];
+    }
+}
+
+/**
+ * Prefix a root-relative path for a locale. The default locale is unprefixed;
+ * an absolute URL, a mailto/tel/anchor, or an already-prefixed path is left
+ * alone.
+ */
+if (! function_exists('localize_path')) {
+    function localize_path(?string $path, ?string $locale = null): ?string
+    {
+        if ($path === null || $path === '') {
+            return $path;
+        }
+
+        $locale ??= App::getLocale();
+
+        if (is_default_locale($locale) || ! str_starts_with($path, '/')) {
+            return $path;
+        }
+
+        [$existing, $bare] = split_locale_prefix($path);
+
+        if ($existing !== null) {
+            $path = $bare;
+        }
+
+        return '/'.$locale.($path === '/' ? '' : $path);
+    }
+}
+
+/**
+ * Text direction ('ltr' | 'rtl') for a locale, from its `languages` row.
+ */
+if (! function_exists('locale_direction')) {
+    function locale_direction(?string $locale = null): string
+    {
+        $locale ??= App::getLocale();
+
+        $language = site_languages()->firstWhere('code', $locale);
+
+        $direction = $language->direction ?? 'ltr';
+
+        return $direction instanceof \App\Enums\Settings\LanguageDirection
+            ? $direction->value
+            : (string) $direction;
+    }
+}
+
+/**
  * Convert a datetime string to human-readable diff
  */
 if (! function_exists('diff_for_humans')) {
@@ -402,6 +533,46 @@ if (! function_exists('site_logo')) {
         });
 
         return $settings->where('slug', $key)->first();
+    }
+}
+
+if (! function_exists('site_analytics')) {
+    /**
+     * Sanitised third-party analytics / ads identifiers for the public site.
+     *
+     * Every value is admin-authored and ends up inside a `<script>` src or a
+     * `<meta>` content attribute, so each is matched against the exact shape
+     * its vendor uses and anything else is dropped to null — a malformed value
+     * can never reach the document. An empty setting is null, not ''.
+     *
+     * @return array{ga: ?string, gtm: ?string, adsense: ?string, verification: ?string}
+     */
+    function site_analytics(): array
+    {
+        $key = \App\Enums\Settings\SettingKey::class;
+
+        // A tag is emitted only when its own enable switch is on AND its ID is
+        // present and well formed. The switch lets an operator turn a tag off
+        // for a while without losing the ID.
+        $pick = static function (string $idKey, ?string $toggleKey, string $pattern): ?string {
+            if ($toggleKey !== null && (string) site_settings($toggleKey) !== \App\Enums\Common\Status::ACTIVE->value) {
+                return null;
+            }
+
+            $value = trim((string) site_settings($idKey));
+
+            return $value !== '' && preg_match($pattern, $value) ? $value : null;
+        };
+
+        return [
+            // GA4 "G-XXXX", legacy Universal "UA-XXXX-Y", Google Ads "AW-XXXX".
+            'ga' => $pick($key::GOOGLE_ANALYTICS_ID->value, $key::GOOGLE_ANALYTICS_ENABLED->value, '/^(G|UA|AW)-[A-Z0-9-]+$/i'),
+            'gtm' => $pick($key::GOOGLE_TAG_MANAGER_ID->value, $key::GOOGLE_TAG_MANAGER_ENABLED->value, '/^GTM-[A-Z0-9]+$/i'),
+            'adsense' => $pick($key::GOOGLE_ADSENSE_ID->value, $key::GOOGLE_ADSENSE_ENABLED->value, '/^ca-pub-[0-9]+$/'),
+            // Verification has no switch — it is inert and there is no reason to
+            // toggle it independently of simply clearing the token.
+            'verification' => $pick($key::GOOGLE_SITE_VERIFICATION->value, null, '/^[A-Za-z0-9_-]+$/'),
+        ];
     }
 }
 

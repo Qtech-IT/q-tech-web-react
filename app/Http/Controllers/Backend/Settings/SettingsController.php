@@ -144,6 +144,38 @@ class SettingsController extends Controller
     }
 
     /**
+     * SEO defaults + third-party analytics / ads identifiers.
+     *
+     * These settings are seeded by `CmsSettingsSeeder` but have no other admin
+     * screen — without this page an operator cannot enter a Google Analytics,
+     * Tag Manager or AdSense ID at all. Saving goes through the shared
+     * `settings.store` endpoint, which already accepts any `SettingKey`.
+     */
+    public function seo(): JsonResponse|InertiaResponse
+    {
+        $this->authorize('view', 'setting');
+
+        $data = [
+            'title' => translate('SEO & Analytics'),
+            'component' => 'SeoAnalyticsForm',
+            'google_analytics_id' => site_settings(SettingKey::GOOGLE_ANALYTICS_ID->value),
+            'google_analytics_enabled' => site_settings(SettingKey::GOOGLE_ANALYTICS_ENABLED->value, Status::INACTIVE->value),
+            'google_tag_manager_id' => site_settings(SettingKey::GOOGLE_TAG_MANAGER_ID->value),
+            'google_tag_manager_enabled' => site_settings(SettingKey::GOOGLE_TAG_MANAGER_ENABLED->value, Status::INACTIVE->value),
+            'google_adsense_id' => site_settings(SettingKey::GOOGLE_ADSENSE_ID->value),
+            'google_adsense_enabled' => site_settings(SettingKey::GOOGLE_ADSENSE_ENABLED->value, Status::INACTIVE->value),
+            'google_site_verification' => site_settings(SettingKey::GOOGLE_SITE_VERIFICATION->value),
+            'default_meta_title_suffix' => site_settings(SettingKey::DEFAULT_META_TITLE_SUFFIX->value),
+            'default_meta_description' => site_settings(SettingKey::DEFAULT_META_DESCRIPTION->value),
+            'modelProperty' => $this->modelProperty,
+        ];
+
+        return AppResponse::asSuccess()
+            ->withComponent($this->modelProperty['pagePrefix'].'Index', $data)
+            ->build();
+    }
+
+    /**
      * Display storage settings page.
      */
     public function storage(): JsonResponse|InertiaResponse

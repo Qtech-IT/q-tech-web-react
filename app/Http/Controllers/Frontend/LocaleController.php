@@ -29,8 +29,29 @@ class LocaleController extends Controller
                 ->build();
         }
 
-        return AppResponse::asSuccess()
-            ->withMessage(translate('Language switched successfully'))
-            ->build();
+        // Send the visitor to the SAME page in the new locale, not `back()` —
+        // the referer still carries the old locale prefix, so a plain bounce
+        // would land them on a URL the middleware immediately corrects.
+        return redirect()->to($this->siblingUrl($request, $code));
+    }
+
+    /**
+     * The referring page's path, re-prefixed for the new locale. Falls back to
+     * the locale home when there is no usable referer.
+     */
+    private function siblingUrl(Request $request, string $code): string
+    {
+        $referer = (string) $request->headers->get('referer');
+        $path = '/';
+
+        if ($referer !== '') {
+            $parsed = parse_url($referer, PHP_URL_PATH);
+
+            if (is_string($parsed) && $parsed !== '') {
+                [, $path] = split_locale_prefix($parsed);
+            }
+        }
+
+        return localize_path($path, $code) ?: '/';
     }
 }

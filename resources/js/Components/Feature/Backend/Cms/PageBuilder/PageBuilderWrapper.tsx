@@ -5,6 +5,7 @@ import { Badge } from '@/Components/UI/Badge';
 import { Button } from '@/Components/UI/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/UI/Card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/UI/Tabs';
+import { useCmsLocales } from '@/Hooks/useCmsLocales';
 import { useForm as useInertiaForm } from '@/Hooks/useForm';
 import { usePermission } from '@/Hooks/usePermission';
 import { useTranslations } from '@/Hooks/useTranslations';
@@ -18,7 +19,7 @@ import type {
 } from '@/Types/cms';
 import { indexSectionTypes, unwrapItem, unwrapList } from '@/Utils/cms';
 import { router } from '@inertiajs/react';
-import { Blocks, ExternalLink, Home, Layers, Plus, Radio, Search } from 'lucide-react';
+import { Blocks, ExternalLink, Home, Languages, Layers, Plus, Radio, Search } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
 import SeoPanel from '../Seo/SeoPanel';
@@ -43,6 +44,7 @@ import SectionTypePickerDialog from './SectionTypePickerDialog';
 export function PageBuilderWrapper(props: PageBuilderProps) {
   const { t } = useTranslations();
   const { can } = usePermission();
+  const { locales, defaultLocale } = useCmsLocales();
 
   const { title, sectionTypeGroups, publishStatuses = [] } = props;
 
@@ -346,6 +348,39 @@ export function PageBuilderWrapper(props: PageBuilderProps) {
             : []),
         ]}
       />
+
+      {locales.length > 1 && page.locale === defaultLocale && can('page.translate') ? (
+        <Card className="mb-6">
+          <CardContent className="flex flex-wrap items-center gap-3 py-4">
+            <Languages className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+            <span className="text-sm font-medium">{t('Language versions')}</span>
+            {locales
+              .filter((language) => language.code !== defaultLocale)
+              .map((language) => (
+                <Button
+                  key={language.code}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    router.post(
+                      route('backend.pages.translations.store', { page: page.uuid }),
+                      { locale: language.code },
+                      { preserveScroll: true }
+                    )
+                  }
+                >
+                  {t('Create :name version', { name: language.name })}
+                </Button>
+              ))}
+            <p className="w-full text-xs text-muted-foreground">
+              {t(
+                'A language version gets its own URL but reuses these sections. Translate their text from the language tabs in the section editor.'
+              )}
+            </p>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Tabs defaultValue="content">
         <TabsList>

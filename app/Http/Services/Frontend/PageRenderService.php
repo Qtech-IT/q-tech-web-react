@@ -8,6 +8,7 @@ use App\Http\Resources\Backend\Cms\PageSectionResource;
 use App\Http\Services\Backend\Cms\PageSectionService;
 use App\Http\Services\Backend\Cms\SectionTypeRegistry;
 use App\Http\Services\Backend\Cms\SeoService;
+use App\Http\Services\Cms\ContentTranslator;
 use App\Models\Page;
 use App\Models\PageSection;
 use App\Traits\Cms\CacheInvalidation;
@@ -32,7 +33,66 @@ class PageRenderService
         protected PageSectionService $sections,
         protected SeoService $seo,
         protected SectionTypeRegistry $registry,
+        protected ContentTranslator $translator,
     ) {}
+
+    /**
+     * The page whose sections are the structure to render.
+     *
+     * For the default locale that is the page itself. For any other locale it
+     * is the default-locale sibling in the same `translation_group_id` — the
+     * one that actually owns `page_sections` rows. A locale page with no
+     * published sibling falls back to its own (usually empty) section set
+     * rather than 500ing.
+     */
+    protected function structurePage(Page $page): Page
+    {
+        if (is_default_locale($page->locale)) {
+            return $page;
+        }
+
+        return Page::query()
+            ->where('site_id', (int) config('cms.site_id'))
+            ->where('translation_group_id', $page->translation_group_id)
+            ->where('locale', default_locale())
+            ->published()
+            ->first() ?? $page;
+    }
+
+    /**
+     * Flatten a published section tree into every model the overlay can
+     * translate: the sections themselves, their repeater items, and nested
+     * child items. `getPublished()` has already swapped shared-block
+     * references for the block body, so a `PageSection` here is always the
+     * thing that carries the text.
+     *
+     * @param  \Illuminate\Support\Collection<int, PageSection>  $sections
+     * @return \Illuminate\Support\Collection<int, \Illuminate\Database\Eloquent\Model>
+     */
+    protected function translatableModels($sections)
+    {
+        $models = collect();
+
+        foreach ($sections as $section) {
+            $models->push($section);
+
+            if (! $section->relationLoaded('blocks')) {
+                continue;
+            }
+
+            foreach ($section->blocks as $block) {
+                $models->push($block);
+
+                if ($block->relationLoaded('children')) {
+                    foreach ($block->children as $child) {
+                        $models->push($child);
+                    }
+                }
+            }
+        }
+
+        return $models;
+    }
 
     /**
      * The homepage, or null when no page is flagged as one.
@@ -43,12 +103,14 @@ class PageRenderService
      */
     public function homepage(): ?Page
     {
-        return Page::query()
-            ->where('site_id', (int) config('cms.site_id'))
-            ->where('is_homepage', true)
-            ->where('locale', get_system_locale())
-            ->published()
-            ->first();
+        return $this->localeAware(
+            fn (string $locale): ?Page => Page::query()
+                ->where('site_id', (int) config('cms.site_id'))
+                ->where('is_homepage', true)
+                ->where('locale', $locale)
+                ->published()
+                ->first()
+        );
     }
 
     /**
@@ -56,12 +118,38 @@ class PageRenderService
      */
     public function byPath(string $path): ?Page
     {
-        return Page::query()
-            ->where('site_id', (int) config('cms.site_id'))
-            ->where('path', $this->normalizePath($path))
-            ->where('locale', get_system_locale())
-            ->published()
-            ->first();
+        $normalized = $this->normalizePath($path);
+
+        return $this->localeAware(
+            fn (string $locale): ?Page => Page::query()
+                ->where('site_id', (int) config('cms.site_id'))
+                ->where('path', $normalized)
+                ->where('locale', $locale)
+                ->published()
+                ->first()
+        );
+    }
+
+    /**
+     * Run a locale-filtered page lookup for the active locale, falling back to
+     * the default locale when that locale has no row yet.
+     *
+     * A visitor who switches to Dutch on a page nobody has translated should
+     * see the English page, not a 404 — "English is always the fallback".
+     * Phase B layers locale-prefixed URLs and redirects on top of this; the
+     * fallback stays as the floor.
+     */
+    protected function localeAware(callable $lookup): ?Page
+    {
+        $active = get_system_locale();
+
+        $page = $lookup($active);
+
+        if ($page === null && ! is_default_locale($active)) {
+            $page = $lookup(default_locale());
+        }
+
+        return $page;
     }
 
     /**
@@ -75,12 +163,14 @@ class PageRenderService
      */
     public function notFoundPage(): ?Page
     {
-        return Page::query()
-            ->where('site_id', (int) config('cms.site_id'))
-            ->where('path', '/404')
-            ->where('locale', get_system_locale())
-            ->published()
-            ->first();
+        return $this->localeAware(
+            fn (string $locale): ?Page => Page::query()
+                ->where('site_id', (int) config('cms.site_id'))
+                ->where('path', '/404')
+                ->where('locale', $locale)
+                ->published()
+                ->first()
+        );
     }
 
     /**
@@ -101,7 +191,7 @@ class PageRenderService
      */
     public function breadcrumbs(Page $page): array
     {
-        $home = ['title' => translate('Home'), 'path' => '/'];
+        $home = ['title' => translate('Home'), 'path' => localize_path('/', $page->locale) ?: '/'];
 
         if ($page->is_homepage || $page->path === '/') {
             return [];
@@ -133,7 +223,7 @@ class PageRenderService
             $title = $titles->get($path);
 
             if (filled($title)) {
-                $trail[] = ['title' => (string) $title, 'path' => $path];
+                $trail[] = ['title' => (string) $title, 'path' => localize_path($path, $page->locale)];
             }
         }
 
@@ -165,7 +255,16 @@ class PageRenderService
      */
     public function payload(Page $page): array
     {
-        $sections = $this->sections->getPublished($page);
+        // Sections are locale-neutral structure owned by the default-locale
+        // page (schema doc §8.2). A non-default locale reuses that structure
+        // and overlays its translated text; it only owns its own URL, title
+        // and SEO record.
+        $structure = $this->structurePage($page);
+        $sections = $this->sections->getPublished($structure);
+
+        if (! is_default_locale($page->locale)) {
+            $this->translator->hydrate($this->translatableModels($sections), $page->locale);
+        }
 
         // Only the types actually present are shipped. Sending the whole
         // registry would put every admin-only field schema on the public wire
@@ -206,7 +305,9 @@ class PageRenderService
             'page' => [
                 'uuid' => $page->uuid,
                 'title' => $page->title,
-                'path' => $page->path,
+                // Locale-prefixed for a non-default locale, so every link the
+                // client renders from this stays inside the locale.
+                'path' => localize_path($page->path, $page->locale),
                 'locale' => $page->locale,
                 'page_type' => $page->page_type?->value,
             ],
@@ -217,7 +318,55 @@ class PageRenderService
             // or an ancestor is renamed, both of which already bust this cache.
             // Safe to cache alongside the payload, unlike a listing.
             'breadcrumbs' => $this->breadcrumbs($page),
+            // hreflang set for this page: every published locale sibling plus
+            // x-default. Consumed by PageWrapper's <Head>.
+            'alternates' => $this->alternates($page),
         ];
+    }
+
+    /**
+     * The published locale variants of a page, for `<link rel="alternate">`.
+     *
+     * Keyed by the `translation_group_id` all siblings share. `x-default`
+     * points at the default-locale row. Paths are locale-prefixed and
+     * root-relative; the client makes them absolute.
+     *
+     * @return array<int, array{hreflang: string, href: string}>
+     */
+    protected function alternates(Page $page): array
+    {
+        if (blank($page->translation_group_id)) {
+            return [];
+        }
+
+        $siblings = Page::query()
+            ->where('site_id', (int) config('cms.site_id'))
+            ->where('translation_group_id', $page->translation_group_id)
+            ->published()
+            ->get(['locale', 'path']);
+
+        if ($siblings->count() < 2) {
+            return [];
+        }
+
+        $out = $siblings
+            ->map(fn (Page $sibling): array => [
+                'hreflang' => $sibling->locale,
+                'href' => localize_path($sibling->path, $sibling->locale),
+            ])
+            ->values()
+            ->all();
+
+        $default = $siblings->firstWhere('locale', default_locale());
+
+        if ($default !== null) {
+            $out[] = [
+                'hreflang' => 'x-default',
+                'href' => localize_path($default->path, $default->locale),
+            ];
+        }
+
+        return $out;
     }
 
     /**

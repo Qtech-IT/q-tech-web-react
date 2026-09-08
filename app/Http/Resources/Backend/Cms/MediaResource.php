@@ -16,6 +16,7 @@ class MediaResource extends BaseResource
     {
         return [
             ...$this->getBaseAttributes($request),
+            'translations' => $this->translationPayload(),
             'folder_id' => $this->folder_id,
             'folder' => $this->whenLoaded('folder', fn (): array => [
                 'uuid' => $this->folder->uuid,

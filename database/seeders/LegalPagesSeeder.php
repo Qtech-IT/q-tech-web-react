@@ -97,14 +97,19 @@ class LegalPagesSeeder extends CmsContentSeeder
             ],
         ]);
 
-        // No entrance animation on a reference document — somebody arriving
-        // here has come to read one clause, and content that fades in as they
-        // scroll is friction rather than polish.
-        $this->articleBody($page, 1, self::EDITOR_NOTE.$policy['body_html'], [
-            'measure' => 'prose',
-            'theme' => 'default',
-            'spacing' => 'default',
-            'animation' => 'none',
+        // A policy is prose end to end, so the body is one `content.prose`
+        // section an editor works in the rich-text editor — not a structured
+        // block-per-row band. No entrance animation on a reference document:
+        // somebody here has come to read one clause, and content that fades in
+        // as they scroll is friction rather than polish.
+        $this->proseBody($page, 1, self::EDITOR_NOTE.$policy['body_html'], [
+            'name' => $policy['title'].' Body',
+            'settings' => [
+                'measure' => 'prose',
+                'theme' => 'default',
+                'spacing' => 'default',
+                'animation' => 'none',
+            ],
         ]);
 
         $this->closingBand($page, 2, [

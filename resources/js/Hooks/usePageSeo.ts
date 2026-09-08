@@ -63,6 +63,11 @@ export interface UsePageSeoOptions {
   fallbackTitle?: string | undefined
   /** JSON-LD to emit when the CMS record carries no schema of its own. */
   defaultSchema?: PageMeta['schema']
+  /**
+   * `PageRenderService`'s `alternates` — root-relative, locale-prefixed hrefs
+   * for this page's other-locale versions. Absolutised here.
+   */
+  alternates?: Array<{ hreflang: string; href: string }> | null | undefined
 }
 
 /**
@@ -85,12 +90,21 @@ export function usePageSeo({
   seo,
   fallbackTitle,
   defaultSchema,
+  alternates,
 }: UsePageSeoOptions): PageMeta {
   return useMemo(() => {
     const title = seo?.title?.trim() || fallbackTitle?.trim()
     const description = seo?.description?.trim() || seo?.og_description?.trim()
     const canonical = toAbsoluteUrl(seo?.canonical)
     const image = toAbsoluteUrl(seo?.og_image ?? seo?.twitter_image)
+
+    const resolvedAlternates = (alternates ?? [])
+      .map((alt) => {
+        const href = toAbsoluteUrl(alt.href)
+
+        return href ? { hreflang: alt.hreflang, href } : null
+      })
+      .filter((alt): alt is { hreflang: string; href: string } => alt !== null)
 
     const cmsSchema =
       seo?.schema_data && Object.keys(seo.schema_data).length > 0
@@ -114,6 +128,7 @@ export function usePageSeo({
       ...(seo && seo.robots_index === false ? { noindex: true } : {}),
       ...(seo?.og_type ? { ogType: seo.og_type } : {}),
       ...(schema ? { schema } : {}),
+      ...(resolvedAlternates.length > 0 ? { alternates: resolvedAlternates } : {}),
     }
-  }, [defaultSchema, fallbackTitle, seo])
+  }, [alternates, defaultSchema, fallbackTitle, seo])
 }

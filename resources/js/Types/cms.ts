@@ -276,6 +276,12 @@ export interface CmsSectionBlock extends CmsBaseAttributes {
   settings: Record<string, unknown> | null;
   sort_order: number;
   children?: CmsSectionBlock[];
+  /**
+   * The non-routable translation overlay (§8.2): `{ locale: { field: value } }`
+   * where `field` is a dotted path (`label`, `data.subtitle`). Present only
+   * when the editor screen eager-loaded it.
+   */
+  translations?: Record<string, Record<string, string>>;
 }
 
 /**
@@ -334,6 +340,12 @@ export interface CmsPageSection extends CmsBaseAttributes {
   settings: Record<string, unknown> | null;
   blocks?: CmsSectionBlock[];
   gallery?: CmsMedia[];
+  /**
+   * The non-routable translation overlay (§8.2): `{ locale: { field: value } }`
+   * where `field` is a dotted path (`heading`, `data.trust_label`). Present
+   * only when the editor screen eager-loaded it.
+   */
+  translations?: Record<string, Record<string, string>>;
   /**
    * Other PAGES this section lists.
    *

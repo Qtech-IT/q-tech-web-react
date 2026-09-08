@@ -131,7 +131,11 @@ enum SettingKey: string
     case ORGANIZATION_LEGAL_NAME = 'organization_legal_name';
     case ORGANIZATION_FOUNDING_YEAR = 'organization_founding_year';
     case GOOGLE_ANALYTICS_ID = 'google_analytics_id';
+    case GOOGLE_ANALYTICS_ENABLED = 'google_analytics_enabled';
     case GOOGLE_TAG_MANAGER_ID = 'google_tag_manager_id';
+    case GOOGLE_TAG_MANAGER_ENABLED = 'google_tag_manager_enabled';
+    case GOOGLE_ADSENSE_ID = 'google_adsense_id';
+    case GOOGLE_ADSENSE_ENABLED = 'google_adsense_enabled';
     case GOOGLE_SITE_VERIFICATION = 'google_site_verification';
     case ROBOTS_TXT_EXTRA = 'robots_txt_extra';
     case SITEMAP_ENABLED = 'sitemap_enabled';
@@ -200,6 +204,9 @@ enum SettingKey: string
 
             self::SITEMAP_ENABLED,
             self::COOKIE_BANNER_ENABLED,
+            self::GOOGLE_ANALYTICS_ENABLED,
+            self::GOOGLE_TAG_MANAGER_ENABLED,
+            self::GOOGLE_ADSENSE_ENABLED,
             self::MEDIA_AUTO_WEBP => InputEnum::SWITCH->value,
 
             self::SITEMAP_CHANGEFREQ,

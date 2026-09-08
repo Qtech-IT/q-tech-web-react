@@ -106,6 +106,15 @@ function SignupForm({
   const emailError = firstError(errors, 'email')
   const consentError = firstError(errors, 'consent')
 
+  // Any server error not tied to a field this form shows (a rate-limit notice,
+  // a rejected `source`) — surfaced so a failed signup is never silent.
+  const generalErrorKey = Object.keys(errors).find(
+    (key) => key !== 'email' && key !== 'consent'
+  )
+  const generalError = generalErrorKey
+    ? firstError(errors, generalErrorKey) ?? t('Something went wrong. Please try again.')
+    : undefined
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
@@ -221,6 +230,9 @@ function SignupForm({
             name="hp_channel"
             tabIndex={-1}
             autoComplete="off"
+            data-lpignore="true"
+            data-1p-ignore=""
+            data-form-type="other"
             value={hpChannel}
             onChange={(event) => setHpChannel(event.target.value)}
           />
@@ -268,7 +280,7 @@ function SignupForm({
         </div>
       ) : null}
 
-      {emailError || consentError ? (
+      {emailError || consentError || generalError ? (
         <p
           id={errorId}
           role="alert"
@@ -277,7 +289,7 @@ function SignupForm({
             align === 'center' && 'text-center'
           )}
         >
-          {emailError ?? consentError}
+          {emailError ?? consentError ?? generalError}
         </p>
       ) : null}
     </form>

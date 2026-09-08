@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\Cms\SectionLinkType;
 use App\Enums\Common\Status;
+use App\Traits\Cms\HasContentTranslations;
 use App\Traits\Cms\HasMedia;
 use App\Traits\Common\Filterable;
 use App\Traits\Common\HasUuid;
@@ -24,6 +25,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class SectionBlock extends Model
 {
     use Filterable;
+    use HasContentTranslations;
     use HasMedia;
     use HasUuid;
     use SoftDeletes;

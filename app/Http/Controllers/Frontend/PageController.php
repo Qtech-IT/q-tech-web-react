@@ -43,7 +43,15 @@ class PageController extends Controller
      */
     public function __invoke(Request $request): mixed
     {
-        $path = $this->render->normalizePath($request->path());
+        /*
+         * `cms_path` is the request path with any `/{locale}` prefix already
+         * stripped by LanguageMiddleware, so `/nl/services` resolves against
+         * the page stored at `/services`. Falls back to the raw path for the
+         * default locale, which carries no prefix.
+         */
+        $path = $this->render->normalizePath(
+            (string) $request->attributes->get('cms_path', $request->path())
+        );
 
         /*
          * A URL under a reserved prefix that got this far is a missing ADMIN or
@@ -54,6 +62,22 @@ class PageController extends Controller
          */
         if ($this->isReserved($path)) {
             abort(Response::HTTP_NOT_FOUND);
+        }
+
+        /*
+         * The bare locale root (`/nl`) strips to `/` and is that locale's
+         * homepage — the same page `HomeController` renders for `/`.
+         */
+        if ($path === '/') {
+            $home = $this->render->homepage();
+
+            return $home !== null
+                ? AppResponse::asSuccess()
+                    ->withComponent('Public/Home', [
+                        'title' => $home->title,
+                        ...$this->render->cachedPayload($home),
+                    ])->build()
+                : $this->notFound();
         }
 
         $page = $this->render->byPath($path);

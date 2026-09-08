@@ -24,12 +24,15 @@ class SubscriptionController extends Controller
      */
     public function store(SubscribeRequest $request): RedirectResponse
     {
-        // Honeypot: a filled hidden field means a bot. Reply exactly as we
-        // would to a real signup but record nothing, so the trap is
-        // indistinguishable from success.
-        if (blank($request->input('hp_channel'))) {
-            $this->subscriptions->subscribe($request->validated(), $request);
-        }
+        // Honeypot: a filled hidden field is almost always a bot. The signup is
+        // still recorded — as an inactive, pending row — rather than dropped,
+        // so a real person whose browser autofilled the hidden field is
+        // recoverable from the admin. The reply is identical either way.
+        $this->subscriptions->subscribe(
+            $request->validated(),
+            $request,
+            isSpam: filled($request->input('hp_channel')),
+        );
 
         return AppResponse::asSuccess()
             ->withMessage(translate('You are on the list. Check your inbox to confirm.'))

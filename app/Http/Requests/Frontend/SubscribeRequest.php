@@ -31,12 +31,13 @@ class SubscribeRequest extends FormRequest
     {
         return [
             /*
-             * `email:rfc,dns` and not merely `email`: the whole point of this
-             * table is that we can post to these addresses later, and a
-             * syntactically valid address at a domain with no MX record is a
-             * guaranteed bounce that also damages sender reputation.
+             * `email:rfc` only. `dns` was tempting here — we email these
+             * addresses later — but it rejects valid addresses whenever the
+             * resolver is slow or unreachable, which showed up as a signup
+             * that silently did nothing. The double opt-in ("check your inbox
+             * to confirm") already stops a dead domain becoming a live row.
              */
-            'email' => ['required', 'string', 'email:rfc,dns', 'max:191'],
+            'email' => ['required', 'string', 'email:rfc', 'max:191'],
 
             // Editor-set on the section, so attribution needs no deploy. Kept
             // short and alpha-dash so it cannot become a free-text sink.

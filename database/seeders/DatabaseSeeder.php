@@ -80,6 +80,14 @@ class DatabaseSeeder extends Seeder
             SharedBlocksSeeder::class,
 
             NavigationRepairSeeder::class,
+
+            /*
+             * LAST. Creates the Dutch (`nl`) locale — an `nl` variant of every
+             * published English page (sharing its translation group, reusing
+             * its sections) plus a Dutch overlay for the nav chrome. Must run
+             * after every page and menu exists. Idempotent.
+             */
+            NlContentSeeder::class,
         ]);
     }
 }

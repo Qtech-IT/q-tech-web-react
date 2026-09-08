@@ -1,5 +1,7 @@
 import CommonLayoutHeader from '@/Components/Feature/Backend/CommonLayoutHeader';
 import { Button } from '@/Components/UI/Button';
+import { Tabs, TabsList, TabsTrigger } from '@/Components/UI/Tabs';
+import { useCmsLocales } from '@/Hooks/useCmsLocales';
 import { usePermission } from '@/Hooks/usePermission';
 import { useTranslations } from '@/Hooks/useTranslations';
 import { MainLayout } from '@/Layouts/User/MainLayout';
@@ -8,10 +10,11 @@ import type { CmsPage, CmsPageSection, CmsSectionType } from '@/Types/cms';
 import { unwrapItem } from '@/Utils/cms';
 import { router } from '@inertiajs/react';
 import { Blocks, ExternalLink } from 'lucide-react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { CmsEmpty } from '../Shared/CmsStateBlock';
 import SectionEditorForm from './SectionEditorForm';
+import SectionTranslationForm from './SectionTranslationForm';
 
 /**
  * The standalone section editor screen.
@@ -27,6 +30,10 @@ import SectionEditorForm from './SectionEditorForm';
 export function SectionEditorWrapper(props: SectionEditorProps) {
   const { t } = useTranslations();
   const { can } = usePermission();
+  const { locales, defaultLocale } = useCmsLocales();
+
+  /** Which locale the editor is working in. Default = structure + English. */
+  const [activeLocale, setActiveLocale] = useState<string>(defaultLocale);
 
   const section = useMemo(
     () => unwrapItem<CmsPageSection>(props.data),
@@ -113,17 +120,50 @@ export function SectionEditorWrapper(props: SectionEditorProps) {
         }
       />
 
-      <SectionEditorForm
-        section={section}
-        sectionType={sectionType}
-        onSaved={refresh}
-        readOnly={!can('section.edit')}
-        actions={
-          <Button type="button" variant="outline" onClick={() => router.visit(backUrl)}>
-            {page ? t('Back to page') : t('Back')}
-          </Button>
-        }
-      />
+      {locales.length > 1 ? (
+        <Tabs
+          value={activeLocale}
+          onValueChange={setActiveLocale}
+          className="mb-4"
+        >
+          <div className="-mx-1 overflow-x-auto px-1 pb-1">
+            <TabsList className="w-max">
+              {locales.map((language) => (
+                <TabsTrigger key={language.code} value={language.code}>
+                  {language.name}
+                  {language.code === defaultLocale ? ` · ${t('default')}` : ''}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+        </Tabs>
+      ) : null}
+
+      {activeLocale === defaultLocale ? (
+        <SectionEditorForm
+          section={section}
+          sectionType={sectionType}
+          onSaved={refresh}
+          readOnly={!can('section.edit')}
+          actions={
+            <Button type="button" variant="outline" onClick={() => router.visit(backUrl)}>
+              {page ? t('Back to page') : t('Back')}
+            </Button>
+          }
+        />
+      ) : (
+        <SectionTranslationForm
+          section={section}
+          sectionType={sectionType}
+          locale={activeLocale}
+          localeLabel={
+            locales.find((language) => language.code === activeLocale)?.name ??
+            activeLocale
+          }
+          onSaved={refresh}
+          readOnly={!can('page.translate')}
+        />
+      )}
     </MainLayout>
   );
 }

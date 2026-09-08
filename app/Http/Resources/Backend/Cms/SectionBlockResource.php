@@ -16,6 +16,7 @@ class SectionBlockResource extends BaseResource
     {
         return [
             ...$this->getBaseAttributes($request),
+            'translations' => $this->translationPayload(),
             'page_section_id' => $this->page_section_id,
             'parent_id' => $this->parent_id,
             'block_type' => $this->block_type,

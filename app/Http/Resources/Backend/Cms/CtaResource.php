@@ -17,6 +17,7 @@ class CtaResource extends BaseResource
     {
         return [
             ...$this->getBaseAttributes($request),
+            'translations' => $this->translationPayload(),
             'label' => $this->label,
             'aria_label' => $this->aria_label,
             'link_type' => $this->link_type,

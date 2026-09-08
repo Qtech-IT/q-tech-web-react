@@ -274,6 +274,28 @@ export default function PublicLayout({
     }
   }, [brandTokens])
 
+  /*
+   * Keep <html lang> and <html dir> in step with the active locale.
+   *
+   * Blade sets both on the first load, but the footer language switch is an
+   * Inertia visit — it swaps the page component and the shared props, never
+   * the <html> element, which lives outside the app root. Without this a
+   * switch to an RTL language left the layout LTR until a hard reload, which
+   * is exactly the bug this fixes.
+   */
+  const currentLocale = page.language_settings?.current_language
+  const currentDirection =
+    languages.find((language) => language.code === currentLocale)?.direction ?? 'ltr'
+
+  useEffect(() => {
+    const root = document.documentElement
+
+    if (currentLocale) {
+      root.setAttribute('lang', currentLocale.replace('_', '-'))
+    }
+    root.setAttribute('dir', currentDirection === 'rtl' ? 'rtl' : 'ltr')
+  }, [currentLocale, currentDirection])
+
   return (
     // `data-site="public"` is what activates the entire public design system.
     // Every `--fx-*` token in `resources/css/frontend.css` is scoped to this

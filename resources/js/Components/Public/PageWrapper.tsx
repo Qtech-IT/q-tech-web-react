@@ -14,6 +14,12 @@ export interface PageMeta {
   ogType?: string | undefined
   /** JSON-LD. Serialised into a script tag; pass an object, not a string. */
   schema?: Record<string, unknown> | Array<Record<string, unknown>> | undefined
+  /**
+   * `hreflang` alternates for this page's other-locale versions, already
+   * absolutised. Includes an `x-default` entry when a default-locale version
+   * exists. Empty on a single-language site.
+   */
+  alternates?: Array<{ hreflang: string; href: string }> | undefined
 }
 
 export interface PageWrapperProps extends PageMeta {
@@ -42,6 +48,7 @@ export function PageWrapper({
   noindex = false,
   ogType = 'website',
   schema,
+  alternates,
   className,
 }: PageWrapperProps) {
   const schemaBlocks = schema
@@ -59,6 +66,17 @@ export function PageWrapper({
         {description ? <meta name="description" content={description} /> : null}
         {canonical ? <link rel="canonical" href={canonical} /> : null}
         {noindex ? <meta name="robots" content="noindex, nofollow" /> : null}
+
+        {/* hreflang: one per locale version of this page, plus x-default.
+            Google wants every alternate (including a self-reference) listed. */}
+        {(alternates ?? []).map((alt) => (
+          <link
+            key={alt.hreflang}
+            rel="alternate"
+            hrefLang={alt.hreflang}
+            href={alt.href}
+          />
+        ))}
 
         {/* Open Graph */}
         <meta property="og:type" content={ogType} />

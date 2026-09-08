@@ -6,6 +6,7 @@ use App\Enums\Cms\CtaLinkType;
 use App\Enums\Cms\IconPosition;
 use App\Enums\Common\Status;
 use App\Traits\Cms\HasAuditUsers;
+use App\Traits\Cms\HasContentTranslations;
 use App\Traits\Common\Filterable;
 use App\Traits\Common\HasUuid;
 use App\Traits\Common\UsesUuidRouting;
@@ -25,6 +26,7 @@ class Cta extends Model
 {
     use Filterable;
     use HasAuditUsers;
+    use HasContentTranslations;
     use HasUuid;
     use SoftDeletes;
     use UsesUuidRouting;

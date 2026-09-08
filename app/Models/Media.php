@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\Cms\MediaType;
 use App\Enums\Common\Status;
 use App\Traits\Cms\HasAuditUsers;
+use App\Traits\Cms\HasContentTranslations;
 use App\Traits\Common\Filterable;
 use App\Traits\Common\HasUuid;
 use App\Traits\Common\UsesUuidRouting;
@@ -18,6 +19,7 @@ class Media extends Model
 {
     use Filterable;
     use HasAuditUsers;
+    use HasContentTranslations;
     use HasUuid;
     use SoftDeletes;
     use UsesUuidRouting;

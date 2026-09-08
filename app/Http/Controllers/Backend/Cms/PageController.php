@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Backend\Cms\PagePublishRequest;
 use App\Http\Requests\Backend\Cms\PageSaveRequest;
 use App\Http\Requests\Backend\Cms\PageStatusRequest;
+use App\Http\Requests\Backend\Cms\PageTranslationRequest;
 use App\Http\Resources\Backend\Cms\PageResource;
 use App\Http\Resources\Backend\Cms\PageTreeResource;
 use App\Http\Services\Backend\Cms\PageService;
@@ -116,6 +117,28 @@ class PageController extends Controller
 
         return AppResponse::asSuccess()
             ->withMessage(translate('Page updated successfully'))
+            ->build();
+    }
+
+    /**
+     * Create a locale variant of this page.
+     *
+     * The new row shares the source's translation group and owns its own URL,
+     * title and SEO record — but no sections: section structure is
+     * locale-neutral (schema doc §8.2) and is translated through the overlay.
+     * Lands as a draft.
+     */
+    public function storeTranslation(PageTranslationRequest $request, Page $page): RedirectResponse
+    {
+        $this->authorize('translate', $page);
+
+        $this->service->createTranslation($page, $request->string('locale')->toString(), [
+            'slug' => $request->input('slug'),
+            'title' => $request->input('title'),
+        ]);
+
+        return AppResponse::asSuccess()
+            ->withMessage(translate('Translation page created'))
             ->build();
     }
 

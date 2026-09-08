@@ -25,6 +25,8 @@ export interface ContentPageProps {
   /** Shipped for parity with the home payload; components resolve via `registry.ts`. */
   sectionTypes?: Record<string, CmsSectionDescriptor> | CmsSectionDescriptor[]
   seo?: CmsResolvedSeo | null
+  /** `PageRenderService::alternates()` — hreflang set for this page. */
+  alternates?: Array<{ hreflang: string; href: string }> | null
   /** `PageRenderService::breadcrumbs()`. Empty for the homepage. */
   breadcrumbs?: Crumb[] | null
   /**
@@ -58,6 +60,7 @@ export function ContentPage({
   page,
   sections,
   seo,
+  alternates,
   breadcrumbs,
   emptyState,
 }: ContentPageProps) {
@@ -123,6 +126,7 @@ export function ContentPage({
     seo,
     fallbackTitle: title ?? page?.title ?? t('Page'),
     ...(defaultSchema ? { defaultSchema } : {}),
+    ...(alternates ? { alternates } : {}),
   })
 
   return (

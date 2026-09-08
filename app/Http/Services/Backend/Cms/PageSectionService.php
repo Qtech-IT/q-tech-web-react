@@ -57,6 +57,12 @@ class PageSectionService
             'blocks.cta',
             'blocks.children',
 
+            // The translation overlay for the editor's locale tabs (§8.2):
+            // the section, and every repeater item / nested child.
+            'translations',
+            'blocks.translations',
+            'blocks.children.translations',
+
             // Without these two, a nested child's media and CTA are simply
             // absent from SectionBlockResource (whenLoaded omits rather
             // than lazy-loads) — the editor would open a tab item and find

@@ -30,11 +30,31 @@ export default defineConfig({
     },
 
     server: {
-        host: true,      // allows access via network IP
-        port: 5174,      // dev server port
+        /*
+         * The dev server runs on the HOST (not inside the Sail container), and
+         * the browser reaches it directly. Two things here fix "the page keeps
+         * doing a full reload when I click a link / submit a form":
+         *
+         *  - `host: 'localhost'` instead of `true`. With `true` the server
+         *    advertised itself on the IPv6 wildcard `[::]` (see `public/hot`),
+         *    an address the browser's HMR client cannot open — so every HMR
+         *    ping failed and Vite fell back to reloading the whole page.
+         *  - `hmr.host` pinned to the same, so the client connects to a real
+         *    address even when Vite is bound more broadly.
+         *
+         * `usePolling` is gone: on the host filesystem native FS events work,
+         * and polling pinned a CPU core and produced phantom change events that
+         * made `refresh: true` reload the page mid-interaction.
+         *
+         * If you ever run Vite INSIDE the container instead, set `host` back to
+         * `true`, add `VITE_PORT=5174` to `.env`, and expose 5174 in
+         * docker-compose.yml.
+         */
+        host: 'localhost',
+        port: 5174,
         strictPort: true,
-        watch: {
-            usePolling: true, // helps with file changes on some environments
+        hmr: {
+            host: 'localhost',
         },
     },
 

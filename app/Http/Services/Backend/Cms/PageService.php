@@ -337,6 +337,88 @@ class PageService
     }
 
     /**
+     * Create a locale variant of a page.
+     *
+     * The new row shares the source's `translation_group_id` and starts as a
+     * copy of its slug / path / title / card fields, but owns NO sections —
+     * section structure is locale-neutral and lives on the default-locale row
+     * (schema doc §8.2). The editor then translates each section through the
+     * overlay and adjusts the slug / title here.
+     *
+     * Lands as a DRAFT so a half-translated page is never public by accident.
+     *
+     * @param  array<string, mixed>  $overrides  slug / title / publish_status
+     */
+    public function createTranslation(Page $source, string $locale, array $overrides = []): Page
+    {
+        return DB::transaction(function () use ($source, $locale, $overrides): Page {
+            if ($locale === $source->locale) {
+                throw ValidationException::withMessages([
+                    'locale' => 'The page is already in this language.',
+                ]);
+            }
+
+            $siteId = (int) config('cms.site_id');
+
+            $existing = Page::withTrashed()
+                ->where('site_id', $siteId)
+                ->where('translation_group_id', $source->translation_group_id)
+                ->where('locale', $locale)
+                ->first();
+
+            if ($existing !== null) {
+                throw ValidationException::withMessages([
+                    'locale' => 'A '.$locale.' version of this page already exists.',
+                ]);
+            }
+
+            // Re-parent onto the locale sibling of the source's parent when one
+            // exists; otherwise the page sits at the root until the parent is
+            // translated too. Path is denormalized, so this only affects the
+            // URL shape, never resolution.
+            $parent = $source->parent_id
+                ? Page::where('site_id', $siteId)
+                    ->where('translation_group_id', Page::whereKey($source->parent_id)->value('translation_group_id'))
+                    ->where('locale', $locale)
+                    ->first()
+                : null;
+
+            $slug = $this->uniqueSlug(
+                slug: make_slug($overrides['slug'] ?? $source->slug),
+                siteId: $siteId,
+                locale: $locale,
+                parentId: $parent?->id,
+                ignoreId: null,
+            );
+
+            $page = new Page;
+            $page->site_id = $siteId;
+            $page->translation_group_id = $source->translation_group_id;
+            $page->locale = $locale;
+            $page->parent_id = $parent?->id;
+            $page->slug = $slug;
+            $page->path = $this->tree->buildPath($parent, $slug);
+            $page->depth = $this->tree->depthFor($parent);
+            $page->title = $overrides['title'] ?? $source->title;
+            $page->excerpt = $source->excerpt;
+            $page->icon = $source->icon;
+            $page->accent = $source->accent;
+            $page->page_type = $source->page_type;
+            $page->template = $source->template;
+            $page->is_homepage = $source->is_homepage;
+            $page->is_indexable = $source->is_indexable;
+            $page->settings = $source->settings;
+            $page->status = Status::ACTIVE->value;
+            $page->publish_status = $overrides['publish_status'] ?? ContentStatus::DRAFT->value;
+            $page->save();
+
+            $this->forgetPage($page);
+
+            return $page;
+        });
+    }
+
+    /**
      * Resolve a slug that does not collide with a sibling.
      *
      * Guards the UNIQUE (site_id, locale, parent_id, slug) index in

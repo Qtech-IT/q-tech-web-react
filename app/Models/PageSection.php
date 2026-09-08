@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\Cms\ContentStatus;
 use App\Enums\Common\Status;
 use App\Traits\Cms\HasAuditUsers;
+use App\Traits\Cms\HasContentTranslations;
 use App\Traits\Cms\HasMedia;
 use App\Traits\Cms\Publishable;
 use App\Traits\Common\Filterable;
@@ -19,6 +20,7 @@ class PageSection extends Model
 {
     use Filterable;
     use HasAuditUsers;
+    use HasContentTranslations;
     use HasMedia;
     use HasUuid;
     use Publishable;

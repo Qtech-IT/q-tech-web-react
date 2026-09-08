@@ -28,16 +28,18 @@ class ContactController extends Controller
      */
     public function store(ContactRequest $request): Response
     {
-        // Honeypot: a filled hidden field means a bot. Answer exactly as we
-        // would a real submission — same message, same status — but store
-        // nothing, so a scraper cannot tell the trap from a success.
-        if (!$this->isBot($request)) {
-            $this->contact->submit(
-                $request->safe()->except(['section', 'hp_channel', 'consent']),
-                $request,
-                $this->resolveInbox($request->input('section')),
-            );
-        }
+        // Honeypot: a filled hidden field is almost always a bot. We still
+        // record the enquiry — as spam, with no inbox alert — rather than drop
+        // it, because a browser or password manager that autofills the hidden
+        // field would otherwise make a real person disappear with no trace and
+        // no error. The response is identical either way, so a scraper learns
+        // nothing.
+        $this->contact->submit(
+            $request->safe()->except(['section', 'hp_channel', 'consent']),
+            $request,
+            $this->resolveInbox($request->input('section')),
+            isSpam: $this->isBot($request),
+        );
 
         return AppResponse::asSuccess()
             ->withMessage(translate('Thanks — your message is with us. We reply within one working day.'))
@@ -55,7 +57,7 @@ class ContactController extends Controller
      */
     protected function resolveInbox(?string $sectionUuid): ?string
     {
-        if (!$sectionUuid) {
+        if (! $sectionUuid) {
             return null;
         }
 

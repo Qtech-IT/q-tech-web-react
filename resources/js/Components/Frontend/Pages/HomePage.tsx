@@ -26,6 +26,8 @@ export interface HomePageProps {
    */
   sectionTypes?: Record<string, CmsSectionDescriptor> | CmsSectionDescriptor[]
   seo?: CmsResolvedSeo | null
+  /** `PageRenderService::alternates()` — hreflang set for the homepage. */
+  alternates?: Array<{ hreflang: string; href: string }> | null
 }
 
 /**
@@ -40,7 +42,7 @@ export interface HomePageProps {
  * content exists. That is the state a fresh install is in, and it must not look
  * like a crash.
  */
-export function HomePage({ title, page, sections, seo }: HomePageProps) {
+export function HomePage({ title, page, sections, seo, alternates }: HomePageProps) {
   const { t } = useTranslations()
   const { name, logo, origin } = useSiteIdentity()
 
@@ -88,6 +90,7 @@ export function HomePage({ title, page, sections, seo }: HomePageProps) {
     seo,
     fallbackTitle: title ?? t('Home'),
     ...(defaultSchema ? { defaultSchema } : {}),
+    ...(alternates ? { alternates } : {}),
   })
 
   return (

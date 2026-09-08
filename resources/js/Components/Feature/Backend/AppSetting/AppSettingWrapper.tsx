@@ -2,6 +2,7 @@
 import { AppearanceForm } from '@/Components/Forms/Backend/Settings/AppearanceForm';
 import { GeneralSettingsForm } from '@/Components/Forms/Backend/Settings/GeneralSettingsForm';
 import { LogoForm } from '@/Components/Forms/Backend/Settings/LogoForm';
+import { SeoAnalyticsForm } from '@/Components/Forms/Backend/Settings/SeoAnalyticsForm';
 import { SecuritySettingsForm } from '@/Components/Forms/Backend/Settings/SecuritySettingsForm';
 import { StorageSettingsForm } from '@/Components/Forms/Backend/Settings/StorageSettingsForm';
 import { SystemPreferencesForm } from '@/Components/Forms/Backend/Settings/SystemPreferencesForm';
@@ -45,6 +46,12 @@ export function AppSettingWrapper() {
             title: t("Logo & Branding"),
             description: t("Upload and manage your site logo, favicon, and branding assets."),
             component: LogoForm,
+        },
+
+        SeoAnalyticsForm: {
+            title: t("SEO & Analytics"),
+            description: t("Configure Google Analytics, Tag Manager, AdSense and default page metadata for the public site."),
+            component: SeoAnalyticsForm,
         },
         AppearanceForm: {
             title: "Appearance Settings",

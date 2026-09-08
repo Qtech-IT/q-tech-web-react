@@ -360,6 +360,41 @@ abstract class CmsContentSeeder extends Seeder
     }
 
     /**
+     * A `content.prose` section: the whole passage as one rich-text body an
+     * editor works in a Lexical editor.
+     *
+     * Long-form legal pages and case-study chapters are prose end to end — the
+     * editor writes paragraphs, sub-heads, a list and the occasional table, and
+     * a structured block-per-row editor gets in the way of that. This is the
+     * "content pages use a text editor" path; the structured `articleBody()`
+     * below stays for content that really is a set of discrete blocks.
+     *
+     * The stored HTML is sanitised against an explicit allowlist in
+     * `RichText.tsx` on every render.
+     *
+     * @param  array<string, mixed>  $overrides  name / eyebrow / heading / subheading / anchor / settings
+     */
+    protected function proseBody(Page $page, int $sort, string $html, array $overrides = []): PageSection
+    {
+        return $this->section($page, 'content.prose', $sort, [
+            'name' => $overrides['name'] ?? (($page->title ?? 'Article').' Body'),
+            'anchor' => $overrides['anchor'] ?? null,
+            'eyebrow' => $overrides['eyebrow'] ?? null,
+            'heading' => $overrides['heading'] ?? null,
+            'subheading' => $overrides['subheading'] ?? null,
+            'media_id' => $overrides['media_id'] ?? null,
+            'body' => $html,
+            'settings' => array_merge([
+                'measure' => 'prose',
+                'align' => 'start',
+                'theme' => 'default',
+                'spacing' => 'default',
+                'animation' => 'none',
+            ], $overrides['settings'] ?? []),
+        ]);
+    }
+
+    /**
      * A `content.blocks` section whose blocks are converted, once, from a
      * passage of seeded HTML.
      *

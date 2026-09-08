@@ -7,6 +7,7 @@ use App\Enums\Cms\MenuVisibility;
 use App\Enums\Common\Status;
 use App\Enums\System\CacheKey;
 use App\Http\Services\Backend\Cms\MenuTreeService;
+use App\Http\Services\Cms\ContentTranslator;
 use App\Models\Menu;
 use App\Models\MenuItem;
 use App\Traits\Cms\CacheInvalidation;
@@ -40,6 +41,7 @@ class NavigationService
 
     public function __construct(
         protected MenuTreeService $tree,
+        protected ContentTranslator $translator,
     ) {}
 
     /**
@@ -118,6 +120,12 @@ class NavigationService
                     ->where('status', Status::ACTIVE->value)
                     ->get();
 
+                // Overlay the visitor's locale onto label / description /
+                // aria before the tree is shaped. The default locale is a
+                // no-op; a non-default locale with no overlay row keeps the
+                // English text. This cache entry is already keyed per locale.
+                $this->translator->hydrate($items, app()->getLocale());
+
                 return $this->present($this->tree->nest($items));
             }
         );
@@ -157,10 +165,23 @@ class NavigationService
             $settings = is_array($item->settings) ? $item->settings : [];
             $children = $this->present($node['children']);
 
+            $href = $item->resolveHref();
+
+            // Only CMS-page links get the locale prefix. A named-route link
+            // (`/contact`) resolves to an unprefixed application route and
+            // must be left alone; an external URL and an anchor already are.
+            $linkType = $item->link_type instanceof MenuLinkType
+                ? $item->link_type
+                : MenuLinkType::tryFrom((string) $item->link_type);
+
+            if ($linkType === MenuLinkType::PAGE) {
+                $href = localize_path($href);
+            }
+
             return [
                 'id' => $item->uuid,
                 'label' => $item->label,
-                'href' => $item->resolveHref(),
+                'href' => $href,
                 'type' => $this->linkType($item),
                 'icon' => $item->icon,
                 'description' => $item->description,

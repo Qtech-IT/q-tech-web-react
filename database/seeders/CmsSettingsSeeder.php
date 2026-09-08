@@ -183,10 +183,34 @@ class CmsSettingsSeeder extends Seeder
                 'default' => null,
             ],
 
+            SettingKey::GOOGLE_ANALYTICS_ENABLED->value => [
+                'title' => 'Analytics — Google Analytics Enabled',
+                'description' => 'Load the Analytics tag on public pages. Ignored while a Tag Manager container is enabled.',
+                'default' => Status::INACTIVE->value,
+            ],
+
             SettingKey::GOOGLE_TAG_MANAGER_ID->value => [
                 'title' => 'Analytics — Google Tag Manager ID',
-                'description' => 'Container ID, e.g. GTM-XXXXXX.',
+                'description' => 'Container ID, e.g. GTM-XXXXXX. When enabled, load Analytics through the container rather than also enabling the Analytics tag above.',
                 'default' => null,
+            ],
+
+            SettingKey::GOOGLE_TAG_MANAGER_ENABLED->value => [
+                'title' => 'Analytics — Google Tag Manager Enabled',
+                'description' => 'Load the Tag Manager container on public pages.',
+                'default' => Status::INACTIVE->value,
+            ],
+
+            SettingKey::GOOGLE_ADSENSE_ID->value => [
+                'title' => 'Analytics — Google AdSense Publisher ID',
+                'description' => 'Publisher ID, e.g. ca-pub-0000000000000000.',
+                'default' => null,
+            ],
+
+            SettingKey::GOOGLE_ADSENSE_ENABLED->value => [
+                'title' => 'Analytics — Google AdSense Enabled',
+                'description' => 'Load the AdSense script site-wide on public pages.',
+                'default' => Status::INACTIVE->value,
             ],
 
             SettingKey::GOOGLE_SITE_VERIFICATION->value => [

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthenticateController;
 use App\Http\Controllers\Backend\AdminUserController;
 use App\Http\Controllers\Backend\Cms\BlockController;
+use App\Http\Controllers\Backend\Cms\ContentTranslationController;
 use App\Http\Controllers\Backend\Cms\CtaController;
 use App\Http\Controllers\Backend\Cms\MediaController;
 use App\Http\Controllers\Backend\Cms\MediaFolderController;
@@ -73,6 +74,7 @@ Route::middleware(['sanitization', 'throttle:60,1'])->group(function (): void {
             ->group(function () {
                 Route::get('index', 'index')->name('index');
                 Route::get('appearance', 'appearance')->name('appearance');
+                Route::get('seo', 'seo')->name('seo');
                 Route::get('logo', 'logo')->name('logo');
                 Route::get('storage', 'storage')->name('storage');
                 Route::get('security', 'security')->name('security');
@@ -225,6 +227,11 @@ Route::middleware(['sanitization', 'throttle:60,1'])->group(function (): void {
 
                 Route::post('{page}/restore', 'restore')->name('restore')->withTrashed();
                 Route::delete('{page}/force', 'forceDestroy')->name('force.destroy')->withTrashed();
+
+                // Create a locale variant sharing this page's translation
+                // group. Sections are not copied — they are locale-neutral
+                // structure translated through the overlay (§8.2).
+                Route::post('{page}/translations', 'storeTranslation')->name('translations.store');
             });
 
         // Sections are always addressed through their owning page.
@@ -255,6 +262,28 @@ Route::middleware(['sanitization', 'throttle:60,1'])->group(function (): void {
             ->name('section-blocks.')
             ->group(function () {
                 Route::post('reorder', 'reorder')->name('reorder');
+            });
+
+        /**
+         * =========================
+         * CMS TRANSLATION OVERLAY ROUTES
+         * =========================
+         *
+         * The non-routable overlay (schema doc §8.2): one locale's translated
+         * strings for a section, repeater item, menu item, CTA, media row or
+         * global block. Routable pages are translated by row-per-locale
+         * through the page builder, not here.
+         */
+        Route::controller(ContentTranslationController::class)
+            ->prefix('cms/translations')
+            ->name('cms.translations.')
+            ->group(function () {
+                Route::put('sections/{page_section}', 'section')->name('section');
+                Route::put('blocks/{section_block}', 'block')->name('block');
+                Route::put('menu-items/{menu_item}', 'menuItem')->name('menu-item');
+                Route::put('ctas/{cta}', 'cta')->name('cta');
+                Route::put('media/{media}', 'media')->name('media');
+                Route::put('global-blocks/{block}', 'globalBlock')->name('global-block');
             });
 
         /**

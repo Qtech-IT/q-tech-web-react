@@ -119,6 +119,47 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Locales
+    |--------------------------------------------------------------------------
+    |
+    | The public site is multilingual. The default locale is unprefixed
+    | (`/services`); every other ACTIVE `languages` row is served under its
+    | code (`/nl/services`). The authoritative default is the
+    | `system_language_code` app setting — `default_locale()` — this array only
+    | holds the routing and detection rules.
+    |
+    | `country_map` drives the first-visit auto-switch: a visitor whose country
+    | maps to a non-default locale is redirected once to the prefixed URL. The
+    | country comes from a proxy header (`country_headers`, in priority order);
+    | `ip_lookup` additionally allows an IP-database lookup when no header is
+    | present, at the cost of a per-visit call, so it is off by default.
+    |
+    */
+
+    'locales' => [
+        // ISO 3166-1 alpha-2 country code => locale code. First hit wins.
+        'country_map' => [
+            'nl' => ['NL', 'BE'],
+        ],
+
+        // Proxy headers carrying the visitor's country, most-trusted first.
+        'country_headers' => [
+            'CF-IPCountry',        // Cloudflare
+            'X-Vercel-IP-Country', // Vercel
+            'X-Country-Code',      // generic / custom edge
+        ],
+
+        // Fall back to an IP-address lookup (stevebauman/location) when no
+        // header is present. A network call per uncookied visitor — enable
+        // only where the app is not behind a country-aware proxy.
+        'ip_lookup' => (bool) env('CMS_LOCALE_IP_LOOKUP', false),
+
+        // Cookie remembering the visitor's chosen / detected locale.
+        'cookie' => 'locale',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Depth caps
     |--------------------------------------------------------------------------
     */

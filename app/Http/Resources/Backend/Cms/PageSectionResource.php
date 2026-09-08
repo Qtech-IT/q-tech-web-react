@@ -47,6 +47,10 @@ class PageSectionResource extends BaseResource
             'data' => $this->data,
             'settings' => $this->settings,
 
+            // The non-routable translation overlay (§8.2), grouped for the
+            // editor's locale tabs. Present only when eager-loaded.
+            'translations' => $this->translationPayload(),
+
             'blocks' => SectionBlockResource::collection($this->whenLoaded('blocks')),
             'gallery' => MediaResource::collection($this->whenLoaded('media')),
 

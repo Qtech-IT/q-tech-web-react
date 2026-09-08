@@ -47,6 +47,15 @@ class LocaleService
             $language->direction ?? 'ltr'
         );
 
+        // The cookie is what `LanguageMiddleware` reads first on the next
+        // request, and what keeps the unprefixed form POSTs (contact,
+        // subscribe) in the chosen language.
+        \Illuminate\Support\Facades\Cookie::queue(
+            (string) config('cms.locales.cookie', 'locale'),
+            $language->code,
+            60 * 24 * 365,
+        );
+
         app()->setLocale($language->code);
 
         return true;

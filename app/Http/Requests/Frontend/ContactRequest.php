@@ -35,7 +35,11 @@ class ContactRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:150'],
-            'email' => ['required', 'string', 'email:rfc,dns', 'max:191'],
+            // `email:rfc` only — NOT `dns`. The DNS check rejects perfectly
+            // valid addresses whenever the resolver is slow, rate-limited or
+            // offline, and a bounced enquiry the visitor never sees is worse
+            // than the odd typo'd domain reaching the inbox.
+            'email' => ['required', 'string', 'email:rfc', 'max:191'],
             'phone' => ['nullable', 'string', 'max:40', 'regex:/^[0-9+()\-.\s]{4,40}$/'],
             'company' => ['nullable', 'string', 'max:150'],
             'message' => ['required', 'string', 'min:10', 'max:5000'],

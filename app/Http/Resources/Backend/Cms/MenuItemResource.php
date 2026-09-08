@@ -17,6 +17,7 @@ class MenuItemResource extends BaseResource
     {
         return [
             ...$this->getBaseAttributes($request),
+            'translations' => $this->translationPayload(),
             'menu_id' => $this->menu_id,
             'parent_id' => $this->parent_id,
             'path' => $this->path,

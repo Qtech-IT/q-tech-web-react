@@ -184,54 +184,51 @@ class CaseStudyPagesSeeder extends CmsContentSeeder
             ]);
         }
 
-        $this->section($page, 'case.narrative', 2, [
+        // The three chapters are prose an editor writes in the rich-text
+        // editor — one `content.prose` band each — rather than the structured
+        // narrative type. The "what we delivered" list folds into the approach
+        // body as a real `<ul>`.
+        $this->proseBody($page, 2, $study['problem_html'], [
             'name' => $study['title'].' Problem',
             'anchor' => 'problem',
             'eyebrow' => 'The Problem',
             'heading' => 'Where They Started',
-            'body' => $this->htmlToNarrative($study['problem_html']),
             'settings' => [
-                'media_side' => 'end',
-                'list_columns' => '1',
-                'accent' => $study['accent'],
                 'theme' => 'default',
                 'spacing' => 'default',
                 'animation' => 'fade',
             ],
         ]);
 
-        $approach = $this->section($page, 'case.narrative', 3, [
+        $delivered = $study['delivered'] ?? [];
+        $deliveredList = $delivered === []
+            ? ''
+            : '<h3>What we delivered</h3><ul>'
+                .implode('', array_map(
+                    static fn (string $item): string => '<li>'.e($item).'</li>',
+                    $delivered,
+                ))
+                .'</ul>';
+
+        $this->proseBody($page, 3, $study['approach_html'].$deliveredList, [
             'name' => $study['title'].' Approach',
             'anchor' => 'approach',
             'eyebrow' => 'Approach',
             'heading' => 'What We Built',
-            'body' => $this->htmlToNarrative($study['approach_html']),
             'media_id' => $mediaId,
-            'data' => ['list_heading' => 'What we delivered'],
             'settings' => [
-                'media_side' => 'end',
-                'list_columns' => '1',
-                'accent' => $study['accent'],
                 'theme' => 'subtle',
                 'spacing' => 'lg',
-                'animation' => 'stagger',
+                'animation' => 'fade',
             ],
         ]);
 
-        foreach ($study['delivered'] as $i => $item) {
-            $this->block($approach, 'point', $i, ['label' => $item]);
-        }
-
-        $this->section($page, 'case.narrative', 4, [
+        $this->proseBody($page, 4, $study['outcome_html'], [
             'name' => $study['title'].' Outcome',
             'anchor' => 'outcome',
             'eyebrow' => 'Outcome',
             'heading' => 'What Happened Next',
-            'body' => $this->htmlToNarrative($study['outcome_html']),
             'settings' => [
-                'media_side' => 'end',
-                'list_columns' => '1',
-                'accent' => $study['accent'],
                 'theme' => 'default',
                 'spacing' => 'default',
                 'animation' => 'fade',
