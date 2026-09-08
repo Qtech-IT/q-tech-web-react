@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * The non-routable translation overlay (schema doc §8.2).
+ * The non-routable translation overlay (schema doc §8.2en).
  *
  * Routable content (`pages`) is multilingual by row-per-locale: each locale is
  * its own row grouped by `translation_group_id`. Everything a page is built
