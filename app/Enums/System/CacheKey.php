@@ -43,6 +43,16 @@ enum CacheKey: string
     case CMS_FEATURED = 'cms:featured';
 
     /**
+     * The subset of translation keys the PUBLIC bundle actually calls.
+     *
+     * Derived by scanning the public component tree, which is a filesystem
+     * walk — far too expensive to repeat per request, and completely static
+     * between deploys. Cached forever; `optimize:clear` on deploy is what
+     * rebuilds it.
+     */
+    case PUBLIC_TRANSLATION_KEYS = 'i18n:public_keys';
+
+    /**
      * Registry of live keys for a wildcard-prone family.
      *
      * Cache::forget() cannot glob, so every key built under a wildcard-prone

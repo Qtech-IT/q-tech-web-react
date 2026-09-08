@@ -159,7 +159,6 @@ Route::middleware(['sanitization', 'throttle:60,1'])->group(function (): void {
             ->prefix('notification-templates/')
             ->name('notification-templates.')->group(function () {
                 Route::get('global', 'globalTemplate')->name('global');
-                Route::post('update/global-template', 'globalTemplate')->name('global');
             });
 
         /**

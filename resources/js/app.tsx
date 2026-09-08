@@ -1,14 +1,36 @@
-import "@fontsource/inter/400.css";
-import "@fontsource/inter/500.css";
-import "@fontsource/inter/600.css";
-import "@fontsource/inter/700.css";
+/*
+ * Latin subsets only.
+ *
+ * The bare `@fontsource/<family>/<weight>.css` entrypoint declares EVERY subset
+ * the family ships — cyrillic, cyrillic-ext, greek, greek-ext, vietnamese, and
+ * for Open Sans also hebrew, math and symbols. Nine weights across two families
+ * built 156 font files and a 278 KB render-blocking stylesheet, to serve a site
+ * whose content locales are English and Dutch.
+ *
+ * `latin` + `latin-ext` covers both, plus the accented characters that turn up
+ * in European names and place names. Adding a non-latin content locale means
+ * adding that subset here — and a script like Arabic or Bengali needs a family
+ * that actually contains it, which neither of these does.
+ */
+import "@fontsource/inter/latin-400.css";
+import "@fontsource/inter/latin-500.css";
+import "@fontsource/inter/latin-600.css";
+import "@fontsource/inter/latin-700.css";
+import "@fontsource/inter/latin-ext-400.css";
+import "@fontsource/inter/latin-ext-500.css";
+import "@fontsource/inter/latin-ext-600.css";
+import "@fontsource/inter/latin-ext-700.css";
 
-
-import '@fontsource/open-sans/300.css';
-import '@fontsource/open-sans/400.css';
-import '@fontsource/open-sans/500.css';
-import '@fontsource/open-sans/600.css';
-import '@fontsource/open-sans/700.css';
+import '@fontsource/open-sans/latin-300.css';
+import '@fontsource/open-sans/latin-400.css';
+import '@fontsource/open-sans/latin-500.css';
+import '@fontsource/open-sans/latin-600.css';
+import '@fontsource/open-sans/latin-700.css';
+import '@fontsource/open-sans/latin-ext-300.css';
+import '@fontsource/open-sans/latin-ext-400.css';
+import '@fontsource/open-sans/latin-ext-500.css';
+import '@fontsource/open-sans/latin-ext-600.css';
+import '@fontsource/open-sans/latin-ext-700.css';
 
 
 
