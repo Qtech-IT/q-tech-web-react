@@ -77,7 +77,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
               <SidebarHeader>
                 <TeamSwitcher
                   siteConfig={themeConfig ?? {}}
-                  siteLogo={props?.logos?.company_logo ?? ''}
+                  siteLogo={props?.logos?.company_logo || props?.logos?.favicon || ''}
                 />
               </SidebarHeader>
               <SidebarContent>

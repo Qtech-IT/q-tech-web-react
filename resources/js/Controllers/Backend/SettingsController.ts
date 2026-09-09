@@ -5,9 +5,13 @@ import toast from "react-hot-toast"
  *
  * @param {*} submitFn
  */
-export const onSettingsUpdate = async (data: any, submitFn: SubmitFunction) => {
+export const onSettingsUpdate = async (
+    data: any,
+    submitFn: SubmitFunction,
+    options: { preserveEmpty?: boolean } = {},
+) => {
 
-    const transformedData: any = transformSettingsBooleanValues(data)
+    const transformedData: any = transformSettingsBooleanValues(data, options.preserveEmpty)
 
 
     if (Object.keys(transformedData?.site_settings).length === 0) {
@@ -54,17 +58,21 @@ export const onLogoUpdate = async (data: any, submitFn: SubmitFunction) => {
  * @param {Object} data - The data object to be processed
  * @returns {Object} - Transformed data object
  */
-export const transformSettingsBooleanValues = (data: any) => {
+export const transformSettingsBooleanValues = (data: any, preserveEmpty = false) => {
     return Object.keys(data).reduce((acc: any, key) => {
         const value = data[key];
 
         if (typeof value === 'boolean') {
             acc[key] = value ? 'active' : 'inactive';
         } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-            acc[key] = transformSettingsBooleanValues(value);
+            acc[key] = transformSettingsBooleanValues(value, preserveEmpty);
         } else {
 
-            if (value !== null && value !== undefined && value !== '') {
+            // An empty string is normally dropped so an untouched blank field
+            // does not overwrite a stored value. `preserveEmpty` opts a form
+            // in to sending '' through — needed where clearing a field must
+            // actually clear the setting (e.g. robots.txt extra rules).
+            if (value !== null && value !== undefined && (preserveEmpty || value !== '')) {
                 acc[key] = value;
             }
 

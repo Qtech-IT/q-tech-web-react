@@ -86,6 +86,11 @@ class DefaultSettings
 			SettingKey::MAINTENANCE_MODE->value         => Status::INACTIVE->value,
 			SettingKey::MAINTENANCE_TITLE->value        => 'We\'ll be back soon!',
 			SettingKey::MAINTENANCE_DESCRIPTION->value  => 'Sorry for the inconvenience but we\'re performing some maintenance at the moment. We\'ll be back online shortly!',
+
+			SettingKey::SITEMAP_ENABLED->value      => Status::ACTIVE->value,
+			SettingKey::SITEMAP_CHANGEFREQ->value   => 'weekly',
+			SettingKey::ROBOTS_ALLOW_INDEXING->value => Status::ACTIVE->value,
+			SettingKey::ROBOTS_AI_CRAWLERS->value   => Status::ACTIVE->value,
 		];
 
 		if ($key) {

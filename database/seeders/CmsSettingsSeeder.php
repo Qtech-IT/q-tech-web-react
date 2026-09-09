@@ -225,6 +225,18 @@ class CmsSettingsSeeder extends Seeder
                 'default' => null,
             ],
 
+            SettingKey::ROBOTS_ALLOW_INDEXING->value => [
+                'title' => 'SEO — Allow Search Engine Indexing',
+                'description' => 'Master switch. When off, robots.txt returns "Disallow: /" for every crawler — use this on staging copies. When on, the full rule set is served.',
+                'default' => Status::ACTIVE->value,
+            ],
+
+            SettingKey::ROBOTS_AI_CRAWLERS->value => [
+                'title' => 'SEO — Allow AI Crawlers',
+                'description' => 'Emit an explicit "welcome" group for AI assistants and answer engines (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, …). Turn off to disallow them site-wide.',
+                'default' => Status::ACTIVE->value,
+            ],
+
             SettingKey::SITEMAP_ENABLED->value => [
                 'title' => 'SEO — Sitemap Enabled',
                 'description' => 'Serve /sitemap.xml.',
