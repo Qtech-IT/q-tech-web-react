@@ -109,6 +109,16 @@ class SettingsService
         Cache::forget(CacheKey::COMPANY_LOGOS->value);
         Cache::forget(CacheKey::DEFAULT_SETTINGS->value);
 
+        // The generated robots.txt and the sitemap (its changefreq hint) are
+        // cached as rendered strings; forgetting DEFAULT_SETTINGS alone does
+        // not reach them.
+        Cache::forget(CacheKey::CMS_SETTINGS->for('robots'));
+        $sitemapRegistry = CacheKey::CMS_KEY_REGISTRY->for(CacheKey::CMS_SITEMAP->value);
+        foreach (Cache::get($sitemapRegistry, []) as $sitemapKey) {
+            Cache::forget($sitemapKey);
+        }
+        Cache::forget($sitemapRegistry);
+
         return [
             'status'  => true,
             'message' => translate('Settings saved successfully')

@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { BarChart3, Search, Tag } from 'lucide-react'
+import { BarChart3, Bot, ExternalLink, Search, Tag } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -17,6 +17,13 @@ import {
   FormMessage,
 } from '@/Components/UI/Form'
 import { Input } from '@/Components/UI/Input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/Components/UI/Select'
 import { Switch } from '@/Components/UI/Switch'
 import { Textarea } from '@/Components/UI/Textarea'
 import { onSettingsUpdate } from '@/Controllers/Backend/SettingsController'
@@ -57,8 +64,31 @@ const schema = z.object({
     ),
     default_meta_title_suffix: z.string().max(120).optional(),
     default_meta_description: z.string().max(320).optional(),
+    robots_allow_indexing: z.boolean(),
+    sitemap_enabled: z.boolean(),
+    robots_ai_crawlers: z.boolean(),
+    sitemap_changefreq: z.enum([
+      'always',
+      'hourly',
+      'daily',
+      'weekly',
+      'monthly',
+      'yearly',
+      'never',
+    ]),
+    robots_txt_extra: z.string().max(4000).optional(),
   }),
 })
+
+const CHANGEFREQ_OPTIONS = [
+  'always',
+  'hourly',
+  'daily',
+  'weekly',
+  'monthly',
+  'yearly',
+  'never',
+] as const
 
 type FormValues = z.infer<typeof schema>
 
@@ -81,6 +111,11 @@ export function SeoAnalyticsForm({ props }: { props: any }) {
         google_site_verification: props?.google_site_verification ?? '',
         default_meta_title_suffix: props?.default_meta_title_suffix ?? '',
         default_meta_description: props?.default_meta_description ?? '',
+        robots_allow_indexing: isOn(props?.robots_allow_indexing ?? 'active'),
+        sitemap_enabled: isOn(props?.sitemap_enabled ?? 'active'),
+        robots_ai_crawlers: isOn(props?.robots_ai_crawlers ?? 'active'),
+        sitemap_changefreq: (props?.sitemap_changefreq ?? 'weekly') as FormValues['site_settings']['sitemap_changefreq'],
+        robots_txt_extra: props?.robots_txt_extra ?? '',
       },
     },
   })
@@ -145,7 +180,9 @@ export function SeoAnalyticsForm({ props }: { props: any }) {
 
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit((values) => onSettingsUpdate(values, submit))}
+          onSubmit={form.handleSubmit((values) =>
+            onSettingsUpdate(values, submit, { preserveEmpty: true }),
+          )}
           className="space-y-6"
         >
           <Alert>
@@ -247,6 +284,108 @@ export function SeoAnalyticsForm({ props }: { props: any }) {
                   </FormItem>
                 )}
               />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Bot className="h-5 w-5 text-orange-500" />
+                <CardTitle>{t('Search Engine Crawling')}</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert>
+                <AlertDescription>
+                  {t(
+                    'robots.txt and sitemap.xml are generated from your published pages and the settings below — there are no files to edit.',
+                  )}
+                </AlertDescription>
+              </Alert>
+
+              {switchField(
+                'robots_allow_indexing',
+                'Allow search engine indexing',
+                'Master switch. Turn OFF on a staging copy so it is never indexed — robots.txt then returns "Disallow: /" for everyone and sitemap.xml stops being served.',
+              )}
+
+              {switchField(
+                'sitemap_enabled',
+                'Serve sitemap.xml',
+                'Publish /sitemap.xml and reference it from robots.txt.',
+              )}
+
+              {switchField(
+                'robots_ai_crawlers',
+                'Allow AI crawlers',
+                'Explicitly welcome AI assistants and answer engines (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, …). Turn off to disallow them site-wide.',
+              )}
+
+              <FormField
+                control={form.control as any}
+                name="site_settings.sitemap_changefreq"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('Sitemap Change Frequency')}</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {CHANGEFREQ_OPTIONS.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {t(option.charAt(0).toUpperCase() + option.slice(1))}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      {t('Hint given to crawlers for how often pages change.')}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control as any}
+                name="site_settings.robots_txt_extra"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('Extra robots.txt Rules')}</FormLabel>
+                    <FormControl>
+                      <Textarea rows={4} className="font-mono text-sm" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      {t('Appended verbatim to the generated robots.txt.')}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex flex-wrap gap-4 pt-2 text-sm">
+                <a
+                  href="/sitemap.xml"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-primary hover:underline"
+                >
+                  {t('View sitemap.xml')}
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+                <a
+                  href="/robots.txt"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-primary hover:underline"
+                >
+                  {t('View robots.txt')}
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              </div>
             </CardContent>
           </Card>
 

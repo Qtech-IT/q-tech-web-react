@@ -174,8 +174,10 @@ class SeoService
     {
         $this->forgetKeys([
             CacheKey::CMS_SEO->for($alias, $id, $locale),
-            CacheKey::CMS_SITEMAP->for(config('cms.site_id')),
         ]);
+
+        // Sitemap entries are keyed per (site, locale-part); flush the family.
+        $this->forgetFamily(CacheKey::CMS_SITEMAP->value);
     }
 
     /**

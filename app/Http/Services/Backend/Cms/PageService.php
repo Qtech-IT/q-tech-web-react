@@ -492,5 +492,10 @@ class PageService
 
         // Menus embed page paths, so any page write can stale a menu tree.
         $this->forgetFamily(CacheKey::CMS_MENU->value);
+
+        // The sitemap is keyed per (site, locale-part); flush the family so a
+        // published, renamed or unpublished page shows up on the next crawl
+        // rather than at the 6h TTL.
+        $this->forgetFamily(CacheKey::CMS_SITEMAP->value);
     }
 }

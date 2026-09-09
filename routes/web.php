@@ -4,6 +4,8 @@ use App\Http\Controllers\Frontend\ContactController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\LocaleController;
 use App\Http\Controllers\Frontend\PageController;
+use App\Http\Controllers\Frontend\RobotsController;
+use App\Http\Controllers\Frontend\SitemapController;
 use App\Http\Controllers\Frontend\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +52,15 @@ Route::middleware(['sanitization'])->group(function (): void {
     Route::post('locale/{code}', [LocaleController::class, 'update'])
         ->middleware('throttle:20,1')
         ->name('locale.update');
+
+    /*
+     * Crawler files. Both prefixes are already in
+     * `cms.reserved_path_prefixes`, so no CMS page can shadow them, and both
+     * are generated from content + settings rather than served statically —
+     * see SitemapService. Registered before the fallback so they win.
+     */
+    Route::get('robots.txt', RobotsController::class)->name('robots');
+    Route::get('sitemap.xml', SitemapController::class)->name('sitemap');
 
     /*
      * Every other public URL: the whole CMS page tree behind one route.
