@@ -14,6 +14,32 @@
            <script>(function(){try{var m=window.matchMedia('(prefers-color-scheme: dark)').matches;var e=document.documentElement;e.classList.toggle('dark',m);e.style.colorScheme=m?'dark':'light';}catch(_){}})();</script>
         @endif
 
+        {{--
+            Preload the display weights the public hero renders in, so the real
+            font is in place before first paint instead of swapping in ~600ms
+            later (right as the headline reveal ends) and reflowing the text.
+            Public pages only; wrapped because a missing manifest entry throws.
+        --}}
+        @unless (request()->is('backend', 'backend/*'))
+            @php
+                $preloadFonts = [];
+                foreach ([
+                    'node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2',
+                    'node_modules/@fontsource/inter/files/inter-latin-700-normal.woff2',
+                ] as $font) {
+                    try {
+                        $preloadFonts[] = Vite::asset($font);
+                    } catch (\Throwable $e) {
+                        // Font not in the manifest for this build — skip the hint.
+                    }
+                }
+            @endphp
+            @foreach ($preloadFonts as $fontUrl)
+                <link rel="preload" as="font" type="font/woff2" crossorigin
+                      href="{{ $fontUrl }}">
+            @endforeach
+        @endunless
+
         <title inertia>
            {{ site_settings('site_name') }}
         </title>

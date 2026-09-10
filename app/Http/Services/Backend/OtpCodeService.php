@@ -51,9 +51,6 @@ class OtpCodeService
 
                     ['value' => strtolower(NotificationTemplateEnum::PASSWORD_RESET->value),
                      'label' => translate('Password Reset')],
-
-                    ['value' => strtolower(NotificationTemplateEnum::EMAIL_VERIFICATION->value),
-                     'label' => translate('Email Verification')],
                 ],
             ],
 

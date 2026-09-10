@@ -61,7 +61,16 @@ export function WordReveal({
   }
 
   return (
-    <Tag {...(id ? { id } : {})} className={cn(className)}>
+    /*
+     * `text-wrap: normal` is forced here, overriding any `text-balance` /
+     * `text-pretty` the caller passed. Each word below is an atomic
+     * `inline-block` box, and `text-wrap: balance` cannot balance a row of
+     * those the way it balances a plain text run — the browser lays the words
+     * out greedily during the reveal, then reflows them once the animation
+     * settles, which reads on mobile as the finished headline "re-formatting"
+     * itself. The plain-text branch above keeps `text-balance` and works fine.
+     */
+    <Tag {...(id ? { id } : {})} className={cn(className, '[text-wrap:normal]')}>
       {words.map((word, position) => (
         <Fragment key={`${word}-${position}`}>
           {/*
@@ -77,8 +86,14 @@ export function WordReveal({
             real, non-collapsible gap, and it keeps the heading selectable
             and copyable as an ordinary sentence.
           */}
+          {/*
+            No manual `will-change`: motion/react adds it automatically for the
+            duration of the animation and removes it on completion. The old
+            static `will-change-[transform,filter,opacity]` class pinned every
+            word of every headline to its own compositing layer permanently.
+          */}
           <motion.span
-            className="inline-block will-change-[transform,filter,opacity]"
+            className="inline-block"
             initial={{ opacity: 0, y: '0.35em', filter: 'blur(8px)' }}
             animate={{ opacity: 1, y: '0em', filter: 'blur(0px)' }}
             transition={{

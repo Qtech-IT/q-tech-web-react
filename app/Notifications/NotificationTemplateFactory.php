@@ -23,12 +23,8 @@ class NotificationTemplateFactory
 	{
 		try {
 			return match ($key) {
-				NotificationTemplateEnum::PASSWORD_RESET->value       => new PasswordResetTemplate(),
-				NotificationTemplateEnum::EMAIL_VERIFICATION->value   => new EmailVerificationTemplate(),
-				NotificationTemplateEnum::USER_STATUS_UPDATE->value   => new UserStatusUpdateTemplate(),
-				NotificationTemplateEnum::USER_REGISTERED->value      => new UserRegisterTemplate(),
-				NotificationTemplateEnum::ADMIN_NEW_USER_ALERT->value => new NewUserAlertTemplate(),
-				default                                               => throw new \Exception("Unknown notification template: {$key}")
+				NotificationTemplateEnum::PASSWORD_RESET->value => new PasswordResetTemplate(),
+				default                                         => throw new \Exception("Unknown notification template: {$key}")
 			};
 		} catch (\Exception $ex) {
 		}
