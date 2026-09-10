@@ -28,7 +28,7 @@ export const LEGACY_THEME_COOKIE_NAME = 'vite-ui-theme'
 
 export const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
 
-export const DEFAULT_THEME: Theme = 'system'
+export const DEFAULT_THEME: Theme = 'light'
 
 export const THEMES: readonly Theme[] = ['light', 'dark', 'system'] as const
 

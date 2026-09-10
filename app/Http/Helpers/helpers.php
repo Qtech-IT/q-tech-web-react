@@ -1161,7 +1161,7 @@ if (! function_exists('theme_preference')) {
 
         $default = Theme::tryFrom((string) site_settings(SettingKey::THEME_MODE->value));
 
-        return ($default ?? Theme::SYSTEM)->value;
+        return ($default ?? Theme::LIGHT)->value;
     }
 }
 
